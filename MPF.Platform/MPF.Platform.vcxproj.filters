@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="头文件\Controls">
+      <UniqueIdentifier>{fc61e451-61bc-48a0-8859-4843cb61b0ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Controls">
+      <UniqueIdentifier>{8a8b859f-1372-44e3-afcc-24c701bed747}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="生成的文件">
+      <UniqueIdentifier>{9b9b9eca-b321-41f1-988e-812d24f5b8ce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -22,6 +31,24 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\common.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\NonCopyable.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Controls\NativeWindow.h">
+      <Filter>头文件\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="MPF.Platform_i.h">
+      <Filter>生成的文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\WeakReferenceBase.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NativeApplication.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,5 +62,16 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Controls\NativeWindow.cpp">
+      <Filter>源文件\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="NativeApplication.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="MPF.Platform.idl">
+      <Filter>源文件</Filter>
+    </Midl>
   </ItemGroup>
 </Project>

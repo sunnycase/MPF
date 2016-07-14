@@ -1,0 +1,42 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	uuid(2705FA1D-68BA-4E2B-92D4-846AE0A8D208),
+	helpstring("Native Window Interface"),
+	version(1.0)
+]
+interface INativeWindow : IUnknown
+{
+	[propget]
+	HRESULT HasMaximize([out] BOOL* value);
+	[propput]
+	HRESULT HasMaximize([in] BOOL value);
+
+	[propget]
+	HRESULT Title([out]BSTR* value);
+	[propput]
+	HRESULT Title([in]BSTR value);
+
+	HRESULT Show();
+	HRESULT Hide();
+};
+
+[
+	uuid(2CABEDF6-D0CB-409D-A400-F03ACBF7663C),
+	helpstring("Native Application Interface"),
+	version(1.0)
+]
+interface INativeApplication : IUnknown
+{
+	HRESULT Run();
+};
+
+[
+	uuid(3E0658B5-F637-4BCD-9D0E-4A938970146D),
+	helpstring("MPF.Platform Type Library"),
+	version(1.0)
+]
+library MPFPlatformLibrary
+{
+}
