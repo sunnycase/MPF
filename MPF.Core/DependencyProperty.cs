@@ -9,7 +9,7 @@ namespace MPF
 {
     public abstract class DependencyProperty : IEquatable<DependencyProperty>
     {
-        private static volatile int _nextAvailableGlobalId = 0;
+        private static int _nextAvailableGlobalId = 0;
 
         public string Name { get; }
         public Type OwnerType { get; }
@@ -21,6 +21,15 @@ namespace MPF
             Name = name;
             OwnerType = ownerType;
             _globalId = Interlocked.Increment(ref _nextAvailableGlobalId);
+        }
+
+        internal DependencyProperty(DependencyProperty property, Type ownerType)
+        {
+            if (ownerType == property.OwnerType)
+                throw new ArgumentOutOfRangeException(nameof(ownerType), $"{nameof(ownerType)} must be different from {nameof(property)}.{nameof(property.OwnerType)}.");
+            Name = property.Name;
+            OwnerType = ownerType;
+            _globalId = property._globalId;
         }
 
         public override bool Equals(object obj)
@@ -78,9 +87,28 @@ namespace MPF
             _defaultValue = defaultValue;
         }
 
+        internal DependencyProperty(DependencyProperty<T> property, Type ownerType, T defaultValue)
+            : base(property, ownerType)
+        {
+            _defaultValue = defaultValue;
+        }
+
         internal void InvokePropertyChangedHandlers(object sender, PropertyChangedEventArgs<T> e)
         {
             PropertyChanged?.Invoke(sender, e);
+        }
+
+        public DependencyProperty<T> AddOwner(Type ownerType, T defaultValue, EventHandler<PropertyChangedEventArgs<T>> propertyChangedHandler = null)
+        {
+            var property = new DependencyProperty<T>(this, ownerType, defaultValue);
+            if (propertyChangedHandler != null)
+                property.PropertyChanged += propertyChangedHandler;
+            return property;
+        }
+
+        public DependencyProperty<T> AddOwner(Type ownerType, EventHandler<PropertyChangedEventArgs<T>> propertyChangedHandler = null)
+        {
+            return AddOwner(ownerType, _defaultValue, propertyChangedHandler);
         }
     }
 }
