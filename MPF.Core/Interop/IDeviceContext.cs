@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace MPF.Interop
 {
-    internal static class Platform
+    [ComImport]
+    [Guid("CDFF5B2C-2CFB-4D80-A378-1B0F1AD95B41")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    internal interface IDeviceContext
     {
-    }
-
-    internal static class Libraries
-    {
-        public const string Platform = "MPF.Platform.dll";
     }
 }

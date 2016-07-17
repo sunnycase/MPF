@@ -96,6 +96,11 @@ public:
 	{
 		return{ weakContext };
 	}
+
+	const std::shared_ptr<Details::WeakReferenceContext<T>>& GetWeakContext() const
+	{
+		return weakContext;
+	}
 protected:
 	std::shared_ptr<Details::WeakReferenceContext<T>> weakContext;
 };

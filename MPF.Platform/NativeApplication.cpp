@@ -32,7 +32,7 @@ NativeApplication::~NativeApplication()
 HRESULT NativeApplication::Run(void)
 {
 	MSG msg;
-	while (GetMessage(&msg, NULL, 0, 0) != WM_QUIT)
+	while (GetMessage(&msg, NULL, 0, 0))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);

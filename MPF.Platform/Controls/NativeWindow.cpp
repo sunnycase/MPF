@@ -9,11 +9,11 @@
 #include <atomic>
 using namespace WRL;
 
-HRESULT __stdcall CreateNativeWindow(NS_PLATFORM::INativeWindow** obj) noexcept
+HRESULT __stdcall CreateNativeWindow(NS_PLATFORM::NativeWindowMessageHandler messageHandler, NS_PLATFORM::INativeWindow** obj) noexcept
 {
 	try
 	{
-		*obj = Make<NS_PLATFORM::NativeWindow>().Detach();
+		*obj = Make<NS_PLATFORM::NativeWindow>(messageHandler).Detach();
 		return S_OK;
 	}
 	CATCH_ALL();
@@ -50,6 +50,32 @@ void NativeWindow::RegisterNativeWindowClass()
 
 		ThrowWin32IfNot(RegisterClassEx(&wndCls));
 	}
+}
+
+HRESULT NativeWindow::get_NativeHandle(INT_PTR * value)
+{
+	*value = reinterpret_cast<INT_PTR>(_hWnd);
+	return S_OK;
+}
+
+STDMETHODIMP NativeWindow::Close()
+{
+	try
+	{
+		ThrowWin32IfNot(PostMessage(_hWnd, WM_CLOSE, 0, 0));
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
+STDMETHODIMP NativeWindow::Destroy()
+{
+	try
+	{
+		ThrowWin32IfNot(PostMessage(_hWnd, WM_DESTROY, 0, 0));
+		return S_OK;
+	}
+	CATCH_ALL();
 }
 
 HRESULT NativeWindow::get_Title(BSTR *value)
@@ -150,8 +176,8 @@ LRESULT CALLBACK NativeWindow::NativeWindowProcWrapper(HWND hWnd, uint32_t uMsg,
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-NativeWindow::NativeWindow()
-	:_weakRef(new WeakRef<NativeWindow>(AsWeak()))
+NativeWindow::NativeWindow(NativeWindowMessageHandler messageHandler)
+	:_weakRef(new WeakRef<NativeWindow>(AsWeak())), _messageHandler(messageHandler)
 {
 	RegisterNativeWindowClass();
 	CreateWindow();
@@ -175,5 +201,16 @@ void NativeWindow::CreateWindow()
 
 LRESULT NativeWindow::WindowProc(HWND hWnd, uint32_t uMsg, WPARAM wParam, LPARAM lParam)
 {
+	switch (uMsg)
+	{
+	case WM_CLOSE:
+		_messageHandler(NWM_Closing);
+		return 0;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	default:
+		break;
+	}
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }

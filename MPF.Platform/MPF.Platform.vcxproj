@@ -70,19 +70,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)inc;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)inc;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)inc;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)inc;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -97,10 +97,14 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
     </Midl>
+    <PostBuildEvent>
+      <Command>copy /y $(TargetPath) $(SolutionDir)Tutorial\MPF.HelloDesktop\bin\Debug\</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -115,6 +119,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
@@ -136,6 +141,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
@@ -157,6 +163,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
@@ -170,6 +177,8 @@
     <ClInclude Include="..\inc\NonCopyable.h" />
     <ClInclude Include="..\inc\WeakReferenceBase.h" />
     <ClInclude Include="Controls\NativeWindow.h" />
+    <ClInclude Include="Media\D3D9DeviceContext.h" />
+    <ClInclude Include="Media\DeviceContext.h" />
     <ClInclude Include="MPF.Platform_i.h" />
     <ClInclude Include="NativeApplication.h" />
     <ClInclude Include="stdafx.h" />
@@ -191,6 +200,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Media\D3D9DeviceContext.cpp" />
+    <ClCompile Include="Media\DeviceContext.cpp" />
     <ClCompile Include="MPF.Platform.cpp" />
     <ClCompile Include="NativeApplication.cpp" />
     <ClCompile Include="stdafx.cpp">

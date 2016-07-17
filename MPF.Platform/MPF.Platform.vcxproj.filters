@@ -22,6 +22,12 @@
     <Filter Include="生成的文件">
       <UniqueIdentifier>{9b9b9eca-b321-41f1-988e-812d24f5b8ce}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Media">
+      <UniqueIdentifier>{e6b4c8ca-aff6-4123-9746-dc0b61f97bac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Media">
+      <UniqueIdentifier>{8417a7ec-ecfd-488a-b9ee-2eff93308340}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -51,6 +57,12 @@
     <ClInclude Include="NativeApplication.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Media\D3D9DeviceContext.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\DeviceContext.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -67,6 +79,12 @@
     </ClCompile>
     <ClCompile Include="NativeApplication.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\D3D9DeviceContext.cpp">
+      <Filter>源文件\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\DeviceContext.cpp">
+      <Filter>源文件\Media</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

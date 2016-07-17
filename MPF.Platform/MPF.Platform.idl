@@ -18,8 +18,13 @@ interface INativeWindow : IUnknown
 	[propput]
 	HRESULT Title([in]BSTR value);
 
+	[propget]
+	HRESULT NativeHandle([out]INT_PTR* value);
+
 	HRESULT Show();
 	HRESULT Hide();
+	HRESULT Close();
+	HRESULT Destroy();
 };
 
 [
@@ -30,6 +35,16 @@ interface INativeWindow : IUnknown
 interface INativeApplication : IUnknown
 {
 	HRESULT Run();
+};
+
+[
+	uuid(CDFF5B2C-2CFB-4D80-A378-1B0F1AD95B41),
+	helpstring("Device Context Interface"),
+	version(1.0)
+]
+interface IDeviceContext : IUnknown
+{
+
 };
 
 [

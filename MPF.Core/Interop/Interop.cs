@@ -11,10 +11,30 @@ namespace MPF.Interop
         [DllImport(Libraries.Platform, CallingConvention = CallingConvention.StdCall)]
         private static extern int CreateNativeApplication([MarshalAs(UnmanagedType.Interface)]out INativeApplication obj);
 
+        [DllImport(Libraries.Platform, CallingConvention = CallingConvention.StdCall)]
+        private static extern int CreateNativeWindow([MarshalAs(UnmanagedType.FunctionPtr), In]NativeWindowMessageHandler handler, [MarshalAs(UnmanagedType.Interface)]out INativeWindow obj);
+
+        [DllImport(Libraries.Platform, CallingConvention = CallingConvention.StdCall)]
+        private static extern int CreateDeviceContext([MarshalAs(UnmanagedType.Interface), In]INativeWindow window, [MarshalAs(UnmanagedType.Interface)]out IDeviceContext obj);
+
         public static INativeApplication CreateNativeApplication()
         {
             INativeApplication obj;
             Marshal.ThrowExceptionForHR(CreateNativeApplication(out obj));
+            return obj;
+        }
+
+        public static INativeWindow CreateNativeWindow(NativeWindowMessageHandler handler)
+        {
+            INativeWindow obj;
+            Marshal.ThrowExceptionForHR(CreateNativeWindow(handler, out obj));
+            return obj;
+        }
+
+        public static IDeviceContext CreateDeviceContext(INativeWindow window)
+        {
+            IDeviceContext obj;
+            Marshal.ThrowExceptionForHR(CreateDeviceContext(window, out obj));
             return obj;
         }
     }

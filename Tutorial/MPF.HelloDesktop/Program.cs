@@ -25,12 +25,11 @@ namespace MPF.HelloDesktop
             _window = new Window();
             _window.Show();
             ChangeMaximizeBox();
-            //_window.HasMaximize = false;
         }
 
         private async void ChangeMaximizeBox()
         {
-            await Task.Delay(2000);
+            await Task.Delay(10);
             _window.HasMaximize = false;
             _window.Title = "Hello MPF";
         }

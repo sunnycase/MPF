@@ -11,7 +11,7 @@ namespace MPF
         public float X { get; set; }
         public float Y { get; set; }
 
-        public static readonly Point Zero = new Point();
+        public static readonly Point Zero = default(Point);
 
         public Point(float x, float y)
         {
