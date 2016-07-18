@@ -29,7 +29,6 @@ namespace MPF.HelloDesktop
 
         private async void ChangeMaximizeBox()
         {
-            await Task.Delay(10);
             _window.HasMaximize = false;
             _window.Title = "Hello MPF";
         }

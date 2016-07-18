@@ -7,6 +7,7 @@
 #pragma once
 #include "../../inc/common.h"
 #include "../../inc/WeakReferenceBase.h"
+#include "D3D9SwapChain.h"
 #include <d3d9.h>
 #include <atomic>
 
@@ -16,7 +17,9 @@ DEFINE_NS_PLATFORM
 class D3D9DeviceContext : public WeakReferenceBase<D3D9DeviceContext, WRL::RuntimeClassFlags<WRL::ClassicCom>, IDeviceContext>
 {
 public:
-	D3D9DeviceContext(INativeWindow* nativeWindow);
+	D3D9DeviceContext();
+
+	STDMETHODIMP CreateSwapChain(INativeWindow* window, ISwapChain** swapChain) override;
 private:
 	void CreateDeviceResources();
 	void StartRenderLoop();
@@ -25,12 +28,11 @@ private:
 	void DoFrameWrapper() noexcept;
 	static void RenderLoop(void* weakRefVoid);
 private:
-	HWND _hWnd;
 	WRL::ComPtr<IDirect3D9> _d3d;
-	WRL::ComPtr<IDirect3DDevice9> _device;
-	D3DCAPS9 _deviceCaps = {};
-	D3DFORMAT _backBufferFormat = D3DFMT_UNKNOWN;
 	std::atomic<bool> _isRenderLoopActive = false;
+	WRL::Wrappers::CriticalSection _rootSwapChainLock;
+	WRL::ComPtr<D3D9SwapChain> _rootSwapChain;
+	std::vector<WeakRef<D3D9ChildSwapChain>> _childSwapChains;
 };
 
 END_NS_PLATFORM

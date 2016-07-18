@@ -19,7 +19,7 @@ namespace MPF.Media
             set { SetValue(TransformProperty, value); }
         }
 
-        public Geometry()
+        internal Geometry()
         {
 
         }

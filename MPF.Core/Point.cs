@@ -19,7 +19,7 @@ namespace MPF
             Y = y;
         }
 
-        public static implicit operator Vector2(Point point)
+        public static explicit operator Vector2(Point point)
         {
             return new Vector2(point.X, point.Y);
         }

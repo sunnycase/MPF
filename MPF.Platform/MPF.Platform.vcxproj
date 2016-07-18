@@ -178,6 +178,7 @@
     <ClInclude Include="..\inc\WeakReferenceBase.h" />
     <ClInclude Include="Controls\NativeWindow.h" />
     <ClInclude Include="Media\D3D9DeviceContext.h" />
+    <ClInclude Include="Media\D3D9SwapChain.h" />
     <ClInclude Include="Media\DeviceContext.h" />
     <ClInclude Include="MPF.Platform_i.h" />
     <ClInclude Include="NativeApplication.h" />
@@ -201,6 +202,7 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Media\D3D9DeviceContext.cpp" />
+    <ClCompile Include="Media\D3D9SwapChain.cpp" />
     <ClCompile Include="Media\DeviceContext.cpp" />
     <ClCompile Include="MPF.Platform.cpp" />
     <ClCompile Include="NativeApplication.cpp" />

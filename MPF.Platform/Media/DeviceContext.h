@@ -13,5 +13,5 @@ END_NS_PLATFORM
 
 extern "C"
 {
-	HRESULT MPF_PLATFORM_API __stdcall CreateDeviceContext(NS_PLATFORM::INativeWindow* window, NS_PLATFORM::IDeviceContext** obj) noexcept;
+	HRESULT MPF_PLATFORM_API __stdcall CreateDeviceContext(NS_PLATFORM::IDeviceContext** obj) noexcept;
 }

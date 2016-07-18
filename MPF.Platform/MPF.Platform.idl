@@ -37,12 +37,24 @@ interface INativeApplication : IUnknown
 	HRESULT Run();
 };
 
+interface ISwapChain;
+
 [
 	uuid(CDFF5B2C-2CFB-4D80-A378-1B0F1AD95B41),
 	helpstring("Device Context Interface"),
 	version(1.0)
 ]
 interface IDeviceContext : IUnknown
+{
+	HRESULT CreateSwapChain([in]INativeWindow* window, [out, retval]ISwapChain** swapChain);
+};
+
+[
+	uuid(D1BCE22E-1DA3-4183-B870-814EE56E1D37),
+	helpstring("SwapChain Interface"),
+	version(1.0)
+]
+interface ISwapChain : IUnknown
 {
 
 };
