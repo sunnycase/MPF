@@ -180,6 +180,10 @@
     <ClInclude Include="Media\D3D9DeviceContext.h" />
     <ClInclude Include="Media\D3D9SwapChain.h" />
     <ClInclude Include="Media\DeviceContext.h" />
+    <ClInclude Include="Media\Geometry.h" />
+    <ClInclude Include="Media\ResourceContainer.h" />
+    <ClInclude Include="Media\ResourceManager.h" />
+    <ClInclude Include="Media\ResourceRef.h" />
     <ClInclude Include="MPF.Platform_i.h" />
     <ClInclude Include="NativeApplication.h" />
     <ClInclude Include="stdafx.h" />
@@ -204,6 +208,7 @@
     <ClCompile Include="Media\D3D9DeviceContext.cpp" />
     <ClCompile Include="Media\D3D9SwapChain.cpp" />
     <ClCompile Include="Media\DeviceContext.cpp" />
+    <ClCompile Include="Media\ResourceManager.cpp" />
     <ClCompile Include="MPF.Platform.cpp" />
     <ClCompile Include="NativeApplication.cpp" />
     <ClCompile Include="stdafx.cpp">

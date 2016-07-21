@@ -2,6 +2,16 @@ import "oaidl.idl";
 import "ocidl.idl";
 
 [
+	uuid(D15A484E-E145-461B-80B1-B6B8A5EF97C2),
+	helpstring("Resource Interface"),
+	version(1.0)
+]
+interface IResource : IUnknown
+{
+
+};
+
+[
 	uuid(2705FA1D-68BA-4E2B-92D4-846AE0A8D208),
 	helpstring("Native Window Interface"),
 	version(1.0)
@@ -57,6 +67,43 @@ interface IDeviceContext : IUnknown
 interface ISwapChain : IUnknown
 {
 
+};
+
+[
+	uuid(E3A7830B-60CA-43CB-ACA4-A82AC65A45E5),
+	helpstring("Resource Container Interface"),
+	version(1.0)
+]
+interface IResourceContainer : IUnknown
+{
+	HRESULT RetireResource([in]UINT_PTR handle);
+};
+
+typedef enum
+{
+	RT_LineGeometry
+} ResourceType;
+
+typedef struct
+{
+	float X, Y;
+} Point;
+
+typedef struct
+{
+	Point StartPoint;
+	Point EndPoint;
+} LineGeometryData;
+
+[
+	uuid(C8E784D3-3EBD-40D0-A421-55B3B52EF590),
+	helpstring("Resource Container Interface"),
+	version(1.0)
+]
+interface IResourceManager : IUnknown
+{
+	HRESULT CreateResource([in]ResourceType resType, [out, retval]IResource** res);
+	HRESULT UpdateLineGeometry([in]IResource* res, [in]LineGeometryData* data);
 };
 
 [

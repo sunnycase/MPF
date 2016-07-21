@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace MPF.Interop
 {
+    [Guid("D15A484E-E145-461B-80B1-B6B8A5EF97C2")]
     [ComImport]
-    [Guid("D1BCE22E-1DA3-4183-B870-814EE56E1D37")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface ISwapChain
+    internal interface IResource
     {
     }
 }

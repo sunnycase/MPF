@@ -28,6 +28,12 @@
     <Filter Include="源文件\Media">
       <UniqueIdentifier>{8417a7ec-ecfd-488a-b9ee-2eff93308340}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Media\Platform">
+      <UniqueIdentifier>{acb0ff3b-98c9-4aec-85f7-b144668e0e89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Media\Platform">
+      <UniqueIdentifier>{05a05f71-5f2a-48d5-a038-611012b56919}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -57,13 +63,25 @@
     <ClInclude Include="NativeApplication.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Media\D3D9DeviceContext.h">
-      <Filter>头文件\Media</Filter>
-    </ClInclude>
     <ClInclude Include="Media\DeviceContext.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
+    <ClInclude Include="Media\D3D9DeviceContext.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="Media\D3D9SwapChain.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\ResourceRef.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\ResourceContainer.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\ResourceManager.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\Geometry.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
   </ItemGroup>
@@ -83,14 +101,17 @@
     <ClCompile Include="NativeApplication.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Media\D3D9DeviceContext.cpp">
-      <Filter>源文件\Media</Filter>
-    </ClCompile>
     <ClCompile Include="Media\DeviceContext.cpp">
       <Filter>源文件\Media</Filter>
     </ClCompile>
     <ClCompile Include="Media\D3D9SwapChain.cpp">
-      <Filter>源文件</Filter>
+      <Filter>源文件\Media\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\D3D9DeviceContext.cpp">
+      <Filter>源文件\Media\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\ResourceManager.cpp">
+      <Filter>源文件\Media</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

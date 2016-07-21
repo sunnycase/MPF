@@ -80,6 +80,13 @@ D3D9ChildSwapChain::D3D9ChildSwapChain(IDirect3DSwapChain9 * swapChain, IDirect3
 
 void D3D9ChildSwapChain::DoFrame()
 {
+	ComPtr<IDirect3DSurface9> backSurface;
+	ThrowIfFailed(_swapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &backSurface));
+	ThrowIfFailed(_device->SetRenderTarget(0, backSurface.Get()));
+	ThrowIfFailed(_device->BeginScene());
+	ThrowIfFailed(_device->Clear(0, nullptr, D3DCLEAR_TARGET, 0x7700FF, 1.f, 0));
+	ThrowIfFailed(_device->EndScene());
+	ThrowIfFailed(_swapChain->Present(nullptr, nullptr, nullptr, nullptr, 0));
 }
 
 D3D9SwapChain::D3D9SwapChain(IDirect3D9 * d3d, INativeWindow * window)
@@ -90,7 +97,7 @@ D3D9SwapChain::D3D9SwapChain(IDirect3D9 * d3d, INativeWindow * window)
 
 void D3D9SwapChain::CreateAdditionalSwapChain(INativeWindow * window, D3D9ChildSwapChain ** swapChain)
 {
-	auto params = CreatePresentParameters();
+	auto params = CreatePresentParameters(GetNativeHandle(window));
 	ComPtr<IDirect3DSwapChain9> d3dSwapChain;
 	ThrowIfFailed(_device->CreateAdditionalSwapChain(&params, &d3dSwapChain));
 	*swapChain = Make<D3D9ChildSwapChain>(d3dSwapChain.Get(), _device.Get(), window).Detach();
@@ -98,18 +105,21 @@ void D3D9SwapChain::CreateAdditionalSwapChain(INativeWindow * window, D3D9ChildS
 
 void D3D9SwapChain::DoFrame()
 {
-	ThrowIfFailed(_device->Clear(0, nullptr, D3DCLEAR_TARGET, 0x0000FF, 1.f, 0));
+	ComPtr<IDirect3DSurface9> backSurface;
+	ThrowIfFailed(_device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backSurface));
+	ThrowIfFailed(_device->SetRenderTarget(0, backSurface.Get()));
 	ThrowIfFailed(_device->BeginScene());
+	ThrowIfFailed(_device->Clear(0, nullptr, D3DCLEAR_TARGET, 0x7700FF, 1.f, 0));
 	ThrowIfFailed(_device->EndScene());
 	ThrowIfFailed(_device->Present(nullptr, nullptr, nullptr, nullptr));
 }
 
-D3DPRESENT_PARAMETERS D3D9SwapChain::CreatePresentParameters() const noexcept
+D3DPRESENT_PARAMETERS D3D9SwapChain::CreatePresentParameters(HWND hWnd) const noexcept
 {
 	D3DPRESENT_PARAMETERS params{};
-	params.BackBufferCount = std::min(D3DPRESENT_BACK_BUFFERS_MAX, 3L);
+	params.BackBufferCount = std::min(D3DPRESENT_BACK_BUFFERS_MAX, 2L);
 	params.BackBufferFormat = _backBufferFormat;
-	params.hDeviceWindow = _hWnd;
+	params.hDeviceWindow = hWnd;
 	params.Windowed = TRUE;
 	params.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	params.PresentationInterval = D3DPRESENT_INTERVAL_DEFAULT;
@@ -120,7 +130,7 @@ void D3D9SwapChain::CreateDeviceResource(IDirect3D9 * d3d)
 {
 	auto adapter = SelectHardwareAdapter(d3d);
 	ThrowIfFailed(d3d->GetDeviceCaps(adapter, D3DDEVTYPE_HAL, &_deviceCaps));
-	auto params = CreatePresentParameters();
+	auto params = CreatePresentParameters(_hWnd);
 
 	const std::array<DWORD, 3> behaviorFlags = { D3DCREATE_HARDWARE_VERTEXPROCESSING,
 		D3DCREATE_MIXED_VERTEXPROCESSING , D3DCREATE_SOFTWARE_VERTEXPROCESSING };

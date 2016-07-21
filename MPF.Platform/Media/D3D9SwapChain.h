@@ -18,7 +18,7 @@ struct DECLSPEC_UUID("A0DCDAC4-9F8F-4BA3-8DF5-E32AFD05C851") ID3D9SwapChain : pu
 	virtual void DoFrame() = 0;
 };
 
-class D3D9ChildSwapChain : public WeakReferenceBase<D3D9ChildSwapChain, WRL::RuntimeClassFlags<WRL::ClassicCom>, ID3D9SwapChain>
+class D3D9ChildSwapChain : public WeakReferenceBase<D3D9ChildSwapChain, WRL::RuntimeClassFlags<WRL::ClassicCom>, ISwapChain, ID3D9SwapChain>
 {
 public:
 	D3D9ChildSwapChain(IDirect3DSwapChain9* swapChain, IDirect3DDevice9* device, INativeWindow* window);
@@ -30,7 +30,7 @@ private:
 	WRL::ComPtr<IDirect3DDevice9> _device;
 };
 
-class D3D9SwapChain : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, ID3D9SwapChain>
+class D3D9SwapChain : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, ISwapChain, ID3D9SwapChain>
 {
 public:
 	D3D9SwapChain(IDirect3D9* d3d, INativeWindow* window);
@@ -44,7 +44,7 @@ public:
 
 	virtual void DoFrame() override;
 private:
-	D3DPRESENT_PARAMETERS CreatePresentParameters() const noexcept;
+	D3DPRESENT_PARAMETERS CreatePresentParameters(HWND hWnd) const noexcept;
 	void CreateDeviceResource(IDirect3D9* d3d);
 private:
 	HWND _hWnd;

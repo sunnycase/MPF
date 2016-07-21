@@ -26,14 +26,15 @@ STDMETHODIMP D3D9DeviceContext::CreateSwapChain(INativeWindow * window, ISwapCha
 		{
 			auto d3dSwapChain = Make<D3D9SwapChain>(_d3d.Get(), window);
 			_rootSwapChain = d3dSwapChain;
-			*swapChain = d3dSwapChain.Detach();
+			ThrowIfFailed(d3dSwapChain.CopyTo(swapChain));
+			StartRenderLoop();
 		}
 		else
 		{
 			ComPtr<D3D9ChildSwapChain> d3dSwapChain;
 			_rootSwapChain->CreateAdditionalSwapChain(window, &d3dSwapChain);
 			_childSwapChains.emplace_back(d3dSwapChain->GetWeakContext());
-			*swapChain = d3dSwapChain.Detach();
+			ThrowIfFailed(d3dSwapChain.CopyTo(swapChain));
 		}
 		return S_OK;
 	}

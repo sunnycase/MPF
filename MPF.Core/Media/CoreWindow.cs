@@ -14,7 +14,7 @@ namespace MPF.Media
     public sealed class CoreWindow
     {
         private readonly INativeWindow _nativeWindow;
-        private readonly IDeviceContext _deviceContext;
+        private readonly SwapChain _swapChain;
 
         public event EventHandler<CancellableEventArgs> Closing;
 
@@ -33,7 +33,7 @@ namespace MPF.Media
         public CoreWindow()
         {
             _nativeWindow = Platform.CreateNativeWindow(OnNativeWindowMessage);
-            _deviceContext = Platform.CreateDeviceContext(_nativeWindow);
+            _swapChain = DeviceContext.Current.CreateSwapChain(_nativeWindow);
         }
 
         private void OnNativeWindowMessage(NativeWindowMessages message)

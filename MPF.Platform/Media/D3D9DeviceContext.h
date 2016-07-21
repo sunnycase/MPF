@@ -26,7 +26,7 @@ private:
 	bool IsActive() const noexcept;
 	void DoFrame();
 	void DoFrameWrapper() noexcept;
-	static void RenderLoop(void* weakRefVoid);
+	static void __cdecl RenderLoop(void* weakRefVoid);
 private:
 	WRL::ComPtr<IDirect3D9> _d3d;
 	std::atomic<bool> _isRenderLoopActive = false;

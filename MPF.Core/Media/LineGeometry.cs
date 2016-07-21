@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MPF.Interop;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,6 +24,13 @@ namespace MPF.Media
         {
             get { return GetValue(EndPointProperty); }
             set { SetValue(EndPointProperty, value); }
+        }
+
+        private readonly IResource _geometryRes;
+
+        public LineGeometry()
+        {
+            _geometryRes = MediaResourceManager.Current.CreateResouce(ResourceType.RT_LineGeometry);
         }
     }
 }
