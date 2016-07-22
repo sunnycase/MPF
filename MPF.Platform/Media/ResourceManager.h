@@ -20,6 +20,9 @@ public:
 	// Í¨¹ý RuntimeClass ¼Ì³Ð
 	STDMETHODIMP CreateResource(ResourceType resType, IResource ** res) override;
 	STDMETHODIMP UpdateLineGeometry(IResource * res, LineGeometryData * data) override;
+	STDMETHODIMP CreateRenderCommandBuffer(IRenderCommandBuffer ** buffer) override;
+
+	const LineGeometry& GetLineGeometry(UINT_PTR handle) const;
 private:
 	WRL::ComPtr<ResourceContainer<LineGeometry>> _lineGeometryContainer;
 };

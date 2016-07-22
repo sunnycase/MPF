@@ -7,6 +7,7 @@
 #include "stdafx.h"
 #include "ResourceManager.h"
 #include "ResourceRef.h"
+#include "RenderCommandBuffer.h"
 using namespace WRL;
 
 HRESULT __stdcall CreateResourceManager(NS_PLATFORM::ResourceManager** obj) noexcept
@@ -30,17 +31,21 @@ HRESULT ResourceManager::CreateResource(ResourceType resType, IResource ** res)
 {
 	try
 	{
-		HRESULT hr = S_OK;
+		IResourceContainer* container = nullptr;
 		switch (resType)
 		{
 		case RT_LineGeometry:
-			*res = Make<ResourceRef>(_lineGeometryContainer.Get(), _lineGeometryContainer->Allocate()).Detach();
+			container = _lineGeometryContainer.Get();
 			break;
 		default:
-			hr = E_INVALIDARG;
 			break;
 		}
-		return hr;
+		if (container)
+		{
+			*res = Make<ResourceRef>(container, resType, container->Allocate()).Detach();
+			return S_OK;
+		}
+		return E_INVALIDARG;
 	}
 	CATCH_ALL();
 }
@@ -48,4 +53,19 @@ HRESULT ResourceManager::CreateResource(ResourceType resType, IResource ** res)
 HRESULT ResourceManager::UpdateLineGeometry(IResource * res, LineGeometryData * data)
 {
 	return E_NOTIMPL;
+}
+
+HRESULT ResourceManager::CreateRenderCommandBuffer(IRenderCommandBuffer ** buffer)
+{
+	try
+	{
+		*buffer = Make<RenderCommandBuffer>(this).Detach();
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
+const LineGeometry& ResourceManager::GetLineGeometry(UINT_PTR handle) const
+{
+	return _lineGeometryContainer->FindResource(handle);
 }

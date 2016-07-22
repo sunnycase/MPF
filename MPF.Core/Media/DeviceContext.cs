@@ -12,15 +12,39 @@ namespace MPF.Media
 
         public static DeviceContext Current => _current.Value;
 
+        public event EventHandler Render;
+
         private readonly IDeviceContext _deviceContext;
         private DeviceContext()
         {
-            _deviceContext = Platform.CreateDeviceContext();
+            _deviceContext = Platform.CreateDeviceContext(OnDeviceContextMessage);
+        }
+
+        private void OnDeviceContextMessage(DeviceContextMessage message)
+        {
+            switch (message)
+            {
+                case DeviceContextMessage.DCM_Render:
+                    OnRender();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void OnRender()
+        {
+            Render?.Invoke(this, EventArgs.Empty);
         }
 
         public SwapChain CreateSwapChain(INativeWindow window)
         {
             return new SwapChain(_deviceContext.CreateSwapChain(window));
+        }
+
+        public IRenderableObject CreateRenderableObject()
+        {
+            return _deviceContext.CreateRenderableObject();
         }
     }
 }

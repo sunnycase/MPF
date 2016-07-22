@@ -19,3 +19,5 @@
 #include <vector>
 #include <sstream>
 #undef CreateWindow
+#undef GetObject
+#undef FindResource

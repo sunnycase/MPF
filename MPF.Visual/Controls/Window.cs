@@ -8,7 +8,7 @@ using MPF.Media;
 
 namespace MPF.Controls
 {
-    public class Window : DependencyObject
+    public class Window : UIElement
     {
         private readonly CoreWindow _coreWindow;
 
@@ -32,6 +32,13 @@ namespace MPF.Controls
             _coreWindow = new CoreWindow();
             _coreWindow.HasMaximize = HasMaximize;
             _coreWindow.Title = Title;
+            _testGeometry = new LineGeometry
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(100, 100)
+            };
+
+            _coreWindow.SetRootVisual(this);
         }
 
         public void Show()
@@ -52,6 +59,14 @@ namespace MPF.Controls
         private static void OnTitlePropertyChanged(object sender, PropertyChangedEventArgs<string> e)
         {
             ((Window)sender)._coreWindow.Title = e.NewValue;
+        }
+
+        private readonly Geometry _testGeometry;
+
+        protected override void OnRender(IDrawingContext drawingContext)
+        {
+            base.OnRender(drawingContext);
+            drawingContext.DrawGeometry(_testGeometry);
         }
     }
 }

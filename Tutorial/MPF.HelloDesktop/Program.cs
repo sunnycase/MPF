@@ -29,7 +29,7 @@ namespace MPF.HelloDesktop
             _window.Show();
             ChangeMaximizeBox();
             _geometry = new LineGeometry();
-            ShowWindow2();
+            //ShowWindow2();
         }
 
         private void ShowWindow2()

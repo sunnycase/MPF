@@ -32,5 +32,10 @@ namespace MPF.Media
         {
             _geometryRes = MediaResourceManager.Current.CreateResouce(ResourceType.RT_LineGeometry);
         }
+
+        internal override IResource GetResourceOverride()
+        {
+            return _geometryRes;
+        }
     }
 }

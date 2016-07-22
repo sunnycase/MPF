@@ -9,7 +9,8 @@ namespace MPF.Interop
     internal enum NativeWindowMessages
     {
         Closing,
-        Closed
+        Closed,
+        Render
     }
     
     delegate void NativeWindowMessageHandler(NativeWindowMessages message);

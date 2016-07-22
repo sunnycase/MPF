@@ -22,5 +22,10 @@ namespace MPF.Media
         {
             return _resourceManager.CreateResource(resType);
         }
+
+        public IRenderCommandBuffer CreateRenderCommandBuffer()
+        {
+            return _resourceManager.CreateRenderCommandBuffer();
+        }
     }
 }

@@ -179,8 +179,12 @@
     <ClInclude Include="Controls\NativeWindow.h" />
     <ClInclude Include="Media\D3D9DeviceContext.h" />
     <ClInclude Include="Media\D3D9SwapChain.h" />
+    <ClInclude Include="Media\D3D9RenderableObject.h" />
     <ClInclude Include="Media\DeviceContext.h" />
     <ClInclude Include="Media\Geometry.h" />
+    <ClInclude Include="Media\RenderableObject.h" />
+    <ClInclude Include="Media\RenderableObjectContainer.h" />
+    <ClInclude Include="Media\RenderCommandBuffer.h" />
     <ClInclude Include="Media\ResourceContainer.h" />
     <ClInclude Include="Media\ResourceManager.h" />
     <ClInclude Include="Media\ResourceRef.h" />
@@ -206,9 +210,14 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Media\D3D9DeviceContext.cpp" />
+    <ClCompile Include="Media\D3D9RenderableObject.cpp" />
     <ClCompile Include="Media\D3D9SwapChain.cpp" />
     <ClCompile Include="Media\DeviceContext.cpp" />
+    <ClCompile Include="Media\RenderableObject.cpp" />
+    <ClCompile Include="Media\RenderableObjectContainer.cpp" />
+    <ClCompile Include="Media\RenderCommandBuffer.cpp" />
     <ClCompile Include="Media\ResourceManager.cpp" />
+    <ClCompile Include="Media\ResourceRef.cpp" />
     <ClCompile Include="MPF.Platform.cpp" />
     <ClCompile Include="NativeApplication.cpp" />
     <ClCompile Include="stdafx.cpp">

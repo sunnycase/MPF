@@ -10,34 +10,20 @@
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
+struct IResourceContainer;
+
 class ResourceRef : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, IResource>
 {
 public:
-	ResourceRef(IResourceContainer* container, UINT_PTR handle)
-		:_container(container), _handle(handle)
-	{
+	ResourceRef(IResourceContainer* container, ResourceType resType, UINT_PTR handle);
 
-	}
+	STDMETHOD_(ULONG, Release)();
 
-	STDMETHOD_(ULONG, Release)()
-	{
-		ULONG ref = InternalRelease();
-		if (ref == 0)
-		{
-			_container->RetireResource(_handle);
-			delete this;
-
-			auto module = ::Microsoft::WRL::GetModuleBase();
-			if (module != nullptr)
-			{
-				module->DecrementObjectCount();
-			}
-		}
-
-		return ref;
-	}
+	ResourceType GetType() const noexcept { return _resType; }
+	UINT_PTR GetHandle() const noexcept { return _handle; }
 private:
 	WRL::ComPtr<IResourceContainer> _container;
+	ResourceType _resType;
 	UINT_PTR _handle;
 };
 

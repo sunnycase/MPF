@@ -48,6 +48,17 @@ interface INativeApplication : IUnknown
 };
 
 interface ISwapChain;
+interface IRenderCommandBuffer;
+
+[
+	uuid(7316E516-0357-4F99-82D8-181F2BD289C6),
+	helpstring("Renderable Object Interface"),
+	version(1.0)
+]
+interface IRenderableObject : IUnknown
+{
+	HRESULT SetContent([in]IRenderCommandBuffer* buffer);
+};
 
 [
 	uuid(CDFF5B2C-2CFB-4D80-A378-1B0F1AD95B41),
@@ -57,6 +68,7 @@ interface ISwapChain;
 interface IDeviceContext : IUnknown
 {
 	HRESULT CreateSwapChain([in]INativeWindow* window, [out, retval]ISwapChain** swapChain);
+	HRESULT CreateRenderableObject([out, retval]IRenderableObject** obj);
 };
 
 [
@@ -70,13 +82,13 @@ interface ISwapChain : IUnknown
 };
 
 [
-	uuid(E3A7830B-60CA-43CB-ACA4-A82AC65A45E5),
-	helpstring("Resource Container Interface"),
+	uuid(B0FDA70A-53E1-419C-934C-F3588B722F32),
+	helpstring("Render Command Buffer Interface"),
 	version(1.0)
 ]
-interface IResourceContainer : IUnknown
+interface IRenderCommandBuffer : IUnknown
 {
-	HRESULT RetireResource([in]UINT_PTR handle);
+	HRESULT DrawGeometry([in]IResource* geometry);
 };
 
 typedef enum
@@ -104,6 +116,7 @@ interface IResourceManager : IUnknown
 {
 	HRESULT CreateResource([in]ResourceType resType, [out, retval]IResource** res);
 	HRESULT UpdateLineGeometry([in]IResource* res, [in]LineGeometryData* data);
+	HRESULT CreateRenderCommandBuffer([out, retval]IRenderCommandBuffer ** buffer);
 };
 
 [

@@ -30,10 +30,18 @@ namespace MPF.Media
             set { _nativeWindow.Title = value; }
         }
 
+        private Visual _rootVisual;
+
         public CoreWindow()
         {
             _nativeWindow = Platform.CreateNativeWindow(OnNativeWindowMessage);
             _swapChain = DeviceContext.Current.CreateSwapChain(_nativeWindow);
+            DeviceContext.Current.Render += OnDeviceContextRender;
+        }
+
+        private void OnDeviceContextRender(object sender, EventArgs e)
+        {
+            OnRender();
         }
 
         private void OnNativeWindowMessage(NativeWindowMessages message)
@@ -46,6 +54,11 @@ namespace MPF.Media
                 default:
                     break;
             }
+        }
+
+        private void OnRender()
+        {
+            _rootVisual?.Render();
         }
 
         private void OnClosing()
@@ -64,6 +77,13 @@ namespace MPF.Media
         public void Hide()
         {
             _nativeWindow.Hide();
+        }
+
+        public void SetRootVisual(Visual visual)
+        {
+            if (_rootVisual != null)
+                throw new InvalidOperationException("Root Visual is already set.");
+            _rootVisual = visual;
         }
     }
 }

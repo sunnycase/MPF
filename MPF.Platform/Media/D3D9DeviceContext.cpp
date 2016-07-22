@@ -10,8 +10,8 @@
 using namespace WRL;
 using namespace NS_PLATFORM;
 
-D3D9DeviceContext::D3D9DeviceContext()
-	:_rootSwapChainLock(5000)
+D3D9DeviceContext::D3D9DeviceContext(DeviceContextMessagesHandler messageHandler)
+	:_rootSwapChainLock(5000), _messageHandler(messageHandler), _renderObjectContainer(Make<RenderableObjectContainer<D3D9RenderableObject>>())
 {
 	_d3d.Attach(Direct3DCreate9(D3D_SDK_VERSION));
 	ThrowIfNot(_d3d, L"Cannot Initialize Direct3D 9 Interface.");
@@ -62,6 +62,9 @@ bool D3D9DeviceContext::IsActive() const noexcept
 
 void D3D9DeviceContext::DoFrame()
 {
+	_messageHandler(DeviceContextMessages::DCM_Render);
+	UpdateRenderObjects();
+
 	std::vector<ComPtr<ID3D9SwapChain>> swapChains;
 	{
 		auto locker = _rootSwapChainLock.Lock();
@@ -85,6 +88,11 @@ void D3D9DeviceContext::DoFrameWrapper() noexcept
 	CATCH_ALL_WITHHR(hr);
 }
 
+void D3D9DeviceContext::UpdateRenderObjects()
+{
+	_renderObjectContainer->Update();
+}
+
 void D3D9DeviceContext::RenderLoop(void * weakRefVoid)
 {
 	std::unique_ptr<WeakRef<D3D9DeviceContext>> weakRef(reinterpret_cast<WeakRef<D3D9DeviceContext>*>(weakRefVoid));
@@ -103,4 +111,14 @@ void D3D9DeviceContext::RenderLoop(void * weakRefVoid)
 			me->DoFrameWrapper();
 		}
 	}
+}
+
+HRESULT D3D9DeviceContext::CreateRenderableObject(IRenderableObject ** obj)
+{
+	try
+	{
+		_renderObjectContainer->AllocateObjectRef(obj);
+		return S_OK;
+	}
+	CATCH_ALL();
 }

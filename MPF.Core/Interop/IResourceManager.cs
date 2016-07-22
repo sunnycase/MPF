@@ -25,5 +25,6 @@ namespace MPF.Interop
     {
         IResource CreateResource([In]ResourceType resType);
         void UpdateLineGeometry([In]IResource resouce, [In] ref LineGeometryData data);
+        IRenderCommandBuffer CreateRenderCommandBuffer();
     }
 }
