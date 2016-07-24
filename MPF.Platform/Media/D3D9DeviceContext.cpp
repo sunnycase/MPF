@@ -7,6 +7,7 @@
 #include "stdafx.h"
 #include "D3D9DeviceContext.h"
 #include <process.h>
+#include "D3D9ResourceManager.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 
@@ -63,6 +64,7 @@ bool D3D9DeviceContext::IsActive() const noexcept
 void D3D9DeviceContext::DoFrame()
 {
 	_messageHandler(DeviceContextMessages::DCM_Render);
+	UpdateResourceManagers();
 	UpdateRenderObjects();
 
 	std::vector<ComPtr<ID3D9SwapChain>> swapChains;
@@ -76,6 +78,13 @@ void D3D9DeviceContext::DoFrame()
 	}
 	for (auto&& swapChain : swapChains)
 		swapChain->DoFrame();
+}
+
+void D3D9DeviceContext::UpdateResourceManagers()
+{
+	for (auto&& resMgrRef : _resourceManagers)
+		if (auto resMgr = resMgrRef.Resolve())
+			resMgr->Update();
 }
 
 void D3D9DeviceContext::DoFrameWrapper() noexcept
@@ -111,6 +120,18 @@ void D3D9DeviceContext::RenderLoop(void * weakRefVoid)
 			me->DoFrameWrapper();
 		}
 	}
+}
+
+HRESULT D3D9DeviceContext::CreateResourceManager(IResourceManager **resMgr)
+{
+	try
+	{
+		auto myResMgr = Make<D3D9ResourceManager>();
+		_resourceManagers.emplace_back(myResMgr->GetWeakContext());
+		*resMgr = myResMgr.Detach();
+		return S_OK;
+	}
+	CATCH_ALL();
 }
 
 HRESULT D3D9DeviceContext::CreateRenderableObject(IRenderableObject ** obj)

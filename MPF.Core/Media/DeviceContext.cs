@@ -46,5 +46,10 @@ namespace MPF.Media
         {
             return _deviceContext.CreateRenderableObject();
         }
+
+        public IResourceManager CreateResourceManager()
+        {
+            return _deviceContext.CreateResourceManager();
+        }
     }
 }

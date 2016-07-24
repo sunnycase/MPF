@@ -6,7 +6,7 @@
 //
 #include "stdafx.h"
 #include "RenderableObject.h"
-#include "ResourceManager.h"
+#include "ResourceManagerBase.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 

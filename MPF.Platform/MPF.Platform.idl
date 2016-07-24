@@ -61,17 +61,6 @@ interface IRenderableObject : IUnknown
 };
 
 [
-	uuid(CDFF5B2C-2CFB-4D80-A378-1B0F1AD95B41),
-	helpstring("Device Context Interface"),
-	version(1.0)
-]
-interface IDeviceContext : IUnknown
-{
-	HRESULT CreateSwapChain([in]INativeWindow* window, [out, retval]ISwapChain** swapChain);
-	HRESULT CreateRenderableObject([out, retval]IRenderableObject** obj);
-};
-
-[
 	uuid(D1BCE22E-1DA3-4183-B870-814EE56E1D37),
 	helpstring("SwapChain Interface"),
 	version(1.0)
@@ -117,6 +106,18 @@ interface IResourceManager : IUnknown
 	HRESULT CreateResource([in]ResourceType resType, [out, retval]IResource** res);
 	HRESULT UpdateLineGeometry([in]IResource* res, [in]LineGeometryData* data);
 	HRESULT CreateRenderCommandBuffer([out, retval]IRenderCommandBuffer ** buffer);
+};
+
+[
+	uuid(CDFF5B2C-2CFB-4D80-A378-1B0F1AD95B41),
+	helpstring("Device Context Interface"),
+	version(1.0)
+]
+interface IDeviceContext : IUnknown
+{
+	HRESULT CreateSwapChain([in]INativeWindow* window, [out, retval]ISwapChain** swapChain);
+	HRESULT CreateRenderableObject([out, retval]IRenderableObject** obj);
+	HRESULT CreateResourceManager([out, retval]IResourceManager** resMgr);
 };
 
 [

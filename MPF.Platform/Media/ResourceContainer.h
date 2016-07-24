@@ -95,7 +95,7 @@ public:
 		for (auto&& handle : _cleanupList)
 		{
 			if (!_freeList.empty())
-				_freeList.emplace_front<FreeListEntry>(handle, 1);
+				_freeList.emplace_front<FreeListEntry>({ handle, 1 });
 			else
 			{
 				auto it = std::find_if(_freeList.begin(), _freeList.end(), [&](const FreeListEntry& entry) {return entry.start > handle; });
@@ -110,6 +110,18 @@ public:
 		auto& value = _data[handle];
 		assert(value.Used);
 		return value;
+	}
+
+	T & FindResource(UINT_PTR handle) noexcept
+	{
+		auto& value = _data[handle];
+		assert(value.Used);
+		return value;
+	}
+
+	const std::vector<UINT_PTR> GetCleanupList() const noexcept
+	{
+		return _cleanupList;
 	}
 private:
 	void CombineFreeNode(typename std::list<FreeListEntry>::iterator it)
@@ -138,7 +150,7 @@ private:
 protected:
 	std::vector<T> _data;
 	std::list<FreeListEntry> _freeList;
-	std::vector<size_t> _cleanupList;
+	std::vector<UINT_PTR> _cleanupList;
 };
 
 template<class T>

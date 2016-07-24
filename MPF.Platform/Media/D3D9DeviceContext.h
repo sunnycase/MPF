@@ -13,6 +13,7 @@
 #include "DeviceContext.h"
 #include "D3D9RenderableObject.h"
 #include "RenderableObjectContainer.h"
+#include "ResourceManagerBase.h"
 
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
@@ -24,6 +25,7 @@ public:
 
 	STDMETHODIMP CreateSwapChain(INativeWindow* window, ISwapChain** swapChain) override;
 	STDMETHODIMP CreateRenderableObject(IRenderableObject ** obj) override;
+	STDMETHODIMP CreateResourceManager(IResourceManager **resMgr);
 private:
 	void CreateDeviceResources();
 	void StartRenderLoop();
@@ -31,6 +33,7 @@ private:
 	void DoFrame();
 	void DoFrameWrapper() noexcept;
 	void UpdateRenderObjects();
+	void UpdateResourceManagers();
 	static void __cdecl RenderLoop(void* weakRefVoid);
 private:
 	DeviceContextMessagesHandler _messageHandler;
@@ -39,6 +42,7 @@ private:
 	WRL::Wrappers::CriticalSection _rootSwapChainLock;
 	WRL::ComPtr<D3D9SwapChain> _rootSwapChain;
 	std::vector<WeakRef<D3D9ChildSwapChain>> _childSwapChains;
+	std::vector<WeakRef<ResourceManagerBase>> _resourceManagers;
 	WRL::ComPtr<RenderableObjectContainer<D3D9RenderableObject>> _renderObjectContainer;
 };
 

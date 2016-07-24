@@ -17,9 +17,6 @@ namespace MPF.Interop
         [DllImport(Libraries.Platform, CallingConvention = CallingConvention.StdCall)]
         private static extern int CreateDeviceContext([MarshalAs(UnmanagedType.FunctionPtr), In]DeviceContextMessageHandler messageHandler, [MarshalAs(UnmanagedType.Interface)]out IDeviceContext obj);
 
-        [DllImport(Libraries.Platform, CallingConvention = CallingConvention.StdCall)]
-        private static extern int CreateResourceManager([MarshalAs(UnmanagedType.Interface)]out IResourceManager obj);
-
         public static INativeApplication CreateNativeApplication()
         {
             INativeApplication obj;
@@ -38,13 +35,6 @@ namespace MPF.Interop
         {
             IDeviceContext obj;
             Marshal.ThrowExceptionForHR(CreateDeviceContext(messageHandler, out obj));
-            return obj;
-        }
-
-        public static IResourceManager CreateResourceManager()
-        {
-            IResourceManager obj;
-            Marshal.ThrowExceptionForHR(CreateResourceManager(out obj));
             return obj;
         }
     }

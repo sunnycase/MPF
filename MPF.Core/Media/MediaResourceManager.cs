@@ -15,7 +15,7 @@ namespace MPF.Media
         private readonly IResourceManager _resourceManager;
         private MediaResourceManager()
         {
-            _resourceManager = Platform.CreateResourceManager();
+            _resourceManager = DeviceContext.Current.CreateResourceManager();
         }
 
         public IResource CreateResouce(ResourceType resType)

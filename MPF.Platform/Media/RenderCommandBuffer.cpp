@@ -6,11 +6,11 @@
 //
 #include "stdafx.h"
 #include "RenderCommandBuffer.h"
-#include "ResourceManager.h"
+#include "ResourceManagerBase.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 
-RenderCommandBuffer::RenderCommandBuffer(ResourceManager* resourceManager)
+RenderCommandBuffer::RenderCommandBuffer(ResourceManagerBase* resourceManager)
 	:_resourceManager(resourceManager)
 {
 }

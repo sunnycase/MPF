@@ -78,9 +78,6 @@
     <ClInclude Include="Media\ResourceContainer.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
-    <ClInclude Include="Media\ResourceManager.h">
-      <Filter>头文件\Media</Filter>
-    </ClInclude>
     <ClInclude Include="Media\Geometry.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
@@ -95,6 +92,12 @@
     </ClInclude>
     <ClInclude Include="Media\RenderableObjectContainer.h">
       <Filter>头文件\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\ResourceManagerBase.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\D3D9ResourceManager.h">
+      <Filter>头文件\Media\Platform</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -122,16 +125,10 @@
     <ClCompile Include="Media\D3D9DeviceContext.cpp">
       <Filter>源文件\Media\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="Media\ResourceManager.cpp">
-      <Filter>源文件\Media</Filter>
-    </ClCompile>
     <ClCompile Include="Media\RenderCommandBuffer.cpp">
       <Filter>源文件\Media</Filter>
     </ClCompile>
     <ClCompile Include="Media\RenderableObjectContainer.cpp">
-      <Filter>源文件\Media</Filter>
-    </ClCompile>
-    <ClCompile Include="Media\D3D9RenderableObject.cpp">
       <Filter>源文件\Media</Filter>
     </ClCompile>
     <ClCompile Include="Media\RenderableObject.cpp">
@@ -139,6 +136,15 @@
     </ClCompile>
     <ClCompile Include="Media\ResourceRef.cpp">
       <Filter>源文件\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\D3D9RenderableObject.cpp">
+      <Filter>源文件\Media\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\ResourceManagerBase.cpp">
+      <Filter>源文件\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\D3D9ResourceManager.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
