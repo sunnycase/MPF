@@ -177,10 +177,12 @@
     <ClInclude Include="..\inc\NonCopyable.h" />
     <ClInclude Include="..\inc\WeakReferenceBase.h" />
     <ClInclude Include="Controls\NativeWindow.h" />
+    <ClInclude Include="Media\D3D9BufferManager.h" />
     <ClInclude Include="Media\D3D9DeviceContext.h" />
     <ClInclude Include="Media\D3D9ResourceManager.h" />
     <ClInclude Include="Media\D3D9SwapChain.h" />
     <ClInclude Include="Media\D3D9RenderableObject.h" />
+    <ClInclude Include="Media\D3D9Vertex.h" />
     <ClInclude Include="Media\DeviceContext.h" />
     <ClInclude Include="Media\Geometry.h" />
     <ClInclude Include="Media\RenderableObject.h" />
@@ -210,6 +212,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Media\D3D9BufferManager.cpp" />
     <ClCompile Include="Media\D3D9DeviceContext.cpp" />
     <ClCompile Include="Media\D3D9RenderableObject.cpp" />
     <ClCompile Include="Media\D3D9ResourceManager.cpp" />
@@ -233,6 +236,7 @@
     <Midl Include="MPF.Platform.idl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(SolutionDir)thirdparty\thirdparty.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>

@@ -7,6 +7,7 @@
 #include "stdafx.h"
 #include "NativeWindow.h"
 #include <atomic>
+#include <algorithm>
 using namespace WRL;
 
 HRESULT __stdcall CreateNativeWindow(NS_PLATFORM::NativeWindowMessageHandler messageHandler, NS_PLATFORM::INativeWindow** obj) noexcept
@@ -205,6 +206,7 @@ LRESULT NativeWindow::WindowProc(HWND hWnd, uint32_t uMsg, WPARAM wParam, LPARAM
 	{
 	case WM_CLOSE:
 		_messageHandler(NWM_Closing);
+		std::for_each(_messageHandlers.begin(), _messageHandlers.end(), [](auto&& handler) {handler(NWM_Closing); });
 		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -213,4 +215,9 @@ LRESULT NativeWindow::WindowProc(HWND hWnd, uint32_t uMsg, WPARAM wParam, LPARAM
 		break;
 	}
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+void NativeWindow::AppendMessageHandler(std::function<void(NativeWindowMessages)>&& messageHandler)
+{
+	_messageHandlers.emplace_back(std::move(messageHandler));
 }

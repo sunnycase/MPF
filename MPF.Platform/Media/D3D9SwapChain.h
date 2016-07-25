@@ -9,28 +9,42 @@
 #include "../../inc/WeakReferenceBase.h"
 #include <d3d9.h>
 #include <atomic>
+#include "D3D9Vertex.h"
 
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
-struct DECLSPEC_UUID("A0DCDAC4-9F8F-4BA3-8DF5-E32AFD05C851") ID3D9SwapChain : public ISwapChain
+class D3D9SwapChainBase : public WeakReferenceBase<D3D9SwapChainBase, WRL::RuntimeClassFlags<WRL::ClassicCom>, ISwapChain>
 {
+public:
+	D3D9SwapChainBase(INativeWindow* window);
+
+	STDMETHODIMP SetCallback(ISwapChainCallback* callback) override;
 	virtual void DoFrame() = 0;
+protected:
+	void CreateWindowSizeDependentResources();
+	void UpdateShaderConstants();
+	void SetDevice(IDirect3DDevice9* device) { _device = device; }
+	void Draw(IDirect3DSurface9* surface);
+protected:
+	HWND _hWnd;
+	D3D::ConstantBufferData _wvp;
+	D3DVIEWPORT9 _viewport;
+	WRL::ComPtr<IDirect3DDevice9> _device;
+	WRL::ComPtr<ISwapChainCallback> _callback;
 };
 
-class D3D9ChildSwapChain : public WeakReferenceBase<D3D9ChildSwapChain, WRL::RuntimeClassFlags<WRL::ClassicCom>, ISwapChain, ID3D9SwapChain>
+class D3D9ChildSwapChain : public D3D9SwapChainBase
 {
 public:
 	D3D9ChildSwapChain(IDirect3DSwapChain9* swapChain, IDirect3DDevice9* device, INativeWindow* window);
 
 	virtual void DoFrame() override;
 private:
-	HWND _hWnd;
 	WRL::ComPtr<IDirect3DSwapChain9> _swapChain;
-	WRL::ComPtr<IDirect3DDevice9> _device;
 };
 
-class D3D9SwapChain : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, ISwapChain, ID3D9SwapChain>
+class D3D9SwapChain : public D3D9SwapChainBase
 {
 public:
 	D3D9SwapChain(IDirect3D9* d3d, INativeWindow* window);
@@ -47,9 +61,7 @@ private:
 	D3DPRESENT_PARAMETERS CreatePresentParameters(HWND hWnd) const noexcept;
 	void CreateDeviceResource(IDirect3D9* d3d);
 private:
-	HWND _hWnd;
 	D3DCAPS9 _deviceCaps = {};
 	D3DFORMAT _backBufferFormat = D3DFMT_UNKNOWN;
-	WRL::ComPtr<IDirect3DDevice9> _device;
 };
 END_NS_PLATFORM

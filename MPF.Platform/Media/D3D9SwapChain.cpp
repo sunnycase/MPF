@@ -8,8 +8,10 @@
 #include "D3D9SwapChain.h"
 #include <algorithm>
 #include <array>
+#include <DirectXMath.h>
 using namespace WRL;
 using namespace NS_PLATFORM;
+using namespace DirectX;
 
 namespace
 {
@@ -73,24 +75,20 @@ namespace
 }
 
 D3D9ChildSwapChain::D3D9ChildSwapChain(IDirect3DSwapChain9 * swapChain, IDirect3DDevice9* device, INativeWindow * window)
-	:_hWnd(GetNativeHandle(window)), _swapChain(swapChain), _device(device)
+	:D3D9SwapChainBase(window), _swapChain(swapChain)
 {
-
+	SetDevice(device);
 }
 
 void D3D9ChildSwapChain::DoFrame()
 {
 	ComPtr<IDirect3DSurface9> backSurface;
 	ThrowIfFailed(_swapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &backSurface));
-	ThrowIfFailed(_device->SetRenderTarget(0, backSurface.Get()));
-	ThrowIfFailed(_device->BeginScene());
-	ThrowIfFailed(_device->Clear(0, nullptr, D3DCLEAR_TARGET, 0x7700FF, 1.f, 0));
-	ThrowIfFailed(_device->EndScene());
-	ThrowIfFailed(_swapChain->Present(nullptr, nullptr, nullptr, nullptr, 0));
+	Draw(backSurface.Get());
 }
 
 D3D9SwapChain::D3D9SwapChain(IDirect3D9 * d3d, INativeWindow * window)
-	: _hWnd(GetNativeHandle(window))
+	: D3D9SwapChainBase(window)
 {
 	CreateDeviceResource(d3d);
 }
@@ -107,11 +105,7 @@ void D3D9SwapChain::DoFrame()
 {
 	ComPtr<IDirect3DSurface9> backSurface;
 	ThrowIfFailed(_device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backSurface));
-	ThrowIfFailed(_device->SetRenderTarget(0, backSurface.Get()));
-	ThrowIfFailed(_device->BeginScene());
-	ThrowIfFailed(_device->Clear(0, nullptr, D3DCLEAR_TARGET, 0x7700FF, 1.f, 0));
-	ThrowIfFailed(_device->EndScene());
-	ThrowIfFailed(_device->Present(nullptr, nullptr, nullptr, nullptr));
+	Draw(backSurface.Get());
 }
 
 D3DPRESENT_PARAMETERS D3D9SwapChain::CreatePresentParameters(HWND hWnd) const noexcept
@@ -140,9 +134,10 @@ void D3D9SwapChain::CreateDeviceResource(IDirect3D9 * d3d)
 	static_assert(behaviorFlags.size() == infos.size(), "behaviorFlags.size() must be equal to infos.size().");
 #endif
 	auto hr = S_OK;
+	ComPtr<IDirect3DDevice9> device;
 	for (size_t i = 0; i < behaviorFlags.size(); i++)
 	{
-		hr = TryCreateDevice(adapter, d3d, _hWnd, params, &_device, behaviorFlags[i]
+		hr = TryCreateDevice(adapter, d3d, _hWnd, params, &device, behaviorFlags[i]
 #if _DEBUG
 			, infos[i]
 #endif
@@ -151,6 +146,59 @@ void D3D9SwapChain::CreateDeviceResource(IDirect3D9 * d3d)
 	}
 	ThrowIfFailed(hr);
 #if _DEBUG
-	DumpAdapter(d3d, _device.Get(), adapter, _deviceCaps);
+	DumpAdapter(d3d, device.Get(), adapter, _deviceCaps);
 #endif
+	SetDevice(device.Get());
+}
+
+D3D9SwapChainBase::D3D9SwapChainBase(INativeWindow* window)
+	:_hWnd(GetNativeHandle(window))
+{
+	XMStoreFloat4x4(&_wvp.World, XMMatrixTranspose(XMMatrixIdentity()));
+	CreateWindowSizeDependentResources();
+}
+
+HRESULT D3D9SwapChainBase::SetCallback(ISwapChainCallback * callback)
+{
+	try
+	{
+		_callback = callback;
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
+void D3D9SwapChainBase::CreateWindowSizeDependentResources()
+{
+	RECT viewRect;
+	ThrowWin32IfNot(GetClientRect(_hWnd, &viewRect));
+	_viewport = { 0, 0, static_cast<DWORD>(viewRect.right - viewRect.left), static_cast<DWORD>(viewRect.bottom - viewRect.top), 0.f, 1.f };
+
+	XMMATRIX orthoMat = XMMatrixOrthographicRH(float(_viewport.Width), float(_viewport.Height), _viewport.MinZ, _viewport.MaxZ);
+	XMStoreFloat4x4(&_wvp.Projection, XMMatrixTranspose(orthoMat));
+
+	const XMVECTORF32 eye = { _viewport.Width / 2.f, _viewport.Height / 2.f, 1.0f, 0.0f };
+	const XMVECTORF32 at = { eye.f[0], eye.f[1], 0.0f, 0.0f };
+	const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
+
+	XMStoreFloat4x4(&_wvp.View, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+}
+
+void D3D9SwapChainBase::UpdateShaderConstants()
+{
+	ThrowIfFailed(_device->SetVertexShaderConstantF(0, reinterpret_cast<const float*>(&_wvp), sizeof(_wvp) / 16));
+}
+
+void D3D9SwapChainBase::Draw(IDirect3DSurface9 * surface)
+{
+	UpdateShaderConstants();
+	ThrowIfFailed(_device->SetRenderTarget(0, surface));
+	ThrowIfFailed(_device->BeginScene());
+	ThrowIfFailed(_device->Clear(0, nullptr, D3DCLEAR_TARGET, 0x7700FF, 1.f, 0));
+
+	if (auto callback = _callback)
+		callback->OnDraw();
+
+	ThrowIfFailed(_device->EndScene());
+	ThrowIfFailed(_device->Present(nullptr, nullptr, nullptr, nullptr));
 }

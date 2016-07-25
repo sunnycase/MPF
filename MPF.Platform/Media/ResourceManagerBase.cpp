@@ -73,11 +73,12 @@ void ResourceManagerBase::Update()
 {
 	{
 		auto& lineGeometryTRC = GetLineGeometryTRC();
-		lineGeometryTRC.Add(_updatedLineGeometry, *_lineGeometryContainer.Get());
+		lineGeometryTRC.Add(_addedLineGeometry, *_lineGeometryContainer.Get());
 		lineGeometryTRC.Update(_updatedLineGeometry, *_lineGeometryContainer.Get());
 		lineGeometryTRC.Remove(_lineGeometryContainer->GetCleanupList());
 		_addedLineGeometry.clear();
 		_updatedLineGeometry.clear();
 		_lineGeometryContainer->CleanUp();
 	}
+	UpdateOverride();
 }

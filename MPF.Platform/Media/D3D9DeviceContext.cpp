@@ -8,8 +8,10 @@
 #include "D3D9DeviceContext.h"
 #include <process.h>
 #include "D3D9ResourceManager.h"
+#include "D3D9Vertex.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
+using namespace D3D;
 
 D3D9DeviceContext::D3D9DeviceContext(DeviceContextMessagesHandler messageHandler)
 	:_rootSwapChainLock(5000), _messageHandler(messageHandler), _renderObjectContainer(Make<RenderableObjectContainer<D3D9RenderableObject>>())
@@ -26,6 +28,8 @@ STDMETHODIMP D3D9DeviceContext::CreateSwapChain(INativeWindow * window, ISwapCha
 		if (!_rootSwapChain)
 		{
 			auto d3dSwapChain = Make<D3D9SwapChain>(_d3d.Get(), window);
+			_device = d3dSwapChain->GetDevice();
+			CreateDeviceResources();
 			_rootSwapChain = d3dSwapChain;
 			ThrowIfFailed(d3dSwapChain.CopyTo(swapChain));
 			StartRenderLoop();
@@ -44,7 +48,15 @@ STDMETHODIMP D3D9DeviceContext::CreateSwapChain(INativeWindow * window, ISwapCha
 
 void D3D9DeviceContext::CreateDeviceResources()
 {
-
+	ComPtr<IDirect3DVertexDeclaration9> vertexDeclaration;
+	static const D3DVERTEXELEMENT9 elements[] =
+	{
+		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, offsetof(Vertex, Color), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
+		D3DDECL_END()
+	};
+	ThrowIfFailed(_device->CreateVertexDeclaration(elements, &vertexDeclaration));
+	ThrowIfFailed(_device->SetVertexDeclaration(vertexDeclaration.Get()));
 }
 
 void D3D9DeviceContext::StartRenderLoop()
@@ -67,7 +79,7 @@ void D3D9DeviceContext::DoFrame()
 	UpdateResourceManagers();
 	UpdateRenderObjects();
 
-	std::vector<ComPtr<ID3D9SwapChain>> swapChains;
+	std::vector<ComPtr<D3D9SwapChainBase>> swapChains;
 	{
 		auto locker = _rootSwapChainLock.Lock();
 		if (_rootSwapChain)
@@ -126,7 +138,7 @@ HRESULT D3D9DeviceContext::CreateResourceManager(IResourceManager **resMgr)
 {
 	try
 	{
-		auto myResMgr = Make<D3D9ResourceManager>();
+		auto myResMgr = Make<D3D9ResourceManager>(_device.Get());
 		_resourceManagers.emplace_back(myResMgr->GetWeakContext());
 		*resMgr = myResMgr.Detach();
 		return S_OK;

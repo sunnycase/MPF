@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace MPF.Interop
 {
+    [Guid("CF627173-9730-4030-944C-67C65442D2A1")]
     [ComImport]
-    [Guid("D1BCE22E-1DA3-4183-B870-814EE56E1D37")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface ISwapChain
+    internal interface ISwapChainCallback
     {
-        void SetCallback([MarshalAs(UnmanagedType.Interface), In] ISwapChainCallback callback);
+        void OnDraw();
     }
 }

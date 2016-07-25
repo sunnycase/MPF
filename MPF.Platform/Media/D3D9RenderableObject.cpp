@@ -15,7 +15,6 @@ D3D9RenderableObject::D3D9RenderableObject()
 
 void D3D9RenderableObject::Update()
 {
-	
 	RenderableObject::Update();
 }
 

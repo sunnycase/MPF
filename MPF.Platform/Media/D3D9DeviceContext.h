@@ -38,10 +38,11 @@ private:
 private:
 	DeviceContextMessagesHandler _messageHandler;
 	WRL::ComPtr<IDirect3D9> _d3d;
+	WRL::ComPtr<IDirect3DDevice9> _device;
 	std::atomic<bool> _isRenderLoopActive = false;
 	WRL::Wrappers::CriticalSection _rootSwapChainLock;
 	WRL::ComPtr<D3D9SwapChain> _rootSwapChain;
-	std::vector<WeakRef<D3D9ChildSwapChain>> _childSwapChains;
+	std::vector<WeakRef<D3D9SwapChainBase>> _childSwapChains;
 	std::vector<WeakRef<ResourceManagerBase>> _resourceManagers;
 	WRL::ComPtr<RenderableObjectContainer<D3D9RenderableObject>> _renderObjectContainer;
 };

@@ -61,13 +61,23 @@ interface IRenderableObject : IUnknown
 };
 
 [
+	uuid(CF627173-9730-4030-944C-67C65442D2A1),
+	helpstring("SwapChain Message Callback Interface"),
+	version(1.0)
+]
+interface ISwapChainCallback : IUnknown
+{
+	HRESULT OnDraw();
+};
+
+[
 	uuid(D1BCE22E-1DA3-4183-B870-814EE56E1D37),
 	helpstring("SwapChain Interface"),
 	version(1.0)
 ]
 interface ISwapChain : IUnknown
 {
-
+	HRESULT SetCallback([in]ISwapChainCallback* callback);
 };
 
 [

@@ -99,6 +99,12 @@
     <ClInclude Include="Media\D3D9ResourceManager.h">
       <Filter>头文件\Media\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Media\D3D9Vertex.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\D3D9BufferManager.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -144,7 +150,10 @@
       <Filter>源文件\Media</Filter>
     </ClCompile>
     <ClCompile Include="Media\D3D9ResourceManager.cpp">
-      <Filter>源文件</Filter>
+      <Filter>源文件\Media\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\D3D9BufferManager.cpp">
+      <Filter>源文件\Media\Platform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

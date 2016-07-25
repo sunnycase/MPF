@@ -20,8 +20,13 @@ enum NativeWindowMessages
 
 typedef HRESULT (__stdcall *NativeWindowMessageHandler)(enum NativeWindowMessages);
 
+struct DECLSPEC_UUID("53DD3D11-22DC-4C82-A703-63ABFD831058") INativeWindowIntern : public IUnknown
+{
+	virtual void AppendMessageHandler(std::function<void(NativeWindowMessages)>&& messageHandler) = 0;
+};
+
 class NativeWindow : private NonCopyable,
-	public WeakReferenceBase<NativeWindow, WRL::RuntimeClassFlags<WRL::ClassicCom>, INativeWindow>
+	public WeakReferenceBase<NativeWindow, WRL::RuntimeClassFlags<WRL::ClassicCom>, INativeWindow, INativeWindowIntern>
 {
 public:
 	NativeWindow(NativeWindowMessageHandler messageHandler);
@@ -37,6 +42,8 @@ public:
 	STDMETHODIMP get_NativeHandle(INT_PTR * value) override;
 	STDMETHODIMP Close() override;
 	STDMETHODIMP Destroy() override;
+
+	virtual void AppendMessageHandler(std::function<void(NativeWindowMessages)>&& messageHandler) override;
 private:
 	void CreateWindow();
 	LRESULT WindowProc(HWND hWnd, uint32_t uMsg, WPARAM wParam, LPARAM lParam);
@@ -47,6 +54,7 @@ private:
 	HWND _hWnd = nullptr;
 	WeakRef<NativeWindow>* _weakRef;
 	NativeWindowMessageHandler _messageHandler;
+	std::vector<std::function<void(NativeWindowMessages)>> _messageHandlers;
 };
 
 END_NS_PLATFORM

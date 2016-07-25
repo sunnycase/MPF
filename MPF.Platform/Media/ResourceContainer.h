@@ -94,7 +94,7 @@ public:
 	{
 		for (auto&& handle : _cleanupList)
 		{
-			if (!_freeList.empty())
+			if (_freeList.empty())
 				_freeList.emplace_front<FreeListEntry>({ handle, 1 });
 			else
 			{
