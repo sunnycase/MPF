@@ -37,6 +37,17 @@ namespace MPF.Media
             _nativeWindow = Platform.CreateNativeWindow(OnNativeWindowMessage);
             _swapChain = DeviceContext.Current.CreateSwapChain(_nativeWindow);
             DeviceContext.Current.Render += OnDeviceContextRender;
+            _swapChain.Draw += OnSwapChainDraw;
+        }
+
+        private void OnSwapChainDraw(object sender, EventArgs e)
+        {
+            OnRenderContent();
+        }
+
+        private void OnRenderContent()
+        {
+            _rootVisual?.RenderContent();
         }
 
         private void OnDeviceContextRender(object sender, EventArgs e)

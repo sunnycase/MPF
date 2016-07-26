@@ -14,6 +14,7 @@
 #include "D3D9RenderableObject.h"
 #include "RenderableObjectContainer.h"
 #include "ResourceManagerBase.h"
+#include <ppltasks.h>
 
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
@@ -27,13 +28,14 @@ public:
 	STDMETHODIMP CreateRenderableObject(IRenderableObject ** obj) override;
 	STDMETHODIMP CreateResourceManager(IResourceManager **resMgr);
 private:
-	void CreateDeviceResources();
+	concurrency::task<void> CreateDeviceResourcesAsync();
 	void StartRenderLoop();
 	bool IsActive() const noexcept;
 	void DoFrame();
 	void DoFrameWrapper() noexcept;
 	void UpdateRenderObjects();
 	void UpdateResourceManagers();
+	void ActiveDeviceAndStartRender();
 	static void __cdecl RenderLoop(void* weakRefVoid);
 private:
 	DeviceContextMessagesHandler _messageHandler;

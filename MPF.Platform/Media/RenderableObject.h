@@ -13,6 +13,8 @@
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
+struct IDrawCallList;
+
 class RenderableObject : public ResourceBase
 {
 public:
@@ -20,14 +22,14 @@ public:
 
 	void SetContent(IRenderCommandBuffer* buffer);
 	void Update();
-protected:
-	virtual void PushDrawCall(UINT_PTR handle, const LineGeometry& geometry) = 0;
+	void Draw();
 private:
 	void SetBufferDirty();
 private:
 	bool _isDirty;
 	bool _isBufferDirty;
 	WRL::ComPtr<RenderCommandBuffer> _buffer;
+	std::shared_ptr<IDrawCallList> _drawCallList;
 };
 
 END_NS_PLATFORM

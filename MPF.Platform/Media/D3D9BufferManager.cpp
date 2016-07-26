@@ -29,7 +29,7 @@ RentInfo D3D9VertexBufferManager::Allocate(size_t length)
 		}
 	}
 	info.entryIdx = _buffers.size();
-	_buffers.emplace_back(_device.Get(), std::max(length, 1024u));
+	_buffers.emplace_back(_device.Get(), std::max(length, size_t(1024)));
 	ThrowIfNot(_buffers.back().TryAllocate(length, info), L"Cannot allocate vertices.");
 	return info;
 }
@@ -130,4 +130,9 @@ void D3D9VertexBufferManager::BufferEntry::CombineFreeNode(typename std::list<Fr
 			_freeList.erase(right);
 		}
 	}
+}
+
+RenderCall D3D9VertexBufferManager::GetDrawCall(const RentInfo& rent)
+{
+	return{ _buffers[rent.entryIdx].GetBuffer(), UINT(rent.offset), UINT(rent.length) };
 }

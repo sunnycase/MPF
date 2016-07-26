@@ -4,5 +4,4 @@
   <ItemGroup>
       <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\$(Configuration)\MPF.Platform.dll" />
   </ItemGroup>
-
 </Project>

@@ -9,10 +9,10 @@ namespace MPF.Media
     public class LineGeometry : Geometry
     {
         public static readonly DependencyProperty<Point> StartPointProperty = DependencyProperty.Register(nameof(StartPoint), typeof(LineGeometry),
-            Point.Zero);
+            Point.Zero, OnStartPointPropertyChanged);
 
         public static readonly DependencyProperty<Point> EndPointProperty = DependencyProperty.Register(nameof(EndPoint), typeof(LineGeometry),
-            Point.Zero);
+            Point.Zero, OnEndPointPropertyChanged);
 
         public Point StartPoint
         {
@@ -36,6 +36,37 @@ namespace MPF.Media
         internal override IResource GetResourceOverride()
         {
             return _geometryRes;
+        }
+
+        private static void OnStartPointPropertyChanged(object sender, PropertyChangedEventArgs<Point> e)
+        {
+            ((LineGeometry)sender).RegisterUpdateResource();
+        }
+
+        bool _updateRegistered = false;
+        private void RegisterUpdateResource()
+        {
+            if(!_updateRegistered)
+            {
+                _updateRegistered = true;
+                DeviceContext.Current.UpdateResource += OnUpdateResource;
+            }
+        }
+
+        private void OnUpdateResource(object sender, EventArgs e)
+        {
+            _updateRegistered = false;
+            var data = new LineGeometryData
+            {
+                StartPoint = StartPoint,
+                EndPoint = EndPoint
+            };
+            MediaResourceManager.Current.UpdateResource(_geometryRes, ref data);
+        }
+
+        private static void OnEndPointPropertyChanged(object sender, PropertyChangedEventArgs<Point> e)
+        {
+            ((LineGeometry)sender).RegisterUpdateResource();
         }
     }
 }

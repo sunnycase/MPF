@@ -21,6 +21,12 @@ struct ITransformedResourceContainer
 	virtual void Remove(const std::vector<UINT_PTR>& handles) = 0;
 };
 
+struct IDrawCallList
+{
+	virtual void PushDrawCall(IResource* resource) = 0;
+	virtual void Draw() = 0;
+};
+
 class ResourceManagerBase : public WeakReferenceBase<ResourceManagerBase, WRL::RuntimeClassFlags<WRL::ClassicCom>, IResourceManager>
 {
 public:
@@ -33,6 +39,7 @@ public:
 
 	const LineGeometry& GetLineGeometry(UINT_PTR handle) const;
 	void Update();
+	virtual std::shared_ptr<IDrawCallList> CreateDrawCallList() = 0;
 protected:
 	virtual ITransformedResourceContainer<LineGeometry>& GetLineGeometryTRC() noexcept = 0;
 	virtual void UpdateOverride() {};

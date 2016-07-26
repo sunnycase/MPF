@@ -27,22 +27,26 @@ void RenderableObject::SetContent(IRenderCommandBuffer * buffer)
 
 void RenderableObject::Update()
 {
-	if (_isDirty && _buffer)
+	if (_isDirty)
 	{
-		auto resMgr = _buffer->GetResourceManager();
-		for (auto&& geoRef : _buffer->GetGeometries())
+		if (_buffer)
 		{
-			auto handle = geoRef->GetHandle();
-			switch (geoRef->GetType())
-			{
-			case RT_LineGeometry:
-				PushDrawCall(handle, resMgr->GetLineGeometry(handle));
-				break;
-			default:
-				break;
-			}
+			auto resMgr = _buffer->GetResourceManager();
+			auto drawCallList = resMgr->CreateDrawCallList();
+			for (auto&& geoRef : _buffer->GetGeometries())
+				drawCallList->PushDrawCall(geoRef.Get());
+			_drawCallList = drawCallList;
 		}
+		else
+			_drawCallList.reset();
+		_isDirty = false;
 	}
+}
+
+void RenderableObject::Draw()
+{
+	if (auto drawCallList = _drawCallList)
+		drawCallList->Draw();
 }
 
 void RenderableObject::SetBufferDirty()

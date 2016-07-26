@@ -174,12 +174,12 @@ void D3D9SwapChainBase::CreateWindowSizeDependentResources()
 	ThrowWin32IfNot(GetClientRect(_hWnd, &viewRect));
 	_viewport = { 0, 0, static_cast<DWORD>(viewRect.right - viewRect.left), static_cast<DWORD>(viewRect.bottom - viewRect.top), 0.f, 1.f };
 
-	XMMATRIX orthoMat = XMMatrixOrthographicRH(float(_viewport.Width), float(_viewport.Height), _viewport.MinZ, _viewport.MaxZ);
+	XMMATRIX orthoMat = XMMatrixOrthographicRH(float(_viewport.Width), float(_viewport.Height), 0.f, 1.f);
 	XMStoreFloat4x4(&_wvp.Projection, XMMatrixTranspose(orthoMat));
 
-	const XMVECTORF32 eye = { _viewport.Width / 2.f, _viewport.Height / 2.f, 1.0f, 0.0f };
-	const XMVECTORF32 at = { eye.f[0], eye.f[1], 0.0f, 0.0f };
-	const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
+	const XMVECTORF32 eye = { _viewport.Width / 2.f, _viewport.Height / 2.f, 0.0f, 0.0f };
+	const XMVECTORF32 at = { eye.f[0], eye.f[1], 1.0f, 0.0f };
+	const XMVECTORF32 up = { 0.0f, -1.0f, 0.0f, 0.0f };
 
 	XMStoreFloat4x4(&_wvp.View, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
 }
@@ -187,11 +187,13 @@ void D3D9SwapChainBase::CreateWindowSizeDependentResources()
 void D3D9SwapChainBase::UpdateShaderConstants()
 {
 	ThrowIfFailed(_device->SetVertexShaderConstantF(0, reinterpret_cast<const float*>(&_wvp), sizeof(_wvp) / 16));
+	ThrowIfFailed(_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
 }
 
 void D3D9SwapChainBase::Draw(IDirect3DSurface9 * surface)
 {
 	UpdateShaderConstants();
+	ThrowIfFailed(_device->SetViewport(&_viewport));
 	ThrowIfFailed(_device->SetRenderTarget(0, surface));
 	ThrowIfFailed(_device->BeginScene());
 	ThrowIfFailed(_device->Clear(0, nullptr, D3DCLEAR_TARGET, 0x7700FF, 1.f, 0));

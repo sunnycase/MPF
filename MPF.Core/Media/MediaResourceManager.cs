@@ -27,5 +27,10 @@ namespace MPF.Media
         {
             return _resourceManager.CreateRenderCommandBuffer();
         }
+
+        public void UpdateResource(IResource res, ref LineGeometryData data)
+        {
+            _resourceManager.UpdateLineGeometry(res, ref data);
+        }
     }
 }

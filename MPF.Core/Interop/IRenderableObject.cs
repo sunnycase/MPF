@@ -12,5 +12,6 @@ namespace MPF.Interop
     internal interface IRenderableObject
     {
         void SetContent([MarshalAs(UnmanagedType.Interface), In]IRenderCommandBuffer buffer);
+        void Render();
     }
 }

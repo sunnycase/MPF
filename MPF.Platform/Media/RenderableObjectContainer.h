@@ -24,6 +24,7 @@ public:
 
 	STDMETHOD_(ULONG, Release)();
 	STDMETHODIMP SetContent(IRenderCommandBuffer* buffer);
+	STDMETHODIMP Render();
 private:
 	WRL::ComPtr<IRenderableObjectContainer> _container;
 	UINT_PTR _handle;

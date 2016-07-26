@@ -13,6 +13,7 @@ namespace MPF.Media
         public static DeviceContext Current => _current.Value;
 
         public event EventHandler Render;
+        public event EventHandler UpdateResource;
 
         private readonly IDeviceContext _deviceContext;
         private DeviceContext()
@@ -34,6 +35,8 @@ namespace MPF.Media
 
         private void OnRender()
         {
+            UpdateResource?.Invoke(this, EventArgs.Empty);
+            UpdateResource = null;
             Render?.Invoke(this, EventArgs.Empty);
         }
 

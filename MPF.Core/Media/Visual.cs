@@ -74,6 +74,11 @@ namespace MPF.Media
 
         }
 
+        internal void RenderContent()
+        {
+            _renderableObject.Render();
+        }
+
         class VisualDrawingContext : RenderDataDrawingContext
         {
             private readonly Visual _visual;

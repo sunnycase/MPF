@@ -17,7 +17,6 @@ public:
 
 	void Update();
 protected:
-	virtual void PushDrawCall(UINT_PTR handle, const LineGeometry& geometry) override;
 };
 
 END_NS_PLATFORM

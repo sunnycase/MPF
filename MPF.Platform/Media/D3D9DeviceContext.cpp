@@ -9,9 +9,11 @@
 #include <process.h>
 #include "D3D9ResourceManager.h"
 #include "D3D9Vertex.h"
+#include "../resource.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 using namespace D3D;
+using namespace concurrency;
 
 D3D9DeviceContext::D3D9DeviceContext(DeviceContextMessagesHandler messageHandler)
 	:_rootSwapChainLock(5000), _messageHandler(messageHandler), _renderObjectContainer(Make<RenderableObjectContainer<D3D9RenderableObject>>())
@@ -29,10 +31,9 @@ STDMETHODIMP D3D9DeviceContext::CreateSwapChain(INativeWindow * window, ISwapCha
 		{
 			auto d3dSwapChain = Make<D3D9SwapChain>(_d3d.Get(), window);
 			_device = d3dSwapChain->GetDevice();
-			CreateDeviceResources();
 			_rootSwapChain = d3dSwapChain;
 			ThrowIfFailed(d3dSwapChain.CopyTo(swapChain));
-			StartRenderLoop();
+			ActiveDeviceAndStartRender();
 		}
 		else
 		{
@@ -46,7 +47,21 @@ STDMETHODIMP D3D9DeviceContext::CreateSwapChain(INativeWindow * window, ISwapCha
 	CATCH_ALL();
 }
 
-void D3D9DeviceContext::CreateDeviceResources()
+namespace
+{
+	const DWORD* LoadShaderResource(int id)
+	{
+		auto hres = FindResourceW(ModuleHandle, MAKEINTRESOURCE(id), L"SHADER");
+		ThrowWin32IfNot(hres);
+		auto handle = LoadResource(ModuleHandle, hres);
+		ThrowWin32IfNot(handle);
+		auto ret = reinterpret_cast<const DWORD*>(LockResource(handle));
+		ThrowWin32IfNot(ret);
+		return ret;
+	}
+}
+
+task<void> D3D9DeviceContext::CreateDeviceResourcesAsync()
 {
 	ComPtr<IDirect3DVertexDeclaration9> vertexDeclaration;
 	static const D3DVERTEXELEMENT9 elements[] =
@@ -57,6 +72,19 @@ void D3D9DeviceContext::CreateDeviceResources()
 	};
 	ThrowIfFailed(_device->CreateVertexDeclaration(elements, &vertexDeclaration));
 	ThrowIfFailed(_device->SetVertexDeclaration(vertexDeclaration.Get()));
+
+	auto uiVSData = LoadShaderResource(IDR_UIVERTEXSHADER);
+	ComPtr<IDirect3DVertexShader9> vs;
+	ThrowIfFailed(_device->CreateVertexShader(uiVSData, &vs));
+
+	auto uiPSData = LoadShaderResource(IDR_UIPIXELSHADER);
+	ComPtr<IDirect3DPixelShader9> ps;
+	ThrowIfFailed(_device->CreatePixelShader(uiPSData, &ps));
+
+	ThrowIfFailed(_device->SetVertexShader(vs.Get()));
+	ThrowIfFailed(_device->SetPixelShader(ps.Get()));
+
+	return task_from_result();
 }
 
 void D3D9DeviceContext::StartRenderLoop()
@@ -97,6 +125,15 @@ void D3D9DeviceContext::UpdateResourceManagers()
 	for (auto&& resMgrRef : _resourceManagers)
 		if (auto resMgr = resMgrRef.Resolve())
 			resMgr->Update();
+}
+
+void D3D9DeviceContext::ActiveDeviceAndStartRender()
+{
+	ComPtr<D3D9DeviceContext> thisHolder;
+	CreateDeviceResourcesAsync().then([thisHolder, this]
+	{
+		this->StartRenderLoop();
+	});
 }
 
 void D3D9DeviceContext::DoFrameWrapper() noexcept

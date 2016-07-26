@@ -17,7 +17,3 @@ void D3D9RenderableObject::Update()
 {
 	RenderableObject::Update();
 }
-
-void D3D9RenderableObject::PushDrawCall(UINT_PTR handle, const LineGeometry & geometry)
-{
-}

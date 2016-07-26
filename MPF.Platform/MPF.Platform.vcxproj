@@ -71,6 +71,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(ProjectDir);$(SolutionDir)inc;$(IncludePath)</IncludePath>
+    <ExecutablePath>C:\Program Files (x86)\Windows Kits\10\bin\x86;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -79,10 +80,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(ProjectDir);$(SolutionDir)inc;$(IncludePath)</IncludePath>
+    <ExecutablePath>C:\Program Files (x86)\Windows Kits\10\bin\x86;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(ProjectDir);$(SolutionDir)inc;$(ProjectDir);$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutputDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -105,6 +110,9 @@
     <PostBuildEvent>
       <Command>copy /y $(TargetPath) $(SolutionDir)Tutorial\MPF.HelloDesktop\bin\Debug\</Command>
     </PostBuildEvent>
+    <FxCompile>
+      <ObjectFileOutput>$(IntDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -124,6 +132,9 @@
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
     </Midl>
+    <FxCompile>
+      <ObjectFileOutput>$(IntDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -146,6 +157,9 @@
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
     </Midl>
+    <FxCompile>
+      <ObjectFileOutput>$(IntDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -168,6 +182,9 @@
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
     </Midl>
+    <FxCompile>
+      <ObjectFileOutput>$(IntDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -193,6 +210,7 @@
     <ClInclude Include="Media\ResourceRef.h" />
     <ClInclude Include="MPF.Platform_i.h" />
     <ClInclude Include="NativeApplication.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -234,6 +252,39 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="MPF.Platform.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\UIPixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">2.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\UIVertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">2.0</ShaderModel>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\UIShaders.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(SolutionDir)thirdparty\thirdparty.targets" />

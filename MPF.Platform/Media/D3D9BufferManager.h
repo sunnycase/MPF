@@ -26,6 +26,13 @@ struct RentInfo
 	size_t length;
 };
 
+struct RenderCall
+{
+	WRL::ComPtr<IDirect3DVertexBuffer9> VB;
+	UINT StartVertex;
+	UINT VertexCount;
+};
+
 class D3D9VertexBufferManager : public D3D9BufferManagerBase<D3D::Vertex>
 {
 	class BufferEntry
@@ -42,6 +49,8 @@ class D3D9VertexBufferManager : public D3D9BufferManagerBase<D3D::Vertex>
 		void Retire(const RentInfo& rent);
 		void Update(const RentInfo& rent, size_t offset, const D3D::Vertex* src, size_t count);
 		void Upload();
+
+		IDirect3DVertexBuffer9* GetBuffer() const noexcept { return _buffer.Get(); }
 	private:
 		void CombineFreeNode(typename std::list<FreeEntry>::iterator it);
 	private:
@@ -57,6 +66,7 @@ public:
 	void Retire(const RentInfo& rent);
 	void Update(const RentInfo& rent, size_t offset, const D3D::Vertex* src, size_t count);
 	void Upload();
+	RenderCall GetDrawCall(const RentInfo& rent);
 private:
 private:
 	WRL::ComPtr<IDirect3DDevice9> _device;

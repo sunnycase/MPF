@@ -34,6 +34,9 @@
     <Filter Include="源文件\Media\Platform">
       <UniqueIdentifier>{05a05f71-5f2a-48d5-a038-611012b56919}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\Shaders">
+      <UniqueIdentifier>{761055da-57ad-4761-bb93-48b6d7f0effc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -105,6 +108,9 @@
     <ClInclude Include="Media\D3D9BufferManager.h">
       <Filter>头文件\Media\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -160,5 +166,23 @@
     <Midl Include="MPF.Platform.idl">
       <Filter>源文件</Filter>
     </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\UIVertexShader.hlsl">
+      <Filter>资源文件\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\UIPixelShader.hlsl">
+      <Filter>资源文件\Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\UIShaders.hlsli">
+      <Filter>资源文件\Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

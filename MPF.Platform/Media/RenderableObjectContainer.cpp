@@ -44,3 +44,14 @@ STDMETHODIMP RenderableObjectRef::SetContent(IRenderCommandBuffer * buffer)
 	}
 	CATCH_ALL();
 }
+
+
+STDMETHODIMP RenderableObjectRef::Render()
+{
+	try
+	{
+		_container->FindObject(_handle).Draw();
+		return S_OK;
+	}
+	CATCH_ALL();
+}

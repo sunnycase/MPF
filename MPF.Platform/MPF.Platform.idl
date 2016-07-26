@@ -58,6 +58,7 @@ interface IRenderCommandBuffer;
 interface IRenderableObject : IUnknown
 {
 	HRESULT SetContent([in]IRenderCommandBuffer* buffer);
+	HRESULT Render();
 };
 
 [

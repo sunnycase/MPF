@@ -58,3 +58,5 @@ inline void __declspec(noreturn) ThrowAlways(const wchar_t* message)
 #define CATCH_ALL_WITHEVENT(event) catch(tomato_error& ex){ event.set_exception(ex); }catch(_com_error& ex){event.set_exception(ex);}catch(...){event.set_exception(E_FAIL);}
 
 namespace WRL = Microsoft::WRL;
+
+extern HMODULE ModuleHandle;
