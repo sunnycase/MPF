@@ -12,13 +12,6 @@
 
 DEFINE_NS_PLATFORM
 
-template<typename T>
-class D3D9BufferManagerBase
-{
-public:
-
-};
-
 struct RentInfo
 {
 	size_t entryIdx;
@@ -29,11 +22,17 @@ struct RentInfo
 struct RenderCall
 {
 	WRL::ComPtr<IDirect3DVertexBuffer9> VB;
+	UINT Stride;
 	UINT StartVertex;
-	UINT VertexCount;
+	UINT PrimitiveCount;
 };
 
-class D3D9VertexBufferManager : public D3D9BufferManagerBase<D3D::Vertex>
+struct StorkeRenderCall : public RenderCall
+{
+	float Thickness;
+};
+
+class D3D9VertexBufferManager
 {
 	class BufferEntry
 	{
@@ -43,32 +42,34 @@ class D3D9VertexBufferManager : public D3D9BufferManagerBase<D3D::Vertex>
 			size_t length;
 		};
 	public:
-		BufferEntry(IDirect3DDevice9* device, size_t vertexCount = 1024);
+		BufferEntry(IDirect3DDevice9* device, UINT stride, size_t vertexCount = 1024);
 
 		bool TryAllocate(size_t length, RentInfo& rent);
 		void Retire(const RentInfo& rent);
-		void Update(const RentInfo& rent, size_t offset, const D3D::Vertex* src, size_t count);
+		void Update(const RentInfo& rent, size_t offset, const void* src, size_t length);
 		void Upload();
 
 		IDirect3DVertexBuffer9* GetBuffer() const noexcept { return _buffer.Get(); }
 	private:
 		void CombineFreeNode(typename std::list<FreeEntry>::iterator it);
 	private:
+		const UINT _stride;
 		WRL::ComPtr<IDirect3DVertexBuffer9> _buffer;
 		std::list<FreeEntry> _freeList;
-		std::vector<D3D::Vertex> _cpuData;
+		std::vector<byte> _cpuData;
 		bool _gpuDirty = false;
 	};
 public:
-	D3D9VertexBufferManager(IDirect3DDevice9* device);
+	D3D9VertexBufferManager(IDirect3DDevice9* device, UINT stride);
 
 	RentInfo Allocate(size_t length);
 	void Retire(const RentInfo& rent);
-	void Update(const RentInfo& rent, size_t offset, const D3D::Vertex* src, size_t count);
+	void Update(const RentInfo& rent, size_t offset, const void* src, size_t length);
 	void Upload();
 	RenderCall GetDrawCall(const RentInfo& rent);
 private:
 private:
+	const UINT _stride;
 	WRL::ComPtr<IDirect3DDevice9> _device;
 	std::vector<BufferEntry> _buffers;
 };

@@ -15,10 +15,10 @@ namespace D3D
 {
 #pragma pack(push, 4)
 
-	struct Vertex
+	struct StrokeVertex
 	{
 		DirectX::XMFLOAT3 Position;
-		DirectX::XMFLOAT4 Color;
+		DirectX::XMFLOAT2 Normal;
 	};
 
 #pragma pack(pop)

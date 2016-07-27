@@ -35,7 +35,7 @@ namespace MPF.Controls
             _testGeometry = new LineGeometry
             {
                 StartPoint = new Point(200, 300),
-                EndPoint = new Point(400, 500)
+                EndPoint = new Point(400, 400)
             };
 
             _coreWindow.SetRootVisual(this);

@@ -11,8 +11,8 @@ using namespace WRL;
 using namespace NS_PLATFORM;
 using namespace D3D;
 
-D3D9VertexBufferManager::D3D9VertexBufferManager(IDirect3DDevice9* device)
-	:_device(device)
+D3D9VertexBufferManager::D3D9VertexBufferManager(IDirect3DDevice9* device, UINT stride)
+	:_device(device), _stride(stride)
 {
 
 }
@@ -29,7 +29,7 @@ RentInfo D3D9VertexBufferManager::Allocate(size_t length)
 		}
 	}
 	info.entryIdx = _buffers.size();
-	_buffers.emplace_back(_device.Get(), std::max(length, size_t(1024)));
+	_buffers.emplace_back(_device.Get(), _stride, std::max(length, size_t(1024)));
 	ThrowIfNot(_buffers.back().TryAllocate(length, info), L"Cannot allocate vertices.");
 	return info;
 }
@@ -39,9 +39,9 @@ void D3D9VertexBufferManager::Retire(const RentInfo & rent)
 	_buffers[rent.entryIdx].Retire(rent);
 }
 
-void D3D9VertexBufferManager::Update(const RentInfo & rent, size_t offset, const D3D::Vertex * src, size_t count)
+void D3D9VertexBufferManager::Update(const RentInfo & rent, size_t offset, const void* src, size_t length)
 {
-	_buffers[rent.entryIdx].Update(rent, offset, src, count);
+	_buffers[rent.entryIdx].Update(rent, offset, src, length);
 }
 
 void D3D9VertexBufferManager::Upload()
@@ -50,10 +50,11 @@ void D3D9VertexBufferManager::Upload()
 		buffer.Upload();
 }
 
-D3D9VertexBufferManager::BufferEntry::BufferEntry(IDirect3DDevice9 * device, size_t vertexCount)
+D3D9VertexBufferManager::BufferEntry::BufferEntry(IDirect3DDevice9 * device, UINT stride, size_t vertexCount)
+	:_stride(stride)
 {
-	ThrowIfFailed(device->CreateVertexBuffer(sizeof(Vertex) * vertexCount, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &_buffer, nullptr));
-	_cpuData.resize(vertexCount);
+	ThrowIfFailed(device->CreateVertexBuffer(stride * vertexCount, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &_buffer, nullptr));
+	_cpuData.resize(stride * vertexCount);
 	_freeList.emplace_back<FreeEntry>({ 0, vertexCount });
 }
 
@@ -89,23 +90,27 @@ void D3D9VertexBufferManager::BufferEntry::Retire(const RentInfo & rent)
 	}
 }
 
-void D3D9VertexBufferManager::BufferEntry::Update(const RentInfo & rent, size_t offset, const D3D::Vertex * src, size_t count)
+void D3D9VertexBufferManager::BufferEntry::Update(const RentInfo & rent, size_t offset, const void* src, size_t length)
 {
-	assert(rent.length >= offset + count);
+	assert(rent.length >= offset + length);
 
 	auto cpuOffset = rent.offset + offset;
-	ThrowIfNot(memcpy_s(&_cpuData.at(cpuOffset), (_cpuData.size() - cpuOffset) * sizeof(Vertex), src, count * sizeof(Vertex)) == 0,
+	ThrowIfNot(memcpy_s(&_cpuData.at(cpuOffset * _stride), (_cpuData.size() - cpuOffset * _stride), src, length * _stride) == 0,
 		L"Cannot update vertices.");
 	_gpuDirty = true;
 }
 
 void D3D9VertexBufferManager::BufferEntry::Upload()
 {
-	void* pData = nullptr;
-	const auto size = _cpuData.size() * sizeof(Vertex);
-	ThrowIfFailed(_buffer->Lock(0, size, &pData, D3DLOCK_DISCARD));
-	auto fin = make_finalizer([&] {_buffer->Unlock(); });
-	ThrowIfNot(memcpy_s(pData, size, _cpuData.data(), size) == 0, L"Cannot upload vertices.");
+	if (_gpuDirty)
+	{
+		void* pData = nullptr;
+		const auto size = _cpuData.size();
+		ThrowIfFailed(_buffer->Lock(0, size, &pData, D3DLOCK_DISCARD));
+		auto fin = make_finalizer([&] {_buffer->Unlock(); });
+		ThrowIfNot(memcpy_s(pData, size, _cpuData.data(), size) == 0, L"Cannot upload vertices.");
+		_gpuDirty = false;
+	}
 }
 
 void D3D9VertexBufferManager::BufferEntry::CombineFreeNode(typename std::list<FreeEntry>::iterator it)
@@ -134,5 +139,5 @@ void D3D9VertexBufferManager::BufferEntry::CombineFreeNode(typename std::list<Fr
 
 RenderCall D3D9VertexBufferManager::GetDrawCall(const RentInfo& rent)
 {
-	return{ _buffers[rent.entryIdx].GetBuffer(), UINT(rent.offset), UINT(rent.length) };
+	return{ _buffers[rent.entryIdx].GetBuffer(), _stride, UINT(rent.offset), UINT(rent.length / 3) };
 }

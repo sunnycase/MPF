@@ -554,7 +554,11 @@ public:
 
     explicit CriticalSection(ULONG spincount = 0) throw()
     {
+#if (_WIN32_WINNT >= _WIN32_WINNT_VISTA)
         ::InitializeCriticalSectionEx(&cs_, spincount, 0);
+#else
+		::InitializeCriticalSectionAndSpinCount(&cs_, spincount);
+#endif
     }
 
     ~CriticalSection() throw()

@@ -2,7 +2,7 @@
 struct VertexShaderInput
 {
 	float3 Position : POSITION;
-	float4 Color : COLOR;
+	float2 Normal : NORMAL;
 };
 
 struct PixelShaderInput

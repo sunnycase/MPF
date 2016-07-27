@@ -196,7 +196,7 @@ void D3D9SwapChainBase::Draw(IDirect3DSurface9 * surface)
 	ThrowIfFailed(_device->SetViewport(&_viewport));
 	ThrowIfFailed(_device->SetRenderTarget(0, surface));
 	ThrowIfFailed(_device->BeginScene());
-	ThrowIfFailed(_device->Clear(0, nullptr, D3DCLEAR_TARGET, 0x7700FF, 1.f, 0));
+	ThrowIfFailed(_device->Clear(0, nullptr, D3DCLEAR_TARGET, 0xFFFFFF, 1.f, 0));
 
 	if (auto callback = _callback)
 		callback->OnDraw();

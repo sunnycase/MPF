@@ -21,3 +21,4 @@
 #undef CreateWindow
 #undef GetObject
 #undef FindResource
+#define InitializeCriticalSectionEx NotSupported

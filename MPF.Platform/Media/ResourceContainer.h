@@ -9,6 +9,7 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <cassert>
 
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"

@@ -1,4 +1,5 @@
 ﻿using MPF.Controls;
+using MPF.Media;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,17 +20,27 @@ namespace MPF.HelloWorld
     class Application : MPF.Application
     {
         private readonly Window _window;
+        private Window _window2;
+        private Geometry _geometry;
 
         public Application()
         {
             _window = new Window();
             _window.Show();
             ChangeMaximizeBox();
+            _geometry = new LineGeometry();
+            //ShowWindow2();
+        }
+
+        private void ShowWindow2()
+        {
+            _window2 = new Window();
+            _window2.Title = "Hello MPF Multi Window";
+            _window2.Show();
         }
 
         private async void ChangeMaximizeBox()
         {
-            await Task.Delay(1);
             _window.HasMaximize = false;
             _window.Title = "Hello MPF";
         }

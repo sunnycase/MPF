@@ -67,7 +67,7 @@ task<void> D3D9DeviceContext::CreateDeviceResourcesAsync()
 	static const D3DVERTEXELEMENT9 elements[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, offsetof(Vertex, Color), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
+		{ 0, offsetof(StrokeVertex, Normal), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
 		D3DDECL_END()
 	};
 	ThrowIfFailed(_device->CreateVertexDeclaration(elements, &vertexDeclaration));
