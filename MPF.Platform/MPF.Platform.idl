@@ -88,18 +88,25 @@ interface ISwapChain : IUnknown
 ]
 interface IRenderCommandBuffer : IUnknown
 {
-	HRESULT DrawGeometry([in]IResource* geometry);
+	HRESULT DrawGeometry([in]IResource* geometry, [in]IResource* pen);
 };
 
 typedef enum
 {
-	RT_LineGeometry
+	RT_LineGeometry,
+	RT_SolidColorBrush,
+	RT_Pen
 } ResourceType;
 
 typedef struct
 {
 	float X, Y;
 } Point;
+
+typedef struct
+{
+	float A, R, G, B;
+} ColorF;
 
 typedef struct
 {
@@ -114,9 +121,11 @@ typedef struct
 ]
 interface IResourceManager : IUnknown
 {
+	HRESULT CreateRenderCommandBuffer([out, retval]IRenderCommandBuffer ** buffer);
 	HRESULT CreateResource([in]ResourceType resType, [out, retval]IResource** res);
 	HRESULT UpdateLineGeometry([in]IResource* res, [in]LineGeometryData* data);
-	HRESULT CreateRenderCommandBuffer([out, retval]IRenderCommandBuffer ** buffer);
+	HRESULT UpdateSolidColorBrush([in]IResource* res, [in]ColorF* color);
+	HRESULT UpdatePen([in]IResource* res, [in]float thickness, [in]IResource* brush);
 };
 
 [

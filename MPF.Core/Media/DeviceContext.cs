@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MPF.Media
@@ -35,8 +36,8 @@ namespace MPF.Media
 
         private void OnRender()
         {
-            UpdateResource?.Invoke(this, EventArgs.Empty);
-            UpdateResource = null;
+            var oldUpdateResource = Interlocked.Exchange(ref UpdateResource, null);
+            oldUpdateResource?.Invoke(this, EventArgs.Empty);
             Render?.Invoke(this, EventArgs.Empty);
         }
 

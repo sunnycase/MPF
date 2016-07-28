@@ -14,18 +14,24 @@ DEFINE_NS_PLATFORM
 
 class ResourceManagerBase;
 
+struct GeometryRenderCommand
+{
+	WRL::ComPtr<ResourceRef> Geometry;
+	WRL::ComPtr<ResourceRef> Pen;
+};
+
 class RenderCommandBuffer : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, IRenderCommandBuffer>
 {
 public:
 	RenderCommandBuffer(ResourceManagerBase* resourceManager);
 
 	// Í¨¹ý RuntimeClass ¼Ì³Ð
-	STDMETHODIMP DrawGeometry(IResource * geometry) override;
+	STDMETHODIMP DrawGeometry(IResource * geometry, IResource* pen) override;
 
-	const std::vector<WRL::ComPtr<ResourceRef>>& GetGeometries() const noexcept { return _geometries; }
+	const std::vector<GeometryRenderCommand>& GetGeometries() const noexcept { return _geometries; }
 	ResourceManagerBase* GetResourceManager() const noexcept { return _resourceManager.Get(); }
 private:
 	WRL::ComPtr<ResourceManagerBase> _resourceManager;
-	std::vector<WRL::ComPtr<ResourceRef>> _geometries;
+	std::vector<GeometryRenderCommand> _geometries;
 };
 END_NS_PLATFORM

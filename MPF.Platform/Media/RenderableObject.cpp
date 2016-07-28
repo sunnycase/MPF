@@ -32,10 +32,7 @@ void RenderableObject::Update()
 		if (_buffer)
 		{
 			auto resMgr = _buffer->GetResourceManager();
-			auto drawCallList = resMgr->CreateDrawCallList();
-			for (auto&& geoRef : _buffer->GetGeometries())
-				drawCallList->PushDrawCall(geoRef.Get());
-			_drawCallList = drawCallList;
+			_drawCallList = resMgr->CreateDrawCallList(_buffer.Get());
 		}
 		else
 			_drawCallList.reset();

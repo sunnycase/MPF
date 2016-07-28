@@ -15,9 +15,9 @@ namespace MPF.Media
             _buffer = MediaResourceManager.Current.CreateRenderCommandBuffer();
         }
 
-        public void DrawGeometry(Geometry geometry)
+        public void DrawGeometry(Geometry geometry, Pen pen)
         {
-            _buffer.DrawGeometry(((IResourceProvider)geometry).Resource);
+            _buffer.DrawGeometry(((IResourceProvider)geometry).Resource, ((IResourceProvider)pen)?.Resource);
         }
 
         public IRenderCommandBuffer Close()

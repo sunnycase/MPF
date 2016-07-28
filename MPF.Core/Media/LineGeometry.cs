@@ -31,6 +31,7 @@ namespace MPF.Media
         public LineGeometry()
         {
             _geometryRes = MediaResourceManager.Current.CreateResouce(ResourceType.RT_LineGeometry);
+            RegisterUpdateResource();
         }
 
         internal override IResource GetResourceOverride()
@@ -61,7 +62,7 @@ namespace MPF.Media
                 StartPoint = StartPoint,
                 EndPoint = EndPoint
             };
-            MediaResourceManager.Current.UpdateResource(_geometryRes, ref data);
+            MediaResourceManager.Current.UpdateLineGeometry(_geometryRes, ref data);
         }
 
         private static void OnEndPointPropertyChanged(object sender, PropertyChangedEventArgs<Point> e)

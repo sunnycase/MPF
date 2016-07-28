@@ -14,6 +14,8 @@
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
+struct IDrawCallList;
+
 struct ResourceBase
 {
 	void SetUsed()
@@ -24,9 +26,15 @@ struct ResourceBase
 	void SetUnused()
 	{
 		Used = false;
+		_dependentDrawCallLists.clear();
 	}
 
+	std::vector<std::weak_ptr<IDrawCallList>>& GetDependentDrawCallLists() noexcept { return _dependentDrawCallLists; }
+	void AddDependentDrawCallList(std::weak_ptr<IDrawCallList>&& dcl) { _dependentDrawCallLists.emplace_back(std::move(dcl)); }
+
 	bool Used = false;
+private:
+	std::vector<std::weak_ptr<IDrawCallList>> _dependentDrawCallLists;
 };
 
 struct DECLSPEC_UUID("E3A7830B-60CA-43CB-ACA4-A82AC65A45E5") IResourceContainer : public IUnknown

@@ -194,6 +194,7 @@
     <ClInclude Include="..\inc\NonCopyable.h" />
     <ClInclude Include="..\inc\WeakReferenceBase.h" />
     <ClInclude Include="Controls\NativeWindow.h" />
+    <ClInclude Include="Media\Brush.h" />
     <ClInclude Include="Media\D3D9BufferManager.h" />
     <ClInclude Include="Media\D3D9DeviceContext.h" />
     <ClInclude Include="Media\D3D9ResourceManager.h" />
@@ -202,6 +203,7 @@
     <ClInclude Include="Media\D3D9Vertex.h" />
     <ClInclude Include="Media\DeviceContext.h" />
     <ClInclude Include="Media\Geometry.h" />
+    <ClInclude Include="Media\Pen.h" />
     <ClInclude Include="Media\RenderableObject.h" />
     <ClInclude Include="Media\RenderableObjectContainer.h" />
     <ClInclude Include="Media\RenderCommandBuffer.h" />

@@ -14,6 +14,7 @@ struct tagStorkeInfo
 	float padding[3];
 };
 extern tagStorkeInfo stroke : register(c12);
+extern float4 color : register(c16);
 
 PixelShaderInput main(VertexShaderInput input)
 {
@@ -26,6 +27,6 @@ PixelShaderInput main(VertexShaderInput input)
 	pos = mul(pos, WVP.projMat);
 
 	output.Position = pos;
-	output.Color = float4(0.f, 0.f, 0.f, 1.f);
+	output.Color = color;
 	return output;
 }

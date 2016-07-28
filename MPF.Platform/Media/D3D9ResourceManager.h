@@ -32,7 +32,7 @@ class D3D9ResourceManager : public ResourceManagerBase
 public:
 	D3D9ResourceManager(IDirect3DDevice9* device);
 
-	virtual std::shared_ptr<IDrawCallList> CreateDrawCallList() override;
+	virtual std::shared_ptr<IDrawCallList> CreateDrawCallList(RenderCommandBuffer* rcb) override;
 	bool TryGet(IResource* res, StorkeRenderCall& rc) const;
 protected:
 	virtual ITransformedResourceContainer<LineGeometry>& GetLineGeometryTRC() noexcept override { return _lineGeometryTRC; }

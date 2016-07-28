@@ -1,11 +1,15 @@
-﻿using System;
+﻿using MPF.Interop;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace MPF.Media
 {
-    public abstract class Brush : DependencyObject
+    public abstract class Brush : Animatable, IResourceProvider
     {
+        IResource IResourceProvider.Resource => GetResourceOverride();
+
+        internal abstract IResource GetResourceOverride();
     }
 }

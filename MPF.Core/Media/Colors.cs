@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace MPF.Media
 {
-    public interface IDrawingContext : IDisposable
+    public static class Colors
     {
-        void DrawGeometry(Geometry geometry, Pen pen);
+        public static Color Transparent => Color.FromArgb(0xFFFFFF);
     }
 }

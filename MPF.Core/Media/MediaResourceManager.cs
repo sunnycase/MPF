@@ -28,9 +28,19 @@ namespace MPF.Media
             return _resourceManager.CreateRenderCommandBuffer();
         }
 
-        public void UpdateResource(IResource res, ref LineGeometryData data)
+        public void UpdateLineGeometry(IResource res, ref LineGeometryData data)
         {
             _resourceManager.UpdateLineGeometry(res, ref data);
+        }
+
+        public void UpdateSolidColorBrush(IResource res, ref ColorF color)
+        {
+            _resourceManager.UpdateSolidColorBrush(res, ref color);
+        }
+
+        public void UpdatePen(IResource res, float thickness, Brush brush)
+        {
+            _resourceManager.UpdatePen(res, thickness, ((IResourceProvider)brush)?.Resource);
         }
     }
 }

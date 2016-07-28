@@ -15,11 +15,11 @@ RenderCommandBuffer::RenderCommandBuffer(ResourceManagerBase* resourceManager)
 {
 }
 
-HRESULT RenderCommandBuffer::DrawGeometry(IResource * geometry)
+HRESULT RenderCommandBuffer::DrawGeometry(IResource * geometry, IResource* pen)
 {
 	try
 	{
-		_geometries.emplace_back(static_cast<ResourceRef*>(geometry));
+		_geometries.emplace_back<GeometryRenderCommand>({ static_cast<ResourceRef*>(geometry), static_cast<ResourceRef*>(pen) });
 		return S_OK;
 	}
 	CATCH_ALL();

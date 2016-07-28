@@ -11,6 +11,6 @@ namespace MPF.Interop
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IRenderCommandBuffer
     {
-        void DrawGeometry([MarshalAs(UnmanagedType.Interface), In]IResource geometry);
+        void DrawGeometry([MarshalAs(UnmanagedType.Interface), In]IResource geometry, [MarshalAs(UnmanagedType.Interface), In] IResource pen);
     }
 }

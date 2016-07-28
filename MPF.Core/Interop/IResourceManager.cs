@@ -8,7 +8,9 @@ namespace MPF.Interop
 {
     enum ResourceType
     {
-        RT_LineGeometry
+        RT_LineGeometry,
+        RT_SolidColorBrush,
+        RT_Pen
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -23,8 +25,10 @@ namespace MPF.Interop
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IResourceManager
     {
+        IRenderCommandBuffer CreateRenderCommandBuffer();
         IResource CreateResource([In]ResourceType resType);
         void UpdateLineGeometry([In]IResource resouce, [In] ref LineGeometryData data);
-        IRenderCommandBuffer CreateRenderCommandBuffer();
+        void UpdateSolidColorBrush([In]IResource resource, [In] ref ColorF color);
+        void UpdatePen([In]IResource resource, [In] float thickness, [In]IResource brush);
     }
 }

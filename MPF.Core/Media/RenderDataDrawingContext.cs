@@ -14,9 +14,9 @@ namespace MPF.Media
 
         }
 
-        public void DrawGeometry(Geometry geometry)
+        public void DrawGeometry(Geometry geometry, Pen pen)
         {
-            _renderData.DrawGeometry(geometry);
+            _renderData.DrawGeometry(geometry, pen);
         }
 
         #region IDisposable Support

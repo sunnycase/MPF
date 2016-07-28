@@ -10,7 +10,7 @@ namespace MPF.Controls
 {
     public class Window : UIElement
     {
-        private readonly CoreWindow _coreWindow;
+        private readonly CoreWindow _coreWindow = new CoreWindow();
 
         public static readonly DependencyProperty<bool> HasMaximizeProperty = DependencyProperty.Register(nameof(HasMaximize), typeof(Window), true, propertyChangedHandler: OnHasMaximizePropertyChanged);
         public static readonly DependencyProperty<string> TitleProperty = DependencyProperty.Register(nameof(Title), typeof(Window), string.Empty, propertyChangedHandler: OnTitlePropertyChanged);
@@ -29,16 +29,28 @@ namespace MPF.Controls
 
         public Window()
         {
-            _coreWindow = new CoreWindow();
             _coreWindow.HasMaximize = HasMaximize;
             _coreWindow.Title = Title;
-            _testGeometry = new LineGeometry
-            {
-                StartPoint = new Point(200, 300),
-                EndPoint = new Point(400, 400)
-            };
 
             _coreWindow.SetRootVisual(this);
+        }
+
+
+        private readonly Geometry _testGeometry = new LineGeometry
+        {
+            StartPoint = new Point(200, 300),
+            EndPoint = new Point(400, 400)
+        };
+        private readonly Pen _testPen = new Pen
+        {
+            Brush = new SolidColorBrush { Color = Color.FromArgb(0xFF33EECC) },
+            Thickness = 5
+        };
+
+        protected override void OnRender(IDrawingContext drawingContext)
+        {
+            base.OnRender(drawingContext);
+            drawingContext.DrawGeometry(_testGeometry, _testPen);
         }
 
         public void Show()
@@ -59,14 +71,6 @@ namespace MPF.Controls
         private static void OnTitlePropertyChanged(object sender, PropertyChangedEventArgs<string> e)
         {
             ((Window)sender)._coreWindow.Title = e.NewValue;
-        }
-
-        private readonly Geometry _testGeometry;
-
-        protected override void OnRender(IDrawingContext drawingContext)
-        {
-            base.OnRender(drawingContext);
-            drawingContext.DrawGeometry(_testGeometry);
         }
     }
 }

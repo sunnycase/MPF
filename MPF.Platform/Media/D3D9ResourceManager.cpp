@@ -116,7 +116,6 @@ bool D3D9LineGeometryTRC::TryGet(UINT_PTR handle, StorkeRenderCall & info) const
 	if (it != _strokeRentInfos.end())
 	{
 		info.RenderCall::operator=(_strokeVBMgr.GetDrawCall(it->second));
-		info.Thickness = 1.f;
 		return true;
 	}
 	return false;
@@ -129,21 +128,13 @@ void D3D9ResourceManager::UpdateOverride()
 
 namespace
 {
-	class DrawCallList final : public IDrawCallList
+	class DrawCallList : public IDrawCallList
 	{
 	public:
-		DrawCallList(IDirect3DDevice9* device, D3D9ResourceManager* resMgr)
-			:_device(device), _resMgr(resMgr)
+		DrawCallList(IDirect3DDevice9* device, D3D9ResourceManager* resMgr, RenderCommandBuffer* rcb)
+			:_device(device), _resMgr(resMgr), _rcb(rcb)
 		{
 
-		}
-
-		// 通过 IDrawCallList 继承
-		virtual void PushDrawCall(IResource * resource) override
-		{
-			StorkeRenderCall rc;
-			if (_resMgr->TryGet(resource, rc))
-				_strokeRenderCalls.emplace_back(rc);
 		}
 
 		// 通过 IDrawCallList 继承
@@ -155,19 +146,73 @@ namespace
 				ThrowIfFailed(_device->SetStreamSource(0, rc.VB.Get(), 0, rc.Stride));
 				constants[0] = rc.Thickness;
 				ThrowIfFailed(_device->SetVertexShaderConstantF(12, constants, 1));
+				ThrowIfFailed(_device->SetVertexShaderConstantF(16, rc.Color, 1));
 				ThrowIfFailed(_device->DrawPrimitive(D3DPT_TRIANGLELIST, rc.StartVertex, rc.PrimitiveCount));
+			}
+		}
+
+		virtual void Update() override
+		{
+			Update(false);
+		}
+
+		void Initialize()
+		{
+			Update(true);
+		}
+	private:
+		// 通过 IDrawCallList 继承
+		void PushGeometryDrawCall(IResource* resource, IResource* pen)
+		{
+			if (pen)
+			{
+				StorkeRenderCall rc;
+				auto& penObj = _resMgr->GetPen(static_cast<ResourceRef*>(pen)->GetHandle());
+				rc.Thickness = penObj.Thickness;
+				if (penObj.Brush)
+				{
+					auto& brushObj = _resMgr->GetBrush(penObj.Brush->GetHandle());
+					if (typeid(brushObj) == typeid(Brush&))
+					{
+						auto& color = static_cast<SolidColorBrush&>(brushObj).Color;
+						rc.Color[0] = color.R;
+						rc.Color[1] = color.G;
+						rc.Color[2] = color.B;
+						rc.Color[3] = color.A;
+					}
+					if (_resMgr->TryGet(resource, rc))
+						_strokeRenderCalls.emplace_back(rc);
+				}
+			}
+		}
+
+		void Update(bool addResDependent)
+		{
+			_strokeRenderCalls.clear();
+			for (auto&& geoRef : _rcb->GetGeometries())
+			{
+				PushGeometryDrawCall(geoRef.Geometry.Get(), geoRef.Pen.Get());
+				if (addResDependent)
+				{
+					auto me = shared_from_this();
+					_resMgr->AddDependentDrawCallList(me, geoRef.Geometry.Get());
+					_resMgr->AddDependentDrawCallList(me, geoRef.Pen.Get());
+				}
 			}
 		}
 	private:
 		ComPtr<IDirect3DDevice9> _device;
 		ComPtr<D3D9ResourceManager> _resMgr;
+		ComPtr<RenderCommandBuffer> _rcb;
 		std::vector<StorkeRenderCall> _strokeRenderCalls;
 	};
 }
 
-std::shared_ptr<IDrawCallList> D3D9ResourceManager::CreateDrawCallList()
+std::shared_ptr<IDrawCallList> D3D9ResourceManager::CreateDrawCallList(RenderCommandBuffer* rcb)
 {
-	return std::make_shared<DrawCallList>(_device.Get(), this);
+	auto ret = std::make_shared<DrawCallList>(_device.Get(), this, rcb);
+	ret->Initialize();
+	return ret;
 }
 
 bool D3D9ResourceManager::TryGet(IResource* res, StorkeRenderCall& rc) const

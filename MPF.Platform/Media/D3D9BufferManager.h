@@ -30,6 +30,7 @@ struct RenderCall
 struct StorkeRenderCall : public RenderCall
 {
 	float Thickness;
+	float Color[4];
 };
 
 class D3D9VertexBufferManager
