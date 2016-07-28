@@ -16,4 +16,9 @@ struct LineGeometry : public ResourceBase
 	LineGeometryData Data;
 };
 
+struct StreamGeometry : public ResourceBase
+{
+
+};
+
 END_NS_PLATFORM
