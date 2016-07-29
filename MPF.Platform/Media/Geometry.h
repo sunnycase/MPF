@@ -16,6 +16,11 @@ struct LineGeometry : public ResourceBase
 	LineGeometryData Data;
 };
 
+struct RectangleGeometry : public ResourceBase
+{
+	RectangleGeometryData Data;
+};
+
 struct StreamGeometry : public ResourceBase
 {
 

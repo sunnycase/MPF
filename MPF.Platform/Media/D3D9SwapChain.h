@@ -10,6 +10,7 @@
 #include <d3d9.h>
 #include <atomic>
 #include "D3D9Vertex.h"
+#include <DirectXMath.h>
 
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
@@ -28,7 +29,7 @@ protected:
 	void Draw(IDirect3DSurface9* surface);
 protected:
 	HWND _hWnd;
-	D3D::ConstantBufferData _wvp;
+	D3D::WorldViewProjectionData _wvp;
 	D3DVIEWPORT9 _viewport;
 	WRL::ComPtr<IDirect3DDevice9> _device;
 	WRL::ComPtr<ISwapChainCallback> _callback;

@@ -15,7 +15,7 @@ using namespace NS_PLATFORM;
 _container##T(Make<ResourceContainer<T>>())
 
 ResourceManagerBase::ResourceManagerBase()
-	:CTOR_IMPL1(LineGeometry), CTOR_IMPL1(SolidColorBrush), CTOR_IMPL1(Pen)
+	:CTOR_IMPL1(LineGeometry), CTOR_IMPL1(RectangleGeometry), CTOR_IMPL1(SolidColorBrush), CTOR_IMPL1(Pen)
 {
 }
 
@@ -35,6 +35,7 @@ HRESULT ResourceManagerBase::CreateResource(ResourceType resType, IResource ** r
 		switch (resType)
 		{
 			CREATERESOURCE_IMPL1(LineGeometry);
+			CREATERESOURCE_IMPL1(RectangleGeometry);
 			CREATERESOURCE_IMPL1(SolidColorBrush);
 			CREATERESOURCE_IMPL1(Pen);
 		default:
@@ -78,6 +79,13 @@ HRESULT ResourceManagerBase::UpdateLineGeometry(IResource * res, LineGeometryDat
 	UPDATE_RES_IMPL1_PRE(LineGeometry)
 		resObj.Data = *data;
 	UPDATE_RES_IMPL1_AFT(LineGeometry);
+}
+
+HRESULT ResourceManagerBase::UpdateRectangleGeometry(IResource * res, RectangleGeometryData * data)
+{
+	UPDATE_RES_IMPL1_PRE(RectangleGeometry)
+		resObj.Data = *data;
+	UPDATE_RES_IMPL1_AFT(RectangleGeometry);
 }
 
 HRESULT ResourceManagerBase::UpdateSolidColorBrush(IResource * res, ColorF * color)
@@ -135,19 +143,36 @@ Pen& ResourceManagerBase::GetPen(UINT_PTR handle)
 	return _containerPen->FindResource(handle);
 }
 
+RectangleGeometry& ResourceManagerBase::GetRectangleGeometry(UINT_PTR handle)
+{
+	return _containerRectangleGeometry->FindResource(handle);
+}
+
+const RectangleGeometry& ResourceManagerBase::GetRectangleGeometry(UINT_PTR handle) const
+{
+	return _containerRectangleGeometry->FindResource(handle);
+}
+
 #define UPDATE_IMPL1(T)			 \
 _added##T.clear();				 \
 _updated##T.clear();			 \
 _container##T->CleanUp();		 
 
+#define UPDATE_IMPL2(T)									\
+auto& trc##T = Get##T##TRC();							\
+trc##T.Add(_added##T, *_container##T.Get());			\
+trc##T.Update(_updated##T, *_container##T.Get());		\
+trc##T.Remove(_container##T->GetCleanupList());
+
 void ResourceManagerBase::Update()
 {
 	{
-		auto& lineGeometryTRC = GetLineGeometryTRC();
-		lineGeometryTRC.Add(_addedLineGeometry, *_containerLineGeometry.Get());
-		lineGeometryTRC.Update(_updatedLineGeometry, *_containerLineGeometry.Get());
-		lineGeometryTRC.Remove(_containerLineGeometry->GetCleanupList());
+		UPDATE_IMPL2(LineGeometry);
 		UPDATE_IMPL1(LineGeometry);
+	}
+	{
+		UPDATE_IMPL2(RectangleGeometry);
+		UPDATE_IMPL1(RectangleGeometry);
 	}
 	{
 		UPDATE_IMPL1(SolidColorBrush);
@@ -175,6 +200,7 @@ void ResourceManagerBase::AddDependentDrawCallList(std::weak_ptr<IDrawCallList>&
 	switch (resRef->GetType())
 	{
 		ADDCL_IMPL1(LineGeometry);
+		ADDCL_IMPL1(RectangleGeometry);
 		ADDCL_IMPL1(Pen);
 	default:
 		break;

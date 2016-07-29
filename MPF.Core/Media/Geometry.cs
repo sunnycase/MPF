@@ -7,7 +7,7 @@ using MPF.Interop;
 
 namespace MPF.Media
 {
-    public abstract class Geometry : DependencyObject, IResourceProvider
+    public abstract class Geometry : Animatable, IResourceProvider
     {
         public static readonly Geometry Empty = new StreamGeometry();
 

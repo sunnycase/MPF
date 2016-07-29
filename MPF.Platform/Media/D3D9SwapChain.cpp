@@ -8,7 +8,7 @@
 #include "D3D9SwapChain.h"
 #include <algorithm>
 #include <array>
-#include <DirectXMath.h>
+#include "D3D9Vertex.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 using namespace DirectX;
@@ -154,7 +154,6 @@ void D3D9SwapChain::CreateDeviceResource(IDirect3D9 * d3d)
 D3D9SwapChainBase::D3D9SwapChainBase(INativeWindow* window)
 	:_hWnd(GetNativeHandle(window))
 {
-	XMStoreFloat4x4(&_wvp.World, XMMatrixTranspose(XMMatrixIdentity()));
 	CreateWindowSizeDependentResources();
 }
 
@@ -174,19 +173,15 @@ void D3D9SwapChainBase::CreateWindowSizeDependentResources()
 	ThrowWin32IfNot(GetClientRect(_hWnd, &viewRect));
 	_viewport = { 0, 0, static_cast<DWORD>(viewRect.right - viewRect.left), static_cast<DWORD>(viewRect.bottom - viewRect.top), 0.f, 1.f };
 
-	XMMATRIX orthoMat = XMMatrixOrthographicRH(float(_viewport.Width), float(_viewport.Height), 0.f, 1.f);
-	XMStoreFloat4x4(&_wvp.Projection, XMMatrixTranspose(orthoMat));
+	XMMATRIX projection = XMMatrixOrthographicOffCenterLH(0, float(_viewport.Width), float(_viewport.Height), 0, 0.f, 1.f);
 
-	const XMVECTORF32 eye = { _viewport.Width / 2.f, _viewport.Height / 2.f, 0.0f, 0.0f };
-	const XMVECTORF32 at = { eye.f[0], eye.f[1], 1.0f, 0.0f };
-	const XMVECTORF32 up = { 0.0f, -1.0f, 0.0f, 0.0f };
-
-	XMStoreFloat4x4(&_wvp.View, XMMatrixTranspose(XMMatrixLookAtRH(eye, at, up)));
+	XMStoreFloat4x4(&_wvp.WorldView, XMMatrixTranspose(XMMatrixIdentity()));
+	XMStoreFloat4x4(&_wvp.Projection, XMMatrixTranspose(projection));
 }
 
 void D3D9SwapChainBase::UpdateShaderConstants()
 {
-	ThrowIfFailed(_device->SetVertexShaderConstantF(0, reinterpret_cast<const float*>(&_wvp), sizeof(_wvp) / 16));
+	ThrowIfFailed(_device->SetVertexShaderConstantF(D3D::VSCSlot_WorldViewProjection, reinterpret_cast<const float*>(&_wvp), D3D::VSCSize_WorldViewProjection));
 	ThrowIfFailed(_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
 }
 

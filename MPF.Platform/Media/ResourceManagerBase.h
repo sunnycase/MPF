@@ -44,11 +44,14 @@ public:
 	STDMETHODIMP CreateRenderCommandBuffer(IRenderCommandBuffer ** buffer) override;
 	STDMETHODIMP CreateResource(ResourceType resType, IResource ** res) override;
 	STDMETHODIMP UpdateLineGeometry(IResource * res, LineGeometryData * data) override;
+	STDMETHODIMP UpdateRectangleGeometry(IResource * res, RectangleGeometryData * data) override;
 	STDMETHODIMP UpdateSolidColorBrush(IResource * res, ColorF * color) override;
 	STDMETHODIMP UpdatePen(IResource * res, float thickness, IResource* brush) override;
 
 	LineGeometry& GetLineGeometry(UINT_PTR handle);
 	const LineGeometry& GetLineGeometry(UINT_PTR handle) const;
+	RectangleGeometry& GetRectangleGeometry(UINT_PTR handle);
+	const RectangleGeometry& GetRectangleGeometry(UINT_PTR handle) const;
 	Brush& GetBrush(UINT_PTR handle);
 	const Brush& GetBrush(UINT_PTR handle) const;
 	Pen& GetPen(UINT_PTR handle);
@@ -58,9 +61,11 @@ public:
 	void AddDependentDrawCallList(std::weak_ptr<IDrawCallList>&& dcl, IResource* res);
 protected:
 	virtual ITransformedResourceContainer<LineGeometry>& GetLineGeometryTRC() noexcept = 0;
+	virtual ITransformedResourceContainer<RectangleGeometry>& GetRectangleGeometryTRC() noexcept = 0;
 	virtual void UpdateOverride() {};
 private:
 	DECL_RESCONTAINERAWARE(LineGeometry);
+	DECL_RESCONTAINERAWARE(RectangleGeometry);
 	DECL_RESCONTAINERAWARE(SolidColorBrush);
 	DECL_RESCONTAINERAWARE(Pen);
 	std::vector<std::shared_ptr<IDrawCallList>> _updatedDrawCallList;

@@ -94,6 +94,7 @@ interface IRenderCommandBuffer : IUnknown
 typedef enum
 {
 	RT_LineGeometry,
+	RT_RectangleGeometry,
 	RT_SolidColorBrush,
 	RT_Pen
 } ResourceType;
@@ -114,6 +115,12 @@ typedef struct
 	Point EndPoint;
 } LineGeometryData;
 
+typedef struct
+{
+	Point LeftTop;
+	Point RightBottom;
+} RectangleGeometryData;
+
 [
 	uuid(C8E784D3-3EBD-40D0-A421-55B3B52EF590),
 	helpstring("Resource Container Interface"),
@@ -124,6 +131,7 @@ interface IResourceManager : IUnknown
 	HRESULT CreateRenderCommandBuffer([out, retval]IRenderCommandBuffer ** buffer);
 	HRESULT CreateResource([in]ResourceType resType, [out, retval]IResource** res);
 	HRESULT UpdateLineGeometry([in]IResource* res, [in]LineGeometryData* data);
+	HRESULT UpdateRectangleGeometry([in]IResource* res, [in]RectangleGeometryData* data);
 	HRESULT UpdateSolidColorBrush([in]IResource* res, [in]ColorF* color);
 	HRESULT UpdatePen([in]IResource* res, [in]float thickness, [in]IResource* brush);
 };

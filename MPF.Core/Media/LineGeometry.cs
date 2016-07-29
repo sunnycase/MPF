@@ -26,46 +26,36 @@ namespace MPF.Media
             set { SetValue(EndPointProperty, value); }
         }
 
-        private readonly IResource _geometryRes;
+        private readonly Lazy<IResource> _geometryRes;
 
         public LineGeometry()
         {
-            _geometryRes = MediaResourceManager.Current.CreateResouce(ResourceType.RT_LineGeometry);
+            _geometryRes = this.CreateResource(ResourceType.RT_LineGeometry);
             RegisterUpdateResource();
         }
 
         internal override IResource GetResourceOverride()
         {
-            return _geometryRes;
+            return _geometryRes.Value;
         }
 
-        private static void OnStartPointPropertyChanged(object sender, PropertyChangedEventArgs<Point> e)
+        internal override void OnUpdateResource(object sender, EventArgs e)
         {
-            ((LineGeometry)sender).RegisterUpdateResource();
-        }
-
-        bool _updateRegistered = false;
-        private void RegisterUpdateResource()
-        {
-            if(!_updateRegistered)
-            {
-                _updateRegistered = true;
-                DeviceContext.Current.UpdateResource += OnUpdateResource;
-            }
-        }
-
-        private void OnUpdateResource(object sender, EventArgs e)
-        {
-            _updateRegistered = false;
+            base.OnUpdateResource(sender, e);
             var data = new LineGeometryData
             {
                 StartPoint = StartPoint,
                 EndPoint = EndPoint
             };
-            MediaResourceManager.Current.UpdateLineGeometry(_geometryRes, ref data);
+            MediaResourceManager.Current.UpdateLineGeometry(_geometryRes.Value, ref data);
         }
 
         private static void OnEndPointPropertyChanged(object sender, PropertyChangedEventArgs<Point> e)
+        {
+            ((LineGeometry)sender).RegisterUpdateResource();
+        }
+
+        private static void OnStartPointPropertyChanged(object sender, PropertyChangedEventArgs<Point> e)
         {
             ((LineGeometry)sender).RegisterUpdateResource();
         }

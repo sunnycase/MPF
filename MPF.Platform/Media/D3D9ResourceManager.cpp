@@ -11,53 +11,98 @@ using namespace WRL;
 using namespace NS_PLATFORM;
 using namespace DirectX;
 
+#define CTOR_IMPL1(T) _trc##T##(_strokeVBMgr)
+
 D3D9ResourceManager::D3D9ResourceManager(IDirect3DDevice9* device)
-	:_device(device), _strokeVBMgr(device, sizeof(D3D::StrokeVertex)), _lineGeometryTRC(_strokeVBMgr)
+	:_device(device), _strokeVBMgr(device, sizeof(D3D::StrokeVertex)), CTOR_IMPL1(LineGeometry), CTOR_IMPL1(RectangleGeometry)
 {
 }
 
+namespace
+{
+	void EmplaceLine(std::vector<D3D::StrokeVertex>& vertices, XMFLOAT2 startPoint, XMFLOAT2 endPoint, const XMVECTOR& normalStartVec, const XMVECTOR& normalEndVec)
+	{
+		XMFLOAT2 normalStart, normalStartOpp;
+		XMFLOAT2 normalEnd, normalEndOpp;
+		XMStoreFloat2(&normalStart, normalStartVec);
+		XMStoreFloat2(&normalStartOpp, XMVectorScale(normalStartVec, -1.f));
+		XMStoreFloat2(&normalEnd, normalEndVec);
+		XMStoreFloat2(&normalEndOpp, XMVectorScale(normalEndVec, -1.f));
+
+		const XMFLOAT4 paramCoffZero{ 0, 0, 0, 0 };
+
+		// 1
+		vertices.emplace_back(D3D::StrokeVertex
+		{
+			{ startPoint.x, startPoint.y, 0.f},
+			normalStart,{ 0, 0 }, paramCoffZero
+		});
+		vertices.emplace_back(D3D::StrokeVertex
+		{
+			{ endPoint.x, endPoint.y, 0.f },
+			normalEnd,{ 1.f, 1.f }, paramCoffZero
+		});
+		vertices.emplace_back(D3D::StrokeVertex
+		{
+			{ endPoint.x, endPoint.y, 0.f },
+			normalEndOpp,{ 1.f, 1.f }, paramCoffZero
+		});
+
+		// 2
+		vertices.emplace_back(D3D::StrokeVertex
+		{
+			{ endPoint.x, endPoint.y, 0.f },
+			normalEndOpp,{ 1.f, 1.f }, paramCoffZero
+		});
+		vertices.emplace_back(D3D::StrokeVertex
+		{
+			{ startPoint.x, startPoint.y, 0.f },
+			normalStartOpp,{ 0, 0 }, paramCoffZero
+		});
+		vertices.emplace_back(D3D::StrokeVertex
+		{
+			{ startPoint.x, startPoint.y, 0.f },
+			normalStart,{ 0, 0 }, paramCoffZero
+		});
+	}
+
+	void SwapIfGeater(float& a, float& b)
+	{
+		if (a > b)
+			std::swap(a, b);
+	}
+}
 
 void ::NS_PLATFORM::Transform(std::vector<D3D::StrokeVertex>& vertices, const LineGeometry& geometry)
 {
 	const auto dirVec = XMLoadFloat2(&XMFLOAT2{ geometry.Data.EndPoint.X - geometry.Data.StartPoint.X, geometry.Data.EndPoint.Y - geometry.Data.StartPoint.Y });
 	const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
-	XMFLOAT2 normal, normalOpp;
-	XMStoreFloat2(&normal, normalVec);
-	XMStoreFloat2(&normalOpp, XMVectorScale(normalVec, -1.f));
 
-	const XMFLOAT4 color{ 0.f, 0.f, 0.f, 1.f };
+	EmplaceLine(vertices, { geometry.Data.StartPoint.X, geometry.Data.StartPoint.Y }, { geometry.Data.EndPoint.X, geometry.Data.EndPoint.Y },
+		normalVec, normalVec);
+}
 
-	vertices.emplace_back(D3D::StrokeVertex
-	{
-		{ geometry.Data.StartPoint.X, geometry.Data.StartPoint.Y, 0.f },
-		normal
-	});
-	vertices.emplace_back(D3D::StrokeVertex
-	{
-		{ geometry.Data.EndPoint.X, geometry.Data.EndPoint.Y, 0.f },
-		normal
-	});
-	vertices.emplace_back(D3D::StrokeVertex
-	{
-		{ geometry.Data.EndPoint.X, geometry.Data.EndPoint.Y, 0.f },
-		normalOpp
-	});
+void ::NS_PLATFORM::Transform(std::vector<D3D::StrokeVertex>& vertices, const RectangleGeometry& geometry)
+{
+	auto leftTopPoint = geometry.Data.LeftTop;
+	auto rightBottomPoint = geometry.Data.RightBottom;
+	SwapIfGeater(leftTopPoint.X, rightBottomPoint.X);
+	SwapIfGeater(leftTopPoint.Y, rightBottomPoint.Y);
 
-	vertices.emplace_back(D3D::StrokeVertex
-	{
-		{ geometry.Data.EndPoint.X, geometry.Data.EndPoint.Y, 0.f },
-		normalOpp
-	});
-	vertices.emplace_back(D3D::StrokeVertex
-	{
-		{ geometry.Data.StartPoint.X, geometry.Data.StartPoint.Y, 0.f },
-		normalOpp
-	});
-	vertices.emplace_back(D3D::StrokeVertex
-	{
-		{ geometry.Data.StartPoint.X, geometry.Data.StartPoint.Y, 0.f },
-		normal
-	});
+	XMFLOAT2 leftTop{ leftTopPoint.X, leftTopPoint.Y };
+	XMFLOAT2 rightTop{ rightBottomPoint.X, leftTopPoint.Y };
+	XMFLOAT2 rightBottom{ rightBottomPoint.X, rightBottomPoint.Y };
+	XMFLOAT2 leftBottom{ leftTopPoint.X, rightBottomPoint.Y };
+
+	const auto ltDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, -1.f });
+	const auto rtDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, -1.f });
+	const auto lbDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, 1.f });
+	const auto rbDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, 1.f });
+	
+	EmplaceLine(vertices, leftTop, rightTop, ltDirVec, rtDirVec);
+	EmplaceLine(vertices, rightTop, rightBottom, rtDirVec, rbDirVec);
+	EmplaceLine(vertices, rightBottom, leftBottom, rbDirVec, lbDirVec);
+	EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
 }
 
 void D3D9ResourceManager::UpdateOverride()
@@ -154,13 +199,17 @@ std::shared_ptr<IDrawCallList> D3D9ResourceManager::CreateDrawCallList(RenderCom
 	return ret;
 }
 
+#define TRYGET_IMPL1(T)										 \
+	case RT_##T:											 \
+		return _trc##T.TryGet(resRef->GetHandle(), rc);
+
 bool D3D9ResourceManager::TryGet(IResource* res, StorkeRenderCall& rc) const
 {
 	auto resRef = static_cast<ResourceRef*>(res);
 	switch (resRef->GetType())
 	{
-	case RT_LineGeometry:
-		return _lineGeometryTRC.TryGet(resRef->GetHandle(), rc);
+		TRYGET_IMPL1(LineGeometry);
+		TRYGET_IMPL1(RectangleGeometry);
 	default:
 		break;
 	}

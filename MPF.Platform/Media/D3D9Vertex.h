@@ -19,16 +19,23 @@ namespace D3D
 	{
 		DirectX::XMFLOAT3 Position;
 		DirectX::XMFLOAT2 Normal;
+		DirectX::XMFLOAT2 ParamFormValue;
+		DirectX::XMFLOAT4 ParamFormCoff;
 	};
 
 #pragma pack(pop)
 #pragma pack(push, 16)
 
-	struct ConstantBufferData
+	struct WorldViewProjectionData
 	{
-		DirectX::XMFLOAT4X4 World;
-		DirectX::XMFLOAT4X4 View;
+		DirectX::XMFLOAT4X4 WorldView;
 		DirectX::XMFLOAT4X4 Projection;
+	};
+
+	enum VertexShaderConstantSlots
+	{
+		VSCSlot_WorldViewProjection = 0,
+		VSCSize_WorldViewProjection = sizeof(WorldViewProjectionData) / 16,
 	};
 
 #pragma pack(pop)

@@ -36,10 +36,20 @@ namespace MPF.Controls
         }
 
 
-        private readonly Geometry _testGeometry = new LineGeometry
+        private readonly Geometry _testGeometry = new RectangleGeometry
         {
-            StartPoint = new Point(200, 300),
-            EndPoint = new Point(400, 400)
+            LeftTop = new Point(200, 300),
+            RigthBottom = new Point(400, 100)
+        };
+        private readonly Geometry _testGeometry2 = new RectangleGeometry
+        {
+            LeftTop = new Point(300, 400),
+            RigthBottom = new Point(500, 200)
+        };
+        private readonly Geometry _testGeometry3 = new LineGeometry
+        {
+            StartPoint = new Point(300, 400),
+            EndPoint = new Point(500, 200)
         };
         private readonly Pen _testPen = new Pen
         {
@@ -51,6 +61,8 @@ namespace MPF.Controls
         {
             base.OnRender(drawingContext);
             drawingContext.DrawGeometry(_testGeometry, _testPen);
+            drawingContext.DrawGeometry(_testGeometry2, _testPen);
+            drawingContext.DrawGeometry(_testGeometry3, _testPen);
         }
 
         public void Show()

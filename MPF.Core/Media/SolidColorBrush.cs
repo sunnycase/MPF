@@ -8,7 +8,7 @@ namespace MPF.Media
 {
     public sealed class SolidColorBrush : Brush
     {
-        private readonly IResource _brushResource;
+        private readonly Lazy< IResource> _brushResource;
 
         public static readonly DependencyProperty<Color> ColorProperty = DependencyProperty.Register(nameof(Color), typeof(SolidColorBrush), Colors.Transparent,
             OnColorPropertyChanged);
@@ -21,17 +21,17 @@ namespace MPF.Media
 
         public SolidColorBrush()
         {
-            _brushResource = MediaResourceManager.Current.CreateResouce(ResourceType.RT_SolidColorBrush);
+            _brushResource = this.CreateResource(ResourceType.RT_SolidColorBrush);
             RegisterUpdateResource();
         }
 
         internal override void OnUpdateResource(object sender, EventArgs e)
         {
             var color = Color.ToColorF();
-            MediaResourceManager.Current.UpdateSolidColorBrush(_brushResource, ref color);
+            MediaResourceManager.Current.UpdateSolidColorBrush(_brushResource.Value, ref color);
         }
 
-        internal override IResource GetResourceOverride() => _brushResource;
+        internal override IResource GetResourceOverride() => _brushResource.Value;
 
         private static void OnColorPropertyChanged(object sender, PropertyChangedEventArgs<Color> e)
         {

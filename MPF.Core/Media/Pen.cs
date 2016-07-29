@@ -1,4 +1,5 @@
 ﻿using MPF.Interop;
+using MPF.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,20 +26,20 @@ namespace MPF.Media
             set { SetValue(BrushProperty, value); }
         }
 
-        private readonly IResource _penResource;
+        private readonly Lazy<IResource> _penResource;
 
-        IResource IResourceProvider.Resource => _penResource;
+        IResource IResourceProvider.Resource => _penResource.Value;
 
         public Pen()
         {
-            _penResource = MediaResourceManager.Current.CreateResouce(ResourceType.RT_Pen);
+            _penResource = this.CreateResource(ResourceType.RT_Pen);
             RegisterUpdateResource();
         }
 
         internal override void OnUpdateResource(object sender, EventArgs e)
         {
             base.OnUpdateResource(sender, e);
-            MediaResourceManager.Current.UpdatePen(_penResource, Thickness, Brush);
+            MediaResourceManager.Current.UpdatePen(_penResource.Value, Thickness, Brush);
         }
 
         private static void OnThicknessPropertyChanged(object sender, PropertyChangedEventArgs<float> e)

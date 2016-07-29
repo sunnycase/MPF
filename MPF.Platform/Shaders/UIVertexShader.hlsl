@@ -1,32 +1,32 @@
 #include "UIShaders.hlsli"
 
-struct tagWorldViewProj
+struct WorldViewProjection
 {
-	matrix worldMat;
-	matrix viewMat;
-	matrix projMat;
+	matrix WorldView;
+	matrix Projection;
 };
-extern tagWorldViewProj WVP: register(c0);
+extern WorldViewProjection _wvp: register(c0);
 
 struct tagStorkeInfo
 {
 	float thickness;
 	float padding[3];
 };
-extern tagStorkeInfo stroke : register(c12);
-extern float4 color : register(c16);
+extern tagStorkeInfo _stroke : register(c12);
+extern float4 _color : register(c16);
 
 PixelShaderInput main(VertexShaderInput input)
 {
 	PixelShaderInput output;
 	float4 pos = float4(input.Position, 1.f);
-	pos.xy += stroke.thickness * input.Normal / 2.f;
 
-	pos = mul(pos, WVP.worldMat);
-	pos = mul(pos, WVP.viewMat);
-	pos = mul(pos, WVP.projMat);
+	pos = mul(pos, _wvp.WorldView);
+	pos.xy += _stroke.thickness * input.Normal / 2.f;
+	pos = mul(pos, _wvp.Projection);
 
 	output.Position = pos;
-	output.Color = color;
+	output.Color = _color;
+	output.ParamFormValue = input.ParamFormValue;
+	output.ParamFormCoff = input.ParamFormCoff;
 	return output;
 }

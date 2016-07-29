@@ -33,6 +33,11 @@ namespace MPF.Media
             _resourceManager.UpdateLineGeometry(res, ref data);
         }
 
+        public void UpdateRectangleGeometry(IResource res, ref RectangleGeometryData data)
+        {
+            _resourceManager.UpdateRectangleGeometry(res, ref data);
+        }
+
         public void UpdateSolidColorBrush(IResource res, ref ColorF color)
         {
             _resourceManager.UpdateSolidColorBrush(res, ref color);
@@ -41,6 +46,14 @@ namespace MPF.Media
         public void UpdatePen(IResource res, float thickness, Brush brush)
         {
             _resourceManager.UpdatePen(res, thickness, ((IResourceProvider)brush)?.Resource);
+        }
+    }
+
+    internal static class MediaResourceManagerExtensions
+    {
+        public static Lazy<IResource> CreateResource(this DependencyObject obj, ResourceType type)
+        {
+            return new Lazy<IResource>(() => MediaResourceManager.Current.CreateResouce(type));
         }
     }
 }
