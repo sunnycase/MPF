@@ -7,6 +7,7 @@
 #include "stdafx.h"
 #include "DeviceContext.h"
 #include "D3D9DeviceContext.h"
+#include "GLDeviceContext.h"
 using namespace WRL;
 
 namespace
@@ -23,11 +24,29 @@ namespace
 	}
 
 #define RETURN_IF_SUCCEEDED(hr) if(SUCCEEDED(hr)) return hr
+
+	typedef HRESULT(*fnCreateDeviceContext)(NS_PLATFORM::DeviceContextMessagesHandler, NS_PLATFORM::IDeviceContext**);
+	static fnCreateDeviceContext cdcFns[NS_PLATFORM::RBT_COUNT] =
+	{
+		nullptr,
+		CreateDeviceContext<NS_PLATFORM::D3D9DeviceContext>,
+		CreateDeviceContext<NS_PLATFORM::GLDeviceContext>
+	};
 }
 
-HRESULT __stdcall CreateDeviceContext(NS_PLATFORM::DeviceContextMessagesHandler messageHandler, NS_PLATFORM::IDeviceContext** obj) noexcept
+HRESULT __stdcall CreateDeviceContext(NS_PLATFORM::RenderBackendType preferredBackend, NS_PLATFORM::DeviceContextMessagesHandler messageHandler, NS_PLATFORM::IDeviceContext** obj) noexcept
 {
-	auto hr = CreateDeviceContext<NS_PLATFORM::D3D9DeviceContext>(messageHandler, obj);
-	RETURN_IF_SUCCEEDED(hr);
+	auto hr = E_FAIL;
+	if (preferredBackend != NS_PLATFORM::RBT_Any)
+	{
+		hr = cdcFns[preferredBackend](messageHandler, obj);
+		RETURN_IF_SUCCEEDED(hr);
+	}
+	for (size_t i = 1; i < _countof(cdcFns); ++i)
+	{
+		if (i == preferredBackend)continue;
+		hr = cdcFns[i](messageHandler, obj);
+		RETURN_IF_SUCCEEDED(hr);
+	}
 	return hr;
 }

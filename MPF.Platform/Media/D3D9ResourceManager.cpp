@@ -104,22 +104,22 @@ void ::NS_PLATFORM::Transform(std::vector<D3D::StrokeVertex>& vertices, const Re
 	EmplaceLine(vertices, rightBottom, leftBottom, rbDirVec, lbDirVec);
 	EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
 
-	//const XMFLOAT4 paramCoff{ 0, 1, 0, -1 };
-	//vertices.emplace_back(D3D::StrokeVertex
-	//{
-	//	{ 0, 0, 0.f },
-	//	{ 0 ,1 },{ 0, 0 }, paramCoff
-	//});
-	//vertices.emplace_back(D3D::StrokeVertex
-	//{
-	//	{ 100, 0, 0.f },
-	//	{ 0 ,1 },{ 0.5f, 0 }, paramCoff
-	//});
-	//vertices.emplace_back(D3D::StrokeVertex
-	//{
-	//	{ 200, 200, 0.f },
-	//	{ 3.f ,1 },{ 1, 1 }, paramCoff
-	//});
+	const XMFLOAT4 paramCoff{ 0, 1, 0, -1 };
+	vertices.emplace_back(D3D::StrokeVertex
+	{
+		{ 0, 0, 0.f },
+		{ 0 ,1 },{ 0, 0 }, paramCoff
+	});
+	vertices.emplace_back(D3D::StrokeVertex
+	{
+		{ 100, 0, 0.f },
+		{ 0 ,1 },{ 0.5f, 0 }, paramCoff
+	});
+	vertices.emplace_back(D3D::StrokeVertex
+	{
+		{ 200, 200, 0.f },
+		{ 3.f ,1 },{ 1, 1 }, paramCoff
+	});
 }
 
 void D3D9ResourceManager::UpdateOverride()

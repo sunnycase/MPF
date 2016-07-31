@@ -6,9 +6,16 @@ using System.Threading.Tasks;
 
 namespace MPF.Interop
 {
-    enum DeviceContextMessage
+    enum DeviceContextMessage : uint
     {
         DCM_Render
+    }
+
+    enum RenderBackendType : uint
+    {
+        RBT_Any,
+        RBT_Direct3D9,
+        RBT_OpenGL
     }
 
     internal delegate void DeviceContextMessageHandler(DeviceContextMessage message);

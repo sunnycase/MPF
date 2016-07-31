@@ -117,6 +117,15 @@
     <ClInclude Include="Media\Pen.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
+    <ClInclude Include="Media\GLDeviceContext.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\glewUtil.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\GLSwapChain.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -165,6 +174,18 @@
       <Filter>源文件\Media\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Media\D3D9BufferManager.cpp">
+      <Filter>源文件\Media\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\GLDeviceContext.cpp">
+      <Filter>源文件\Media\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Encoding.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EncodingDetector.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\GLSwapChain.cpp">
       <Filter>源文件\Media\Platform</Filter>
     </ClCompile>
   </ItemGroup>

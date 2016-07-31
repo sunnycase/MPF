@@ -5,6 +5,12 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory);$(MSBuildThisFileDirectory)inc</AdditionalIncludeDirectories>
     </ClCompile>
+  	<Link>
+  		<AdditionalLibraryDirectories>$(MSBuildThisFileDirectory)lib\$(Platform)</AdditionalLibraryDirectories>
+  	</Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)lib\$(Platform)\glew32.dll" />
+  </ItemGroup>
 
 </Project>

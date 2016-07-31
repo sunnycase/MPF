@@ -19,7 +19,7 @@ namespace MPF.Media
         private readonly IDeviceContext _deviceContext;
         private DeviceContext()
         {
-            _deviceContext = Platform.CreateDeviceContext(OnDeviceContextMessage);
+            _deviceContext = Platform.CreateDeviceContext(RenderBackendType.RBT_OpenGL, OnDeviceContextMessage);
         }
 
         private void OnDeviceContextMessage(DeviceContextMessage message)

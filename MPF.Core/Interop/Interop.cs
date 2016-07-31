@@ -15,7 +15,7 @@ namespace MPF.Interop
         private static extern int CreateNativeWindow([MarshalAs(UnmanagedType.FunctionPtr), In]NativeWindowMessageHandler handler, [MarshalAs(UnmanagedType.Interface)]out INativeWindow obj);
 
         [DllImport(Libraries.Platform, CallingConvention = CallingConvention.StdCall)]
-        private static extern int CreateDeviceContext([MarshalAs(UnmanagedType.FunctionPtr), In]DeviceContextMessageHandler messageHandler, [MarshalAs(UnmanagedType.Interface)]out IDeviceContext obj);
+        private static extern int CreateDeviceContext(RenderBackendType preferredBackend, [MarshalAs(UnmanagedType.FunctionPtr), In]DeviceContextMessageHandler messageHandler, [MarshalAs(UnmanagedType.Interface)]out IDeviceContext obj);
 
         public static INativeApplication CreateNativeApplication()
         {
@@ -31,10 +31,10 @@ namespace MPF.Interop
             return obj;
         }
 
-        public static IDeviceContext CreateDeviceContext(DeviceContextMessageHandler messageHandler)
+        public static IDeviceContext CreateDeviceContext(RenderBackendType prefferedBackend, DeviceContextMessageHandler messageHandler)
         {
             IDeviceContext obj;
-            Marshal.ThrowExceptionForHR(CreateDeviceContext(messageHandler, out obj));
+            Marshal.ThrowExceptionForHR(CreateDeviceContext(prefferedBackend, messageHandler, out obj));
             return obj;
         }
     }

@@ -3,5 +3,6 @@
 
   <ItemGroup>
       <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\$(Configuration)\MPF.Platform.dll" />
+      <ReferenceCopyLocalPaths Include="$(SolutionDir)\thirdparty\lib\Win32\glew32.dll" />
   </ItemGroup>
 </Project>

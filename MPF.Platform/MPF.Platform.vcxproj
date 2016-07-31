@@ -102,7 +102,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
@@ -127,7 +127,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
@@ -152,7 +152,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
@@ -177,7 +177,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
@@ -203,6 +203,9 @@
     <ClInclude Include="Media\D3D9Vertex.h" />
     <ClInclude Include="Media\DeviceContext.h" />
     <ClInclude Include="Media\Geometry.h" />
+    <ClInclude Include="Media\GLDeviceContext.h" />
+    <ClInclude Include="Media\glewUtil.h" />
+    <ClInclude Include="Media\GLSwapChain.h" />
     <ClInclude Include="Media\Pen.h" />
     <ClInclude Include="Media\RenderableObject.h" />
     <ClInclude Include="Media\RenderableObjectContainer.h" />
@@ -232,12 +235,16 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Encoding.cpp" />
+    <ClCompile Include="EncodingDetector.cpp" />
     <ClCompile Include="Media\D3D9BufferManager.cpp" />
     <ClCompile Include="Media\D3D9DeviceContext.cpp" />
     <ClCompile Include="Media\D3D9RenderableObject.cpp" />
     <ClCompile Include="Media\D3D9ResourceManager.cpp" />
     <ClCompile Include="Media\D3D9SwapChain.cpp" />
     <ClCompile Include="Media\DeviceContext.cpp" />
+    <ClCompile Include="Media\GLDeviceContext.cpp" />
+    <ClCompile Include="Media\GLSwapChain.cpp" />
     <ClCompile Include="Media\RenderableObject.cpp" />
     <ClCompile Include="Media\RenderableObjectContainer.cpp" />
     <ClCompile Include="Media\RenderCommandBuffer.cpp" />
@@ -257,14 +264,22 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\UIPixelShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"></ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'"></ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"></ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'"></ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"></ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"></ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'"></ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'"></ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ShaderModel>
       <AdditionalOptions>/T ps_2_a %(AdditionalOptions)</AdditionalOptions>
     </FxCompile>
     <FxCompile Include="Shaders\UIVertexShader.hlsl">
