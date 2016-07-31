@@ -9,8 +9,8 @@
 using namespace WRL;
 using namespace NS_PLATFORM;
 
-RenderableObjectRef::RenderableObjectRef(IRenderableObjectContainer * container, UINT_PTR handle)
-	:_container(container), _handle(handle)
+RenderableObjectRef::RenderableObjectRef(std::shared_ptr<IRenderableObjectContainer>&& container, UINT_PTR handle)
+	:_container(std::move(container)), _handle(handle)
 {
 
 }
@@ -20,8 +20,8 @@ STDMETHODIMP_(ULONG) RenderableObjectRef::Release()
 	ULONG ref = InternalRelease();
 	if (ref == 0)
 	{
-		ComPtr<IResourceContainer> resContainer;
-		if(SUCCEEDED(_container.As(&resContainer)))
+		auto container(_container);
+		if(auto resContainer = dynamic_cast<IResourceContainer*>(container.get()))
 			resContainer->RetireResource(_handle);
 		delete this;
 

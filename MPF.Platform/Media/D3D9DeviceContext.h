@@ -23,6 +23,7 @@ class D3D9DeviceContext : public WeakReferenceBase<D3D9DeviceContext, WRL::Runti
 {
 public:
 	D3D9DeviceContext(DeviceContextMessagesHandler messageHandler);
+	virtual ~D3D9DeviceContext();
 
 	STDMETHODIMP CreateSwapChain(INativeWindow* window, ISwapChain** swapChain) override;
 	STDMETHODIMP CreateRenderableObject(IRenderableObject ** obj) override;
@@ -46,7 +47,7 @@ private:
 	WRL::ComPtr<D3D9SwapChain> _rootSwapChain;
 	std::vector<WeakRef<D3D9SwapChainBase>> _childSwapChains;
 	std::vector<WeakRef<ResourceManagerBase>> _resourceManagers;
-	WRL::ComPtr<RenderableObjectContainer<D3D9RenderableObject>> _renderObjectContainer;
+	std::shared_ptr<RenderableObjectContainer<D3D9RenderableObject>> _renderObjectContainer;
 };
 
 END_NS_PLATFORM

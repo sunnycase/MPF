@@ -31,7 +31,7 @@ struct IDrawCallList : std::enable_shared_from_this<IDrawCallList>
 };
 
 #define DECL_RESCONTAINERAWARE(T) \
-WRL::ComPtr<ResourceContainer<T>> _container##T; \
+std::shared_ptr<ResourceContainer<T>> _container##T; \
 std::vector<UINT_PTR> _added##T;				 \
 std::vector<UINT_PTR> _updated##T;					 
 

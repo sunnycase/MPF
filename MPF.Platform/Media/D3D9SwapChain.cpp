@@ -48,6 +48,15 @@ namespace
 				<< "Vertex Shader Version: " << D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion) << '.' << D3DSHADER_VERSION_MINOR(caps.VertexShaderVersion) << '\n'
 				<< "Pixel Shader Version: " << D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion) << '.' << D3DSHADER_VERSION_MINOR(caps.PixelShaderVersion) << '\n'
 				<< "Texture Memory Size: " << device->GetAvailableTextureMem() << " Bytes." << std::endl;
+			if (caps.PS20Caps.Caps)
+			{
+				if (caps.PS20Caps.NumTemps >= 32)
+					ss << "Support ps_2_b Shader Profile." << std::endl;
+				else
+					ss << "Support ps_2_a Shader Profile." << std::endl;
+			}
+			else
+				ss << "Not support ps_2_x Shader Profile." << std::endl;
 			puts(ss.str().c_str());
 		}
 	}

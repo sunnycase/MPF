@@ -21,8 +21,15 @@ public:
 
 	// Í¨¹ý WeakReferenceBase ¼Ì³Ð
 	STDMETHODIMP Run(void) override;
+
+	static void AddEventToWait(HANDLE handle);
+	static void RemoveEventToWait(HANDLE handle);
+	static void AddAtExit(std::function<void()>&& callback);
 private:
 private:
+	static WRL::Wrappers::CriticalSection _eventsToWaitCS;
+	static std::vector<HANDLE> _eventsToWait;
+	static std::vector<std::function<void()>> _atExits;
 };
 
 END_NS_PLATFORM

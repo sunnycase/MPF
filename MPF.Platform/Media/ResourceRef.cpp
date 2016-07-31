@@ -10,8 +10,8 @@
 using namespace WRL;
 using namespace NS_PLATFORM;
 
-ResourceRef::ResourceRef(IResourceContainer * container, ResourceType resType, UINT_PTR handle)
-	:_container(container), _handle(handle), _resType(resType)
+ResourceRef::ResourceRef(std::shared_ptr<IResourceContainer>&& container, ResourceType resType, UINT_PTR handle)
+	:_container(std::move(container)), _handle(handle), _resType(resType)
 {
 
 }

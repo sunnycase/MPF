@@ -10,7 +10,8 @@ struct VertexShaderInput
 struct PixelShaderInput
 {
 	float4 Position : POSITION;
+	float3 NormalAndThickness : TEXCOORD0;
 	float4 Color : COLOR;
-	float2 ParamFormValue : TEXCOORD0;
-	float4 ParamFormCoff : TEXCOORD1;
+	float2 ParamFormValue : TEXCOORD1;
+	float4 ParamFormCoff : TEXCOORD2;
 };

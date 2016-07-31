@@ -16,12 +16,6 @@ struct Pen : public ResourceBase
 {
 	float Thickness;
 	WRL::ComPtr<ResourceRef> Brush;
-
-	void SetUnused()
-	{
-		Brush.Reset();
-		ResourceBase::SetUnused();
-	}
 };
 
 END_NS_PLATFORM

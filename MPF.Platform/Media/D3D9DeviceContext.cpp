@@ -10,16 +10,29 @@
 #include "D3D9ResourceManager.h"
 #include "D3D9Vertex.h"
 #include "../resource.h"
+#include "../NativeApplication.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 using namespace D3D;
 using namespace concurrency;
 
 D3D9DeviceContext::D3D9DeviceContext(DeviceContextMessagesHandler messageHandler)
-	:_rootSwapChainLock(5000), _messageHandler(messageHandler), _renderObjectContainer(Make<RenderableObjectContainer<D3D9RenderableObject>>())
+	:_rootSwapChainLock(5000), _messageHandler(messageHandler), _renderObjectContainer(std::make_shared<RenderableObjectContainer<D3D9RenderableObject>>())
 {
 	_d3d.Attach(Direct3DCreate9(D3D_SDK_VERSION));
 	ThrowIfNot(_d3d, L"Cannot Initialize Direct3D 9 Interface.");
+
+	WeakRef<D3D9DeviceContext> weakRef(AsWeak());
+	NativeApplication::AddAtExit([weakRef]
+	{
+		if (auto me = weakRef.Resolve())
+			me->_isRenderLoopActive = false;
+	});
+}
+
+D3D9DeviceContext::~D3D9DeviceContext()
+{
+	_isRenderLoopActive = false;
 }
 
 STDMETHODIMP D3D9DeviceContext::CreateSwapChain(INativeWindow * window, ISwapChain ** swapChain)
@@ -93,14 +106,15 @@ void D3D9DeviceContext::StartRenderLoop()
 {
 	if (!_isRenderLoopActive.load(std::memory_order_acquire))
 	{
-		ThrowIfNot(_beginthread(RenderLoop, 0, new WeakRef<D3D9DeviceContext>(GetWeakContext())) != -1,
-			L"Cannot create Render Loop Thread.");
+		auto handle = _beginthread(RenderLoop, 0, new WeakRef<D3D9DeviceContext>(GetWeakContext()));
+		ThrowIfNot(handle != -1, L"Cannot create Render Loop Thread.");
+		NativeApplication::AddEventToWait(reinterpret_cast<HANDLE>(handle));
 	}
 }
 
 bool D3D9DeviceContext::IsActive() const noexcept
 {
-	return true;
+	return _isRenderLoopActive;
 }
 
 void D3D9DeviceContext::DoFrame()
@@ -189,7 +203,7 @@ HRESULT D3D9DeviceContext::CreateRenderableObject(IRenderableObject ** obj)
 {
 	try
 	{
-		_renderObjectContainer->AllocateObjectRef(obj);
+		*obj = Make<RenderableObjectRef>(_renderObjectContainer, _renderObjectContainer->Allocate()).Detach();
 		return S_OK;
 	}
 	CATCH_ALL();

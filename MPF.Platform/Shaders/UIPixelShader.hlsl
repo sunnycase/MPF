@@ -2,7 +2,18 @@
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
-	clip(input.ParamFormCoff.x * pow(input.ParamFormValue.x, 3) + input.ParamFormCoff.y * pow(input.ParamFormValue.x, 2) +
-		input.ParamFormCoff.z * input.ParamFormValue.x + input.ParamFormCoff.w * input.ParamFormValue.y);
+	float thickness = input.NormalAndThickness.z;
+	if (input.ParamFormCoff.y)
+	{
+		float2 px = ddx(input.ParamFormValue);
+		float2 py = ddy(input.ParamFormValue);
+		// Chain rule  
+		float fx = (2 * input.ParamFormValue.x)*px.x - px.y;
+		float fy = (2 * input.ParamFormValue.x)*py.x - py.y;
+		// Signed distance  
+		float sd = (input.ParamFormValue.x * input.ParamFormValue.x - input.ParamFormValue.y) / sqrt(fx*fx + fy*fy);
+
+		clip(thickness / 2.f - abs(sd));
+	}
 	return input.Color;
 }

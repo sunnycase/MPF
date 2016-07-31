@@ -15,14 +15,14 @@ struct IResourceContainer;
 class ResourceRef : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, IResource>
 {
 public:
-	ResourceRef(IResourceContainer* container, ResourceType resType, UINT_PTR handle);
+	ResourceRef(std::shared_ptr<IResourceContainer>&& container, ResourceType resType, UINT_PTR handle);
 
 	STDMETHOD_(ULONG, Release)();
 
 	ResourceType GetType() const noexcept { return _resType; }
 	UINT_PTR GetHandle() const noexcept { return _handle; }
 private:
-	WRL::ComPtr<IResourceContainer> _container;
+	std::shared_ptr<IResourceContainer> _container;
 	ResourceType _resType;
 	UINT_PTR _handle;
 };

@@ -25,6 +25,7 @@ PixelShaderInput main(VertexShaderInput input)
 	pos = mul(pos, _wvp.Projection);
 
 	output.Position = pos;
+	output.NormalAndThickness = float3(input.Normal, _stroke.thickness);
 	output.Color = _color;
 	output.ParamFormValue = input.ParamFormValue;
 	output.ParamFormCoff = input.ParamFormCoff;

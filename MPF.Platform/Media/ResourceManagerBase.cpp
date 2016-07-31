@@ -12,7 +12,7 @@ using namespace WRL;
 using namespace NS_PLATFORM;
 
 #define CTOR_IMPL1(T) \
-_container##T(Make<ResourceContainer<T>>())
+_container##T(std::make_shared<ResourceContainer<T>>())
 
 ResourceManagerBase::ResourceManagerBase()
 	:CTOR_IMPL1(LineGeometry), CTOR_IMPL1(RectangleGeometry), CTOR_IMPL1(SolidColorBrush), CTOR_IMPL1(Pen)
@@ -21,7 +21,7 @@ ResourceManagerBase::ResourceManagerBase()
 
 #define CREATERESOURCE_IMPL1(T) 	   \
 case RT_##T:						   \
-container = _container##T.Get();	   \
+container = _container##T;			   \
 handle = container->Allocate();		   \
 _added##T.emplace_back(handle);		   \
 break;								   
@@ -31,7 +31,7 @@ HRESULT ResourceManagerBase::CreateResource(ResourceType resType, IResource ** r
 	try
 	{
 		UINT_PTR handle;
-		IResourceContainer* container = nullptr;
+		std::shared_ptr<IResourceContainer> container = nullptr;
 		switch (resType)
 		{
 			CREATERESOURCE_IMPL1(LineGeometry);
@@ -43,7 +43,7 @@ HRESULT ResourceManagerBase::CreateResource(ResourceType resType, IResource ** r
 		}
 		if (container)
 		{
-			*res = Make<ResourceRef>(container, resType, handle).Detach();
+			*res = Make<ResourceRef>(std::move(container), resType, handle).Detach();
 			return S_OK;
 		}
 		return E_INVALIDARG;
@@ -160,8 +160,8 @@ _container##T->CleanUp();
 
 #define UPDATE_IMPL2(T)									\
 auto& trc##T = Get##T##TRC();							\
-trc##T.Add(_added##T, *_container##T.Get());			\
-trc##T.Update(_updated##T, *_container##T.Get());		\
+trc##T.Add(_added##T, *_container##T.get());			\
+trc##T.Update(_updated##T, *_container##T.get());		\
 trc##T.Remove(_container##T->GetCleanupList());
 
 void ResourceManagerBase::Update()

@@ -12,7 +12,7 @@
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
-struct DECLSPEC_UUID("193F6B97-9D78-409F-BF78-8B528BCF709E") IRenderableObjectContainer : public IUnknown
+struct IRenderableObjectContainer
 {
 	virtual RenderableObject& FindObject(UINT_PTR handle) = 0;
 };
@@ -20,25 +20,20 @@ struct DECLSPEC_UUID("193F6B97-9D78-409F-BF78-8B528BCF709E") IRenderableObjectCo
 class RenderableObjectRef : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, IRenderableObject>
 {
 public:
-	RenderableObjectRef(IRenderableObjectContainer* container, UINT_PTR handle);
+	RenderableObjectRef(std::shared_ptr<IRenderableObjectContainer>&& container, UINT_PTR handle);
 
 	STDMETHOD_(ULONG, Release)();
 	STDMETHODIMP SetContent(IRenderCommandBuffer* buffer);
 	STDMETHODIMP Render();
 private:
-	WRL::ComPtr<IRenderableObjectContainer> _container;
+	std::shared_ptr<IRenderableObjectContainer> _container;
 	UINT_PTR _handle;
 };
 
 template<typename T>
-class RenderableObjectContainer : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, ResourceContainerImplement<T>, IRenderableObjectContainer>
+class RenderableObjectContainer : public IRenderableObjectContainer, public ResourceContainer<T>
 {
 public:
-
-	void AllocateObjectRef(IRenderableObject** obj)
-	{
-		*obj = WRL::Make<RenderableObjectRef>(this, Allocate()).Detach();
-	}
 
 	virtual RenderableObject& FindObject(UINT_PTR handle) override
 	{

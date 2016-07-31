@@ -26,7 +26,6 @@ struct ResourceBase
 	void SetUnused()
 	{
 		Used = false;
-		_dependentDrawCallLists.clear();
 	}
 
 	std::vector<std::weak_ptr<IDrawCallList>>& GetDependentDrawCallLists() noexcept { return _dependentDrawCallLists; }
@@ -37,14 +36,14 @@ private:
 	std::vector<std::weak_ptr<IDrawCallList>> _dependentDrawCallLists;
 };
 
-struct DECLSPEC_UUID("E3A7830B-60CA-43CB-ACA4-A82AC65A45E5") IResourceContainer : public IUnknown
+struct IResourceContainer
 {
 	virtual UINT_PTR Allocate() = 0;
 	virtual HRESULT RetireResource(UINT_PTR handle) noexcept = 0;
 };
 
 template<class T>
-class ResourceContainerImplement : public WRL::Implements<WRL::RuntimeClassFlags<WRL::ClassicCom>, IResourceContainer>
+class ResourceContainer : public IResourceContainer
 {
 	struct FreeListEntry
 	{
@@ -52,10 +51,9 @@ class ResourceContainerImplement : public WRL::Implements<WRL::RuntimeClassFlags
 		size_t length;
 	};
 public:
-	ResourceContainerImplement(size_t capacity = 231)
+	ResourceContainer(size_t capacity = 231)
 	{
-		_data.resize(capacity);
-		_freeList.emplace_front<FreeListEntry>({ 0, _data.size() });
+		Enlarge(capacity);
 	}
 
 	virtual UINT_PTR Allocate() override
@@ -67,15 +65,22 @@ public:
 		auto handle = front.start++;
 		if (!--front.length)
 			_freeList.erase(_freeList.begin());
+		new (&_data.at(handle)) T();
 		_data[handle].SetUsed();
 		return handle;
 	}
 
-	void Enlarge()
+	void Enlarge(size_t up = 0)
 	{
 		const auto oldCapacity = _data.size();
-		const auto newCapacity = oldCapacity * 2;
+		const auto upCapacity = up ? up : oldCapacity;
+		const auto newCapacity = oldCapacity + upCapacity;
 		_data.resize(newCapacity);
+		std::for_each(_data.begin() + oldCapacity, _data.end(), [](auto& item)
+		{
+			item.~T();
+			item.SetUnused();
+		});
 		if (!_freeList.empty())
 		{
 			auto& back = _freeList.back();
@@ -92,6 +97,7 @@ public:
 	{
 		try
 		{
+			_data[handle].~T();
 			_data[handle].SetUnused();
 			_cleanupList.emplace_back(size_t(handle));
 			return S_OK;
@@ -160,11 +166,6 @@ protected:
 	std::vector<T> _data;
 	std::list<FreeListEntry> _freeList;
 	std::vector<UINT_PTR> _cleanupList;
-};
-
-template<class T>
-class ResourceContainer : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, ResourceContainerImplement<T>>
-{
 };
 
 END_NS_PLATFORM

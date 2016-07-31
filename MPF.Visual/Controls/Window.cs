@@ -54,14 +54,14 @@ namespace MPF.Controls
         private readonly Pen _testPen = new Pen
         {
             Brush = new SolidColorBrush { Color = Color.FromArgb(0xFF33EECC) },
-            Thickness = 5
+            Thickness = 1
         };
 
         protected override void OnRender(IDrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
             drawingContext.DrawGeometry(_testGeometry, _testPen);
-            drawingContext.DrawGeometry(_testGeometry2, _testPen);
+            //drawingContext.DrawGeometry(_testGeometry2, _testPen);
             drawingContext.DrawGeometry(_testGeometry3, _testPen);
         }
 
