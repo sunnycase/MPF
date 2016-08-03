@@ -16,22 +16,13 @@ DEFINE_NS_PLATFORM
 
 struct IDrawCallList;
 
+template<class T>
+class ResourceContainer;
+
 struct ResourceBase
 {
-	void SetUsed()
-	{
-		Used = true;
-	}
-
-	void SetUnused()
-	{
-		Used = false;
-	}
-
 	std::vector<std::weak_ptr<IDrawCallList>>& GetDependentDrawCallLists() noexcept { return _dependentDrawCallLists; }
 	void AddDependentDrawCallList(std::weak_ptr<IDrawCallList>&& dcl) { _dependentDrawCallLists.emplace_back(std::move(dcl)); }
-
-	bool Used = false;
 private:
 	std::vector<std::weak_ptr<IDrawCallList>> _dependentDrawCallLists;
 };
@@ -50,10 +41,114 @@ class ResourceContainer : public IResourceContainer
 		size_t start;
 		size_t length;
 	};
+protected:
+	struct ObjectStorage
+	{
+		static_assert(std::is_nothrow_destructible<T>::value, "T must be nothrow destructible.");
+
+		ObjectStorage() noexcept
+			:Inited(false)
+		{
+
+		}
+
+		ObjectStorage(const ObjectStorage& other)
+			:Inited(other.Inited)
+		{
+			if (Inited)
+				new (_data) T(other.GetObject());
+		}
+
+		ObjectStorage(ObjectStorage&& other) noexcept
+			:Inited(other.Inited)
+		{
+			if (Inited)
+			{
+				new (_data) T(std::move(other.GetObject()));
+				other.Inited = false;
+			}
+		}
+
+		ObjectStorage& operator=(const ObjectStorage& other)
+		{
+			Free();
+			if (other.Inited)
+			{
+				new (_data) T(other.GetObject());
+				Inited = true;
+			}
+			return *this;
+		}
+
+		ObjectStorage& operator=(ObjectStorage&& other) noexcept
+		{
+			Free();
+			if (other.Inited)
+			{
+				new (_data) T(std::move(other.GetObject()));
+				Inited = true;
+				other.Inited = false;
+			}
+			return *this;
+		}
+
+		template<class ...P>
+		void Create(P&&... params)
+		{
+			Free();
+			new (_data) T(std::forward<P>(params)...);
+			Inited = true;
+		}
+
+		T& GetObject()
+		{
+			assert(Inited);
+			return *reinterpret_cast<T*>(_data);
+		}
+
+		const T& GetObject() const
+		{
+			assert(Inited);
+			return *reinterpret_cast<T const*>(_data);
+		}
+
+		void Free() noexcept
+		{
+			if (Inited)
+			{
+				GetObject().~T();
+				Inited = false;
+			}
+		}
+
+		bool GetUsed() const noexcept { return Used; }
+
+		void SetUsed() noexcept
+		{
+			Used = true;
+		}
+
+		void SetUnused() noexcept
+		{
+			Used = false;
+		}
+
+	private:
+		alignas(alignof(T)) char _data[sizeof(T)];
+
+		bool Used = false;
+		bool Inited;
+	};
 public:
 	ResourceContainer(size_t capacity = 231)
 	{
 		Enlarge(capacity);
+	}
+
+	virtual ~ResourceContainer()
+	{
+		for (auto&& item : _data)
+			item.Free();
 	}
 
 	virtual UINT_PTR Allocate() override
@@ -65,8 +160,9 @@ public:
 		auto handle = front.start++;
 		if (!--front.length)
 			_freeList.erase(_freeList.begin());
-		new (&_data.at(handle)) T();
-		_data[handle].SetUsed();
+		auto& obj = _data.at(handle);
+		obj.Create();
+		obj.SetUsed();
 		return handle;
 	}
 
@@ -76,11 +172,6 @@ public:
 		const auto upCapacity = up ? up : oldCapacity;
 		const auto newCapacity = oldCapacity + upCapacity;
 		_data.resize(newCapacity);
-		std::for_each(_data.begin() + oldCapacity, _data.end(), [](auto& item)
-		{
-			item.~T();
-			item.SetUnused();
-		});
 		if (!_freeList.empty())
 		{
 			auto& back = _freeList.back();
@@ -97,8 +188,9 @@ public:
 	{
 		try
 		{
-			_data[handle].~T();
-			_data[handle].SetUnused();
+			auto& obj = _data[handle];
+			obj.Free();
+			obj.SetUnused();
 			_cleanupList.emplace_back(size_t(handle));
 			return S_OK;
 		}
@@ -123,15 +215,15 @@ public:
 	T const & FindResource(UINT_PTR handle) const noexcept
 	{
 		auto& value = _data[handle];
-		assert(value.Used);
-		return value;
+		assert(value.GetUsed());
+		return value.GetObject();
 	}
 
 	T & FindResource(UINT_PTR handle) noexcept
 	{
 		auto& value = _data[handle];
-		assert(value.Used);
-		return value;
+		assert(value.GetUsed());
+		return value.GetObject();
 	}
 
 	const std::vector<UINT_PTR> GetCleanupList() const noexcept
@@ -163,7 +255,7 @@ private:
 		}
 	}
 protected:
-	std::vector<T> _data;
+	std::vector<ObjectStorage> _data;
 	std::list<FreeListEntry> _freeList;
 	std::vector<UINT_PTR> _cleanupList;
 };

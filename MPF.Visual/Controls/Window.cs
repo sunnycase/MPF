@@ -33,6 +33,13 @@ namespace MPF.Controls
             _coreWindow.Title = Title;
 
             _coreWindow.SetRootVisual(this);
+
+            using (var ctx = _testGeometry4.Open())
+            {
+                ctx.MoveTo(new Point(10, 10));
+                ctx.LineTo(new Point(350, 420));
+                ctx.ArcTo(new Point(450, 370), 120);
+            }
         }
 
 
@@ -51,6 +58,7 @@ namespace MPF.Controls
             StartPoint = new Point(300, 400),
             EndPoint = new Point(500, 200)
         };
+        private readonly StreamGeometry _testGeometry4 = new StreamGeometry();
         private readonly Pen _testPen = new Pen
         {
             Brush = new SolidColorBrush { Color = Color.FromArgb(0xFF33EECC) },
@@ -60,9 +68,10 @@ namespace MPF.Controls
         protected override void OnRender(IDrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
-            drawingContext.DrawGeometry(_testGeometry, _testPen);
-            //drawingContext.DrawGeometry(_testGeometry2, _testPen);
-            drawingContext.DrawGeometry(_testGeometry3, _testPen);
+            //drawingContext.DrawGeometry(_testGeometry, _testPen);
+            drawingContext.DrawGeometry(_testGeometry2, _testPen);
+            //drawingContext.DrawGeometry(_testGeometry3, _testPen);
+            drawingContext.DrawGeometry(_testGeometry4, _testPen);
         }
 
         public void Show()

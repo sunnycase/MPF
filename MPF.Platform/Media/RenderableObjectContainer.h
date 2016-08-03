@@ -37,15 +37,15 @@ public:
 
 	virtual RenderableObject& FindObject(UINT_PTR handle) override
 	{
-		return _data[handle];
+		return _data[handle].GetObject();
 	}
 
 	void Update()
 	{
 		for (auto&& obj : _data)
 		{
-			if (obj.Used)
-				obj.Update();
+			if (obj.GetUsed())
+				obj.GetObject().Update();
 		}
 	}
 };

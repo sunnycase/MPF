@@ -4,7 +4,7 @@ struct VertexShaderInput
 	float3 Position : POSITION;
 	float2 Normal : NORMAL;
 	float2 ParamFormValue : TEXCOORD0;
-	float4 ParamFormCoff : TEXCOORD1;
+	float SegmentType : TEXCOORD1;
 };
 
 struct PixelShaderInput
@@ -13,5 +13,5 @@ struct PixelShaderInput
 	float3 NormalAndThickness : TEXCOORD0;
 	float4 Color : COLOR;
 	float2 ParamFormValue : TEXCOORD1;
-	float4 ParamFormCoff : TEXCOORD2;
+	int SegmentType : TEXCOORD2;
 };

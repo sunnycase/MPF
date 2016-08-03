@@ -10,6 +10,7 @@ namespace MPF.Interop
     {
         RT_LineGeometry,
         RT_RectangleGeometry,
+        RT_PathGeometry,
         RT_SolidColorBrush,
         RT_Pen
     }
@@ -28,6 +29,38 @@ namespace MPF.Interop
         public Point RightBottom;
     }
 
+    namespace PathGeometrySegments
+    {
+        enum Operations
+        {
+            MoveTo,
+            LineTo,
+            ArcTo
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        struct MoveTo
+        {
+            public Operations Type;
+            public Point Point;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        struct LineTo
+        {
+            public Operations Type;
+            public Point Point;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        struct ArcTo
+        {
+            public Operations Type;
+            public Point Point;
+            public float Angle;
+        }
+    }
+
     [Guid("C8E784D3-3EBD-40D0-A421-55B3B52EF590")]
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -37,6 +70,7 @@ namespace MPF.Interop
         IResource CreateResource([In]ResourceType resType);
         void UpdateLineGeometry([In]IResource resouce, [In] ref LineGeometryData data);
         void UpdateRectangleGeometry([In]IResource resouce, [In] ref RectangleGeometryData data);
+        void UpdatePathGeometry([In]IResource resouce, [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] data, [In] uint length);
         void UpdateSolidColorBrush([In]IResource resource, [In] ref ColorF color);
         void UpdatePen([In]IResource resource, [In] float thickness, [In]IResource brush);
     }

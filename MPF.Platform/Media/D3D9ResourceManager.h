@@ -88,6 +88,7 @@ private:
 
 void Transform(std::vector<D3D::StrokeVertex>& vertices, const LineGeometry& geometry);
 void Transform(std::vector<D3D::StrokeVertex>& vertices, const RectangleGeometry& geometry);
+void Transform(std::vector<D3D::StrokeVertex>& vertices, const PathGeometry& geometry);
 
 #define DECL_GET_TRC(T)	\
 virtual ITransformedResourceContainer<T>& Get##T##TRC() noexcept override { return _trc##T; }
@@ -104,12 +105,14 @@ public:
 protected:
 	DECL_GET_TRC(LineGeometry);
 	DECL_GET_TRC(RectangleGeometry);
+	DECL_GET_TRC(PathGeometry);
 	virtual void UpdateOverride() override;
 private:
 	WRL::ComPtr<IDirect3DDevice9> _device;
 	D3D9VertexBufferManager _strokeVBMgr;
 	DECL_TRC_MEMBER(LineGeometry);
 	DECL_TRC_MEMBER(RectangleGeometry);
+	DECL_TRC_MEMBER(PathGeometry);
 };
 
 END_NS_PLATFORM

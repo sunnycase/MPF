@@ -38,6 +38,11 @@ namespace MPF.Media
             _resourceManager.UpdateRectangleGeometry(res, ref data);
         }
 
+        public void UpdatePathGeometry(IResource res, byte[] data)
+        {
+            _resourceManager.UpdatePathGeometry(res, data, (uint)(data?.Length ?? 0));
+        }
+
         public void UpdateSolidColorBrush(IResource res, ref ColorF color)
         {
             _resourceManager.UpdateSolidColorBrush(res, ref color);
