@@ -15,7 +15,7 @@ using namespace NS_PLATFORM;
 _container##T(std::make_shared<ResourceContainer<T>>())
 
 ResourceManagerBase::ResourceManagerBase()
-	:CTOR_IMPL1(LineGeometry), CTOR_IMPL1(RectangleGeometry), CTOR_IMPL1(SolidColorBrush), CTOR_IMPL1(Pen)
+	:CTOR_IMPL1(LineGeometry), CTOR_IMPL1(RectangleGeometry), CTOR_IMPL1(PathGeometry), CTOR_IMPL1(SolidColorBrush), CTOR_IMPL1(Pen)
 {
 }
 
@@ -36,6 +36,7 @@ HRESULT ResourceManagerBase::CreateResource(ResourceType resType, IResource ** r
 		{
 			CREATERESOURCE_IMPL1(LineGeometry);
 			CREATERESOURCE_IMPL1(RectangleGeometry);
+			CREATERESOURCE_IMPL1(PathGeometry);
 			CREATERESOURCE_IMPL1(SolidColorBrush);
 			CREATERESOURCE_IMPL1(Pen);
 		default:
@@ -88,6 +89,48 @@ HRESULT ResourceManagerBase::UpdateRectangleGeometry(IResource * res, RectangleG
 	UPDATE_RES_IMPL1_AFT(RectangleGeometry);
 }
 
+namespace
+{
+	template<class T>
+	T* Read(byte*& data)
+	{
+		auto old = reinterpret_cast<T*>(data);
+		data += sizeof(T);
+		return reinterpret_cast<T*>(old);
+	}
+
+#define UPDATE_PATH_GEO_IMPL1(T)											\
+case T:																		\
+	seg.Operation = T;														\
+	seg.Data.##T## = *Read<Segment::tagData::tag##T>(data);					\
+	break;
+}
+
+STDMETHODIMP ResourceManagerBase::UpdatePathGeometry(IResource * res, byte * data, UINT32 length)
+{
+	UPDATE_RES_IMPL1_PRE(PathGeometry)
+		using namespace PathGeometrySegments;
+
+	auto& segments = resObj.Segments;
+	segments.clear();
+	const auto end = data + length;
+	while (data < end)
+	{
+		Segment seg;
+		const auto type = Read<Operations>(data);
+		switch (*type)
+		{
+			UPDATE_PATH_GEO_IMPL1(MoveTo);
+			UPDATE_PATH_GEO_IMPL1(LineTo);
+			UPDATE_PATH_GEO_IMPL1(ArcTo);
+		default:
+			continue;
+		}
+		segments.emplace_back(std::move(seg));
+	}
+	UPDATE_RES_IMPL1_AFT(PathGeometry);
+}
+
 HRESULT ResourceManagerBase::UpdateSolidColorBrush(IResource * res, ColorF * color)
 {
 	UPDATE_RES_IMPL1_PRE(SolidColorBrush)
@@ -103,21 +146,6 @@ HRESULT ResourceManagerBase::UpdatePen(IResource * res, float thickness, IResour
 	UPDATE_RES_IMPL1_AFT(Pen);
 }
 
-HRESULT ResourceManagerBase::CreateRenderCommandBuffer(IRenderCommandBuffer ** buffer)
-{
-	try
-	{
-		*buffer = Make<RenderCommandBuffer>(this).Detach();
-		return S_OK;
-	}
-	CATCH_ALL();
-}
-
-const LineGeometry& ResourceManagerBase::GetLineGeometry(UINT_PTR handle) const
-{
-	return _containerLineGeometry->FindResource(handle);
-}
-
 Brush & ResourceManagerBase::GetBrush(UINT_PTR handle)
 {
 	return _containerSolidColorBrush->FindResource(handle);
@@ -128,29 +156,14 @@ const Brush & ResourceManagerBase::GetBrush(UINT_PTR handle) const
 	return _containerSolidColorBrush->FindResource(handle);
 }
 
-LineGeometry& ResourceManagerBase::GetLineGeometry(UINT_PTR handle)
+HRESULT ResourceManagerBase::CreateRenderCommandBuffer(IRenderCommandBuffer ** buffer)
 {
-	return _containerLineGeometry->FindResource(handle);
-}
-
-const Pen& ResourceManagerBase::GetPen(UINT_PTR handle) const
-{
-	return _containerPen->FindResource(handle);
-}
-
-Pen& ResourceManagerBase::GetPen(UINT_PTR handle)
-{
-	return _containerPen->FindResource(handle);
-}
-
-RectangleGeometry& ResourceManagerBase::GetRectangleGeometry(UINT_PTR handle)
-{
-	return _containerRectangleGeometry->FindResource(handle);
-}
-
-const RectangleGeometry& ResourceManagerBase::GetRectangleGeometry(UINT_PTR handle) const
-{
-	return _containerRectangleGeometry->FindResource(handle);
+	try
+	{
+		*buffer = Make<RenderCommandBuffer>(this).Detach();
+		return S_OK;
+	}
+	CATCH_ALL();
 }
 
 #define UPDATE_IMPL1(T)			 \
@@ -173,6 +186,10 @@ void ResourceManagerBase::Update()
 	{
 		UPDATE_IMPL2(RectangleGeometry);
 		UPDATE_IMPL1(RectangleGeometry);
+	}
+	{
+		UPDATE_IMPL2(PathGeometry);
+		UPDATE_IMPL1(PathGeometry);
 	}
 	{
 		UPDATE_IMPL1(SolidColorBrush);
@@ -201,6 +218,7 @@ void ResourceManagerBase::AddDependentDrawCallList(std::weak_ptr<IDrawCallList>&
 	{
 		ADDCL_IMPL1(LineGeometry);
 		ADDCL_IMPL1(RectangleGeometry);
+		ADDCL_IMPL1(PathGeometry);
 		ADDCL_IMPL1(Pen);
 	default:
 		break;

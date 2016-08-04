@@ -6,6 +6,7 @@
 //
 #include "stdafx.h"
 #include "glewUtil.h"
+#include <GL/wglew.h>
 #include "GLSwapChain.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
@@ -25,14 +26,44 @@ namespace
 		return str ? str : reinterpret_cast<const GLubyte*>("Unknown");
 	}
 
-	void DumpAdapter() noexcept
+	GLint glGetIntegerv(GLenum name)
+	{
+		GLint value = 0;
+		::glGetIntegerv(name,&value);
+		return value;
+	}
+
+	void SelectAdapter()
+	{
+		if (WGLEW_NV_gpu_affinity)
+		{
+			for (int gpu = 0;; ++gpu)
+			{
+				HGPUNV hGPU;
+				if (!wglEnumGpusNV(gpu, &hGPU))break;
+				GPU_DEVICE gpuDevice{};
+				gpuDevice.cb = sizeof(gpuDevice);
+				if (!wglEnumGpuDevicesNV(hGPU, 0, &gpuDevice))continue;
+			}
+		}
+	}
+
+	void DumpAdapter(HDC hdc) noexcept
 	{
 		std::stringstream ss;
 		ss << "MPF OpenGL Dump Info:\n"
 			<< "Vendor: " << glGetString(GL_VENDOR) << '\n'
-			<< "Renderer: " << glGetString(GL_RENDER) << '\n'
+			<< "Renderer: " << glGetString(GL_RENDERER) << '\n'
 			<< "Version: " << glGetString(GL_VERSION) << '\n'
 			<< "Shading Language Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+
+		if (GLEW_NVX_gpu_memory_info)
+		{
+			ss << "Dedicated Video Memory: " << glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX) << " KB\n"
+				<< "Total Avaliable Video Memory: " << glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX) << " KB\n"
+				<< "Current Avaliable Video Memory: " << glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX) << " KB" << std::endl;
+		}
+
 		puts(ss.str().c_str());
 	}
 }
@@ -69,7 +100,13 @@ GLSwapChainBase::GLSwapChainBase(INativeWindow * window)
 	ThrowWin32IfNot(_glCtx);
 	ThrowWin32IfNot(wglMakeCurrent(_hdc, _glCtx));
 	ThrowGlewIfNotOK(glewInit());
-	DumpAdapter();
+
+	static bool dumped = false;
+	if (!dumped)
+	{
+		DumpAdapter(_hdc);
+		dumped = true;
+	}
 }
 
 GLSwapChainBase::~GLSwapChainBase()

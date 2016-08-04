@@ -14,7 +14,7 @@ using namespace DirectX;
 #define CTOR_IMPL1(T) _trc##T##(_strokeVBMgr)
 
 D3D9ResourceManager::D3D9ResourceManager(IDirect3DDevice9* device)
-	:_device(device), _strokeVBMgr(device, sizeof(D3D::StrokeVertex)), CTOR_IMPL1(LineGeometry), CTOR_IMPL1(RectangleGeometry)
+	:_device(device), _strokeVBMgr(device, sizeof(D3D::StrokeVertex)), CTOR_IMPL1(LineGeometry), CTOR_IMPL1(RectangleGeometry), CTOR_IMPL1(PathGeometry)
 {
 }
 
@@ -29,40 +29,66 @@ namespace
 		XMStoreFloat2(&normalEnd, normalEndVec);
 		XMStoreFloat2(&normalEndOpp, XMVectorScale(normalEndVec, -1.f));
 
-		const XMFLOAT4 paramCoffZero{ 0, 0, 0, 0 };
-
 		// 1
 		vertices.emplace_back(D3D::StrokeVertex
 		{
 			{ startPoint.x, startPoint.y, 0.f},
-			normalStart,{ 0, 0 }, paramCoffZero
+			normalStart,{ 0, 0 }, D3D::StrokeVertex::ST_Linear
 		});
 		vertices.emplace_back(D3D::StrokeVertex
 		{
 			{ endPoint.x, endPoint.y, 0.f },
-			normalEnd,{ 1.f, 1.f }, paramCoffZero
+			normalEnd,{ 1.f, 1.f }, D3D::StrokeVertex::ST_Linear
 		});
 		vertices.emplace_back(D3D::StrokeVertex
 		{
 			{ endPoint.x, endPoint.y, 0.f },
-			normalEndOpp,{ 1.f, 1.f }, paramCoffZero
+			normalEndOpp,{ 1.f, 1.f }, D3D::StrokeVertex::ST_Linear
 		});
 
 		// 2
 		vertices.emplace_back(D3D::StrokeVertex
 		{
 			{ endPoint.x, endPoint.y, 0.f },
-			normalEndOpp,{ 1.f, 1.f }, paramCoffZero
+			normalEndOpp,{ 1.f, 1.f }, D3D::StrokeVertex::ST_Linear
 		});
 		vertices.emplace_back(D3D::StrokeVertex
 		{
 			{ startPoint.x, startPoint.y, 0.f },
-			normalStartOpp,{ 0, 0 }, paramCoffZero
+			normalStartOpp,{ 0, 0 }, D3D::StrokeVertex::ST_Linear
 		});
 		vertices.emplace_back(D3D::StrokeVertex
 		{
 			{ startPoint.x, startPoint.y, 0.f },
-			normalStart,{ 0, 0 }, paramCoffZero
+			normalStart,{ 0, 0 }, D3D::StrokeVertex::ST_Linear
+		});
+	}
+
+	void EmplaceArc(std::vector<D3D::StrokeVertex>& vertices, XMFLOAT2 startPoint, XMFLOAT2 endPoint, float angle, const XMVECTOR& normalStartVec, const XMVECTOR& normalEndVec)
+	{
+		XMFLOAT2 normalStart, normalStartOpp;
+		XMFLOAT2 normalEnd, normalEndOpp;
+		XMStoreFloat2(&normalStart, normalStartVec);
+		XMStoreFloat2(&normalStartOpp, XMVectorScale(normalStartVec, -1.f));
+		XMStoreFloat2(&normalEnd, normalEndVec);
+		XMStoreFloat2(&normalEndOpp, XMVectorScale(normalEndVec, -1.f));
+
+		const auto radian = XMConvertToRadians(angle);
+
+		vertices.emplace_back(D3D::StrokeVertex
+		{
+			{ 0, 0, 0.f },
+			{ 0 ,1 },{ 0, 0 }, D3D::StrokeVertex::ST_Arc
+		});
+		vertices.emplace_back(D3D::StrokeVertex
+		{
+			{ 100, 0, 0.f },
+			{ 0 ,1 },{ 0.5f, 0 }, D3D::StrokeVertex::ST_Arc
+		});
+		vertices.emplace_back(D3D::StrokeVertex
+		{
+			{ 200, 200, 0.f },
+			{ 3.f ,1 },{ 1, 1 }, D3D::StrokeVertex::ST_Arc
 		});
 	}
 
@@ -104,22 +130,66 @@ void ::NS_PLATFORM::Transform(std::vector<D3D::StrokeVertex>& vertices, const Re
 	EmplaceLine(vertices, rightBottom, leftBottom, rbDirVec, lbDirVec);
 	EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
 
-	const XMFLOAT4 paramCoff{ 0, 1, 0, -1 };
 	vertices.emplace_back(D3D::StrokeVertex
 	{
 		{ 0, 0, 0.f },
-		{ 0 ,1 },{ 0, 0 }, paramCoff
+		{ 0 ,1 },{ 0, 0 }, D3D::StrokeVertex::ST_QuadraticBezier
 	});
 	vertices.emplace_back(D3D::StrokeVertex
 	{
 		{ 100, 0, 0.f },
-		{ 0 ,1 },{ 0.5f, 0 }, paramCoff
+		{ 0 ,1 },{ 0.5f, 0 }, D3D::StrokeVertex::ST_QuadraticBezier
 	});
 	vertices.emplace_back(D3D::StrokeVertex
 	{
 		{ 200, 200, 0.f },
-		{ 3.f ,1 },{ 1, 1 }, paramCoff
+		{ 3.f ,1 },{ 1, 1 }, D3D::StrokeVertex::ST_QuadraticBezier
 	});
+}
+
+void ::NS_PLATFORM::Transform(std::vector<D3D::StrokeVertex>& vertices, const PathGeometry& geometry)
+{
+	using namespace PathGeometrySegments;
+
+	XMFLOAT2 lastPoint{ 0,0 };
+	for (auto&& seg : geometry.Segments)
+	{
+		switch (seg.Operation)
+		{
+		case MoveTo:
+		{
+			const auto& data = seg.Data.MoveTo;
+			lastPoint = { data.Point.X, data.Point.Y };
+		}
+		break;
+		case LineTo:
+		{
+			const auto& data = seg.Data.LineTo;
+			XMFLOAT2 endPoint(data.Point.X, data.Point.Y);
+
+			const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
+			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
+
+			EmplaceLine(vertices, lastPoint, endPoint, normalVec, normalVec);
+			lastPoint = endPoint;
+		}
+		break;
+		case ArcTo:
+		{
+			const auto& data = seg.Data.ArcTo;
+			XMFLOAT2 endPoint(data.Point.X, data.Point.Y);
+
+			const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
+			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
+
+			EmplaceArc(vertices, lastPoint, endPoint, data.Angle, normalVec, normalVec);
+			lastPoint = endPoint;
+		}
+		break;
+		default:
+			break;
+		}
+	}
 }
 
 void D3D9ResourceManager::UpdateOverride()
@@ -183,6 +253,10 @@ namespace
 					}
 					if (_resMgr->TryGet(resource, rc))
 						_strokeRenderCalls.emplace_back(rc);
+					else
+					{
+						assert(false && "Geometry not found.");
+					}
 				}
 			}
 		}
@@ -227,6 +301,7 @@ bool D3D9ResourceManager::TryGet(IResource* res, StorkeRenderCall& rc) const
 	{
 		TRYGET_IMPL1(LineGeometry);
 		TRYGET_IMPL1(RectangleGeometry);
+		TRYGET_IMPL1(PathGeometry);
 	default:
 		break;
 	}

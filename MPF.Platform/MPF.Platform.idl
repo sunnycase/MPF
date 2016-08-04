@@ -95,6 +95,7 @@ typedef enum
 {
 	RT_LineGeometry,
 	RT_RectangleGeometry,
+	RT_PathGeometry,
 	RT_SolidColorBrush,
 	RT_Pen
 } ResourceType;
@@ -132,6 +133,7 @@ interface IResourceManager : IUnknown
 	HRESULT CreateResource([in]ResourceType resType, [out, retval]IResource** res);
 	HRESULT UpdateLineGeometry([in]IResource* res, [in]LineGeometryData* data);
 	HRESULT UpdateRectangleGeometry([in]IResource* res, [in]RectangleGeometryData* data);
+	HRESULT UpdatePathGeometry([in]IResource* res, [in, size_is(length)]byte* data, [in]UINT32 length);
 	HRESULT UpdateSolidColorBrush([in]IResource* res, [in]ColorF* color);
 	HRESULT UpdatePen([in]IResource* res, [in]float thickness, [in]IResource* brush);
 };

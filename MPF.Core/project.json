@@ -6,6 +6,10 @@
     "System.Numerics.Vectors": "4.1.1"
   },
 
+  "compilationOptions": {
+    "allowUnsafe": true
+  },
+
   "frameworks": {
     "netstandard1.4": {
 

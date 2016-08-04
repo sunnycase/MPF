@@ -28,6 +28,6 @@ PixelShaderInput main(VertexShaderInput input)
 	output.NormalAndThickness = float3(input.Normal, _stroke.thickness);
 	output.Color = _color;
 	output.ParamFormValue = input.ParamFormValue;
-	output.ParamFormCoff = input.ParamFormCoff;
+	output.SegmentType = input.SegmentType;
 	return output;
 }
