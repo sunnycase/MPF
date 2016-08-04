@@ -7,9 +7,8 @@
   },
 
   "frameworks": {
-    "netstandard1.6": {
-      "imports": "dnxcore50"
-    },
-    "net462": {}
+    "netstandard1.4": {
+
+    }
   }
 }
