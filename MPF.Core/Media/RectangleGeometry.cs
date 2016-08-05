@@ -9,10 +9,10 @@ namespace MPF.Media
     public class RectangleGeometry : Geometry
     {
         public static readonly DependencyProperty<Point> LeftTopProperty = DependencyProperty.Register(nameof(LeftTop), typeof(RectangleGeometry),
-            Point.Zero, OnLeftTopPropertyChanged);
+            new PropertyMetadata<Point>(Point.Zero, OnLeftTopPropertyChanged));
 
         public static readonly DependencyProperty<Point> RigthBottomProperty = DependencyProperty.Register(nameof(RigthBottom), typeof(RectangleGeometry),
-            Point.Zero, OnRigthBottomPropertyChanged);
+            new PropertyMetadata<Point>(Point.Zero, OnRigthBottomPropertyChanged));
 
         public Point LeftTop
         {

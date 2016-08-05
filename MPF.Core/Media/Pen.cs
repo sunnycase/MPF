@@ -10,9 +10,9 @@ namespace MPF.Media
     public sealed class Pen : Animatable, IResourceProvider
     {
         public static readonly DependencyProperty<float> ThicknessProperty = DependencyProperty.Register(nameof(Thickness), typeof(Pen),
-            1.0f, OnThicknessPropertyChanged);
-        public static readonly DependencyProperty<Brush> BrushProperty = DependencyProperty.Register<Brush>(nameof(Brush), typeof(Pen),
-            null, OnBrushPropertyChanged);
+            new PropertyMetadata<float>(1.0f, OnThicknessPropertyChanged));
+        public static readonly DependencyProperty<Brush> BrushProperty = DependencyProperty.Register(nameof(Brush), typeof(Pen),
+            new PropertyMetadata<Brush>(DependencyProperty.UnsetValue, OnBrushPropertyChanged));
 
         public float Thickness
         {

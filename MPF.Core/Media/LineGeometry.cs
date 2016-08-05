@@ -9,10 +9,10 @@ namespace MPF.Media
     public class LineGeometry : Geometry
     {
         public static readonly DependencyProperty<Point> StartPointProperty = DependencyProperty.Register(nameof(StartPoint), typeof(LineGeometry),
-            Point.Zero, OnStartPointPropertyChanged);
+            new PropertyMetadata<Point>(Point.Zero, OnStartPointPropertyChanged));
 
         public static readonly DependencyProperty<Point> EndPointProperty = DependencyProperty.Register(nameof(EndPoint), typeof(LineGeometry),
-            Point.Zero, OnEndPointPropertyChanged);
+            new PropertyMetadata<Point>(Point.Zero, OnEndPointPropertyChanged));
 
         public Point StartPoint
         {

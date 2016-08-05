@@ -8,10 +8,10 @@ namespace MPF.Media
 {
     public sealed class SolidColorBrush : Brush
     {
-        private readonly Lazy< IResource> _brushResource;
+        private readonly Lazy<IResource> _brushResource;
 
-        public static readonly DependencyProperty<Color> ColorProperty = DependencyProperty.Register(nameof(Color), typeof(SolidColorBrush), Colors.Transparent,
-            OnColorPropertyChanged);
+        public static readonly DependencyProperty<Color> ColorProperty = DependencyProperty.Register(nameof(Color), typeof(SolidColorBrush),
+            new PropertyMetadata<Color>(Colors.Transparent, OnColorPropertyChanged));
 
         public Color Color
         {

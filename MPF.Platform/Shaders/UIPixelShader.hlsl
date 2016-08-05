@@ -5,40 +5,39 @@
 #define	ST_CubicBezier			2
 #define	ST_Arc					3
 
-void ClipForQuadraticBezier(in PixelShaderInput input)
+float GetQuadraticBezierSignedDistance(float2 px, float2 py, float2 value)
 {
-	float thickness = input.NormalAndThickness.z;
-	float2 px = ddx(input.ParamFormValue);
-	float2 py = ddy(input.ParamFormValue);
-	// Chain rule  
-	float fx = (2 * input.ParamFormValue.x)*px.x - px.y;
-	float fy = (2 * input.ParamFormValue.x)*py.x - py.y;
+	float fx = (2 * value.x)*px.x - px.y;
+	float fy = (2 * value.x)*py.x - py.y;
 	// Signed distance  
-	float sd = (input.ParamFormValue.x * input.ParamFormValue.x - input.ParamFormValue.y) / sqrt(fx*fx + fy*fy);
-	float alpha = thickness / 2 - abs(sd);
-	clip(alpha);
+	return (value.x * value.x - value.y) / sqrt(fx*fx + fy*fy);
 }
 
-void ClipForArc(in PixelShaderInput input)
+float GetArcSignedDistance(float2 px, float2 py, float2 value)
 {
-	//float thickness = input.NormalAndThickness.z;
-	//float2 px = ddx(input.ParamFormValue);
-	//float2 py = ddy(input.ParamFormValue);
-	//// Chain rule  
-	//float fx = (2 * input.ParamFormValue.x)*px.x - px.y;
-	//float fy = (2 * input.ParamFormValue.x)*py.x - py.y;
-	//// Signed distance  
-	//float sd = (input.ParamFormValue.x * input.ParamFormValue.x - input.ParamFormValue.y) / sqrt(fx*fx + fy*fy);
-	//float alpha = thickness / 2 - abs(sd);
-	//clip(alpha);
-	clip(-1);
+	float fx = (2 * value.x)*px.x + (2 * value.y)*px.y;
+	float fy = (2 * value.x)*py.x + (2 * value.y)*py.y;
+	// Signed distance  
+	return (value.x * value.x + value.y * value.y - 1.f) / sqrt(fx*fx + fy*fy);
 }
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
-if (input.SegmentType == ST_QuadraticBezier)
-ClipForQuadraticBezier(input);
-else if (input.SegmentType == ST_Arc)
-ClipForArc(input);
-return input.Color;
+	int segmentType = input.SegmentType;
+	if (segmentType == ST_Linear);
+	else
+	{
+		float thickness = input.NormalAndThickness.z;
+		float2 px = ddx(input.ParamFormValue);
+		float2 py = ddy(input.ParamFormValue);
+		float sd;
+		if (segmentType == ST_QuadraticBezier)
+			sd = GetQuadraticBezierSignedDistance(px, py, input.ParamFormValue);
+		else if (segmentType == ST_Arc)
+			sd = GetArcSignedDistance(px, py, input.ParamFormValue);
+		float alpha = thickness - abs(sd);
+		clip(alpha);
+		return input.Color + float4(1.f, 1.f, 1.f, 1.f) * (1.f - saturate(alpha));
+	}
+	return input.Color;
 }

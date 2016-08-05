@@ -55,3 +55,23 @@ STDMETHODIMP RenderableObjectRef::Render()
 	}
 	CATCH_ALL();
 }
+
+STDMETHODIMP RenderableObjectRef::SetFlags(RenderableObjectFlags flags)
+{
+	try
+	{
+		_container->FindObject(_handle).SetFlags(flags);
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
+STDMETHODIMP RenderableObjectRef::SetMeasureCallback(INT_PTR callback)
+{
+	try
+	{
+		_container->FindObject(_handle).SetMeasureCallback(reinterpret_cast<RenderableObjectAction>(callback));
+		return S_OK;
+	}
+	CATCH_ALL();
+}

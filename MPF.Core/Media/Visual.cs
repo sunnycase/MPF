@@ -9,10 +9,10 @@ namespace MPF.Media
     public abstract class Visual : DependencyObject
     {
         public static readonly DependencyProperty<bool> IsHitTestVisibleProperty = DependencyProperty.Register(nameof(IsHitTestVisible),
-            typeof(Visual), true);
+            typeof(Visual), new PropertyMetadata<bool>(true));
 
         private static readonly DependencyProperty<Geometry> VisualClipProperty = DependencyProperty.Register(nameof(VisualClip),
-            typeof(Visual), Geometry.Empty);
+            typeof(Visual), new PropertyMetadata<Geometry>(Geometry.Empty));
 
         public bool IsHitTestVisible
         {
@@ -27,7 +27,7 @@ namespace MPF.Media
         }
 
         private RenderData _renderData;
-        private IRenderableObject _renderableObject;
+        internal readonly IRenderableObject _renderableObject;
         private bool _needRender = true;
 
         public Visual()
@@ -48,7 +48,7 @@ namespace MPF.Media
 
         internal void Render()
         {
-            if(_needRender)
+            if (_needRender)
             {
                 using (var drawingContext = RenderOpen())
                 {

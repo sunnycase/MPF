@@ -73,22 +73,34 @@ namespace
 		XMStoreFloat2(&normalEnd, normalEndVec);
 		XMStoreFloat2(&normalEndOpp, XMVectorScale(normalEndVec, -1.f));
 
+		const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - startPoint.x, endPoint.y - startPoint.y });
+		const auto halfVec = XMVectorScale(dirVec, 0.5f);
+		const auto centerDir = XMVector2Normalize(XMVector3Orthogonal(dirVec));
 		const auto radian = XMConvertToRadians(angle);
+		const auto radius = XMVector2Length(halfVec).m128_f32[0] / std::sin(radian / 2.f);
+		const auto centerVec = XMLoadFloat2(&startPoint) + halfVec + centerDir * (radius * std::cos(radian / 2.f));
+		const auto slopeLength = radius / std::cos(radian / 2.f) * 1.1f;
+		const auto point2Vec = XMVector2Normalize(XMLoadFloat2(&startPoint) - centerVec) * slopeLength + centerVec;
+		const auto point3Vec = XMVector2Normalize(XMLoadFloat2(&endPoint) - centerVec) * slopeLength + centerVec;
+		XMFLOAT2 centerPoint, point2, point3;
+		XMStoreFloat2(&centerPoint, centerVec);
+		XMStoreFloat2(&point2, point2Vec);
+		XMStoreFloat2(&point3, point3Vec);
 
 		vertices.emplace_back(D3D::StrokeVertex
 		{
-			{ 0, 0, 0.f },
+			{ centerPoint.x, centerPoint.y, 0.f},
 			{ 0 ,1 },{ 0, 0 }, D3D::StrokeVertex::ST_Arc
 		});
 		vertices.emplace_back(D3D::StrokeVertex
 		{
-			{ 100, 0, 0.f },
-			{ 0 ,1 },{ 0.5f, 0 }, D3D::StrokeVertex::ST_Arc
+			{ point2.x, point2.y, 0.f },
+			{ 0 ,1 },{ slopeLength / radius, 0 }, D3D::StrokeVertex::ST_Arc
 		});
 		vertices.emplace_back(D3D::StrokeVertex
 		{
-			{ 200, 200, 0.f },
-			{ 3.f ,1 },{ 1, 1 }, D3D::StrokeVertex::ST_Arc
+			{ point3.x, point3.y, 0.f },
+			{ 3.f ,1 },{ slopeLength * std::cos(radian) / radius, slopeLength * std::sin(radian) / radius }, D3D::StrokeVertex::ST_Arc
 		});
 	}
 

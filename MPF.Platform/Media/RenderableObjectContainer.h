@@ -24,6 +24,8 @@ public:
 
 	STDMETHOD_(ULONG, Release)();
 	STDMETHODIMP SetContent(IRenderCommandBuffer* buffer);
+	STDMETHODIMP SetFlags(RenderableObjectFlags flags);
+	STDMETHODIMP SetMeasureCallback(INT_PTR callback);
 	STDMETHODIMP Render();
 private:
 	std::shared_ptr<IRenderableObjectContainer> _container;

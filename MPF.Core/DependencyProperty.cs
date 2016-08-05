@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,15 +25,6 @@ namespace MPF
             _globalId = Interlocked.Increment(ref _nextAvailableGlobalId);
         }
 
-        internal DependencyProperty(DependencyProperty property, Type ownerType)
-        {
-            if (ownerType == property.OwnerType)
-                throw new ArgumentOutOfRangeException(nameof(ownerType), $"{nameof(ownerType)} must be different from {nameof(property)}.{nameof(property.OwnerType)}.");
-            Name = property.Name;
-            OwnerType = ownerType;
-            _globalId = property._globalId;
-        }
-
         public override bool Equals(object obj)
         {
             if (obj is DependencyProperty)
@@ -50,65 +43,104 @@ namespace MPF
             return _globalId.GetHashCode();
         }
 
-        public static DependencyProperty<T> Register<T>(string name, Type ownerType, T defaultValue = default(T), EventHandler<PropertyChangedEventArgs<T>> propertyChangedHandler = null)
+        public static DependencyProperty<T> Register<T>(string name, Type ownerType, PropertyMetadata<T> metadata)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
             if (ownerType == null)
                 throw new ArgumentNullException(nameof(ownerType));
+            if (metadata == null)
+                throw new ArgumentNullException(nameof(metadata));
 
-            var property = new DependencyProperty<T>(name, ownerType, defaultValue);
-            if (propertyChangedHandler != null)
-                property.PropertyChanged += propertyChangedHandler;
-            return property;
+            return new DependencyProperty<T>(name, ownerType, metadata ?? new PropertyMetadata<T>(UnsetValue));
+        }
+
+        public static readonly UnsetValueType UnsetValue = default(UnsetValueType);
+
+        public struct UnsetValueType
+        {
+
         }
     }
 
     public sealed class DependencyProperty<T> : DependencyProperty
     {
-        private T _defaultValue;
-        public T DefaultValue
-        {
-            get { return _defaultValue; }
-            set
-            {
-                if (!EqualityComparer<T>.Default.Equals(_defaultValue, value))
-                {
-                    _defaultValue = value;
-                    DefaultValueChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-        }
+        private readonly Type _ownerType;
+        private PropertyMetadata<T> _baseMetadata;
+        private readonly ConcurrentDictionary<Type, PropertyMetadata<T>> _metadatas = new ConcurrentDictionary<Type, PropertyMetadata<T>>();
 
-        public event EventHandler DefaultValueChanged;
-        public event EventHandler<PropertyChangedEventArgs<T>> PropertyChanged;
-
-        internal DependencyProperty(string name, Type ownerType, T defaultValue)
+        internal DependencyProperty(string name, Type ownerType, PropertyMetadata<T> metadata)
             : base(name, ownerType)
         {
-            _defaultValue = defaultValue;
+            Contract.Assert(metadata != null);
+
+            _ownerType = ownerType;
+            _baseMetadata = metadata;
         }
 
-        internal DependencyProperty(DependencyProperty<T> property, Type ownerType, T defaultValue)
-            : base(property, ownerType)
+        public void OverrideMetadata(Type type, PropertyMetadata<T> metadata)
         {
-            _defaultValue = defaultValue;
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+            if (metadata == null)
+                throw new ArgumentNullException(nameof(metadata));
+
+            if (type == _ownerType)
+                _baseMetadata = MergeMetadata(_baseMetadata, metadata);
+            else
+                _metadatas.AddOrUpdate(type, metadata, (k, old) =>
+                {
+                    metadata = MergeMetadata(_baseMetadata, metadata);
+                    metadata = MergeMetadata(old, metadata);
+                    return metadata;
+                });
         }
 
-        internal void InvokePropertyChangedHandlers(object sender, PropertyChangedEventArgs<T> e)
+        public bool TryGetDefaultValue(Type type, out T value)
         {
-            PropertyChanged?.Invoke(sender, e);
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
+            if (type != _ownerType)
+            {
+                PropertyMetadata<T> metadata;
+                if (_metadatas.TryGetValue(type, out metadata))
+                    return metadata.TryGetDefaultValue(out value);
+            }
+            return _baseMetadata.TryGetDefaultValue(out value);
         }
 
-        public DependencyProperty<T> AddOwner(Type ownerType, T defaultValue, EventHandler<PropertyChangedEventArgs<T>> propertyChangedHandler = null)
+        internal void RaisePropertyChanged(Type type, object sender, PropertyChangedEventArgs<T> e)
         {
-            var property = new DependencyProperty<T>(this, ownerType, defaultValue);
-            if (propertyChangedHandler != null)
-                property.PropertyChanged += propertyChangedHandler;
-            return property;
+            if (type != _ownerType)
+            {
+                PropertyMetadata<T> metadata;
+                if (_metadatas.TryGetValue(type, out metadata))
+                {
+                    metadata.RaisePropertyChanged(sender, e);
+                    return;
+                }
+            }
+            _baseMetadata.RaisePropertyChanged(sender, e);
         }
 
-        public DependencyProperty<T> AddOwner(Type ownerType, EventHandler<PropertyChangedEventArgs<T>> propertyChangedHandler = null)
+        private PropertyMetadata<T> MergeMetadata(PropertyMetadata<T> oldMetadata, PropertyMetadata<T> newMetadata)
         {
-            return AddOwner(ownerType, _defaultValue, propertyChangedHandler);
+            if (!oldMetadata.GetType().IsAssignableFrom(newMetadata.GetType()))
+                throw new InvalidOperationException("The type of new metadata must be derived from the type of old metadata.");
+            newMetadata.Merge(oldMetadata);
+            return newMetadata;
+        }
+
+        public DependencyProperty<T> AddOwner(Type ownerType, PropertyMetadata<T> metadata)
+        {
+            if (ownerType == null)
+                throw new ArgumentNullException(nameof(ownerType));
+            if (metadata == null)
+                throw new ArgumentNullException(nameof(metadata));
+
+            OverrideMetadata(ownerType, metadata ?? new PropertyMetadata<T>(UnsetValue));
+            return this;
         }
     }
 }

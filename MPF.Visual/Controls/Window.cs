@@ -12,8 +12,10 @@ namespace MPF.Controls
     {
         private readonly CoreWindow _coreWindow = new CoreWindow();
 
-        public static readonly DependencyProperty<bool> HasMaximizeProperty = DependencyProperty.Register(nameof(HasMaximize), typeof(Window), true, propertyChangedHandler: OnHasMaximizePropertyChanged);
-        public static readonly DependencyProperty<string> TitleProperty = DependencyProperty.Register(nameof(Title), typeof(Window), string.Empty, propertyChangedHandler: OnTitlePropertyChanged);
+        public static readonly DependencyProperty<bool> HasMaximizeProperty = DependencyProperty.Register(nameof(HasMaximize), typeof(Window),
+            new PropertyMetadata<bool>(true, propertyChangedHandler: OnHasMaximizePropertyChanged));
+        public static readonly DependencyProperty<string> TitleProperty = DependencyProperty.Register(nameof(Title), typeof(Window), 
+            new PropertyMetadata<string>(string.Empty, propertyChangedHandler: OnTitlePropertyChanged));
 
         public bool HasMaximize
         {
@@ -38,7 +40,7 @@ namespace MPF.Controls
             {
                 ctx.MoveTo(new Point(10, 10));
                 ctx.LineTo(new Point(350, 420));
-                ctx.ArcTo(new Point(450, 370), 120);
+                ctx.ArcTo(new Point(450, 420), 110);
             }
         }
 

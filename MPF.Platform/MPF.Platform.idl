@@ -50,6 +50,12 @@ interface INativeApplication : IUnknown
 interface ISwapChain;
 interface IRenderCommandBuffer;
 
+typedef enum
+{
+	ROF_None = 0,
+	ROF_MeasureDirty = 1
+} RenderableObjectFlags;
+
 [
 	uuid(7316E516-0357-4F99-82D8-181F2BD289C6),
 	helpstring("Renderable Object Interface"),
@@ -58,6 +64,8 @@ interface IRenderCommandBuffer;
 interface IRenderableObject : IUnknown
 {
 	HRESULT SetContent([in]IRenderCommandBuffer* buffer);
+	HRESULT SetFlags([in]RenderableObjectFlags flags);
+	HRESULT SetMeasureCallback([in]INT_PTR callback);
 	HRESULT Render();
 };
 

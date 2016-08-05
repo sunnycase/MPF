@@ -27,6 +27,12 @@ void RenderableObject::SetContent(IRenderCommandBuffer * buffer)
 
 void RenderableObject::Update()
 {
+	if ((_flags | ROF_MeasureDirty) && _measureCallback)
+	{
+		_measureCallback();
+		_flags &= ~ROF_MeasureDirty;
+	}
+
 	if (_isDirty)
 	{
 		if (_buffer)

@@ -8,7 +8,7 @@ namespace MPF.Media
     public class GeometryDrawing : Drawing
     {
         public DependencyProperty<Geometry> GeometryProperty = DependencyProperty.Register(nameof(Geometry), typeof(GeometryDrawing),
-            Geometry.Empty);
+            new PropertyMetadata<Geometry>(Geometry.Empty));
 
         public Geometry Geometry
         {

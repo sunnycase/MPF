@@ -9,9 +9,11 @@ namespace MPF
     public class DependencyObject
     {
         private readonly ConcurrentDictionary<DependencyProperty, object> _localValueStore = new ConcurrentDictionary<DependencyProperty, object>();
+        private readonly Type _realType;
 
         public DependencyObject()
         {
+            _realType = this.GetType();
         }
 
         public void SetValue<T>(DependencyProperty<T> property, T value)
@@ -20,7 +22,7 @@ namespace MPF
             if (!EqualityComparer<T>.Default.Equals(oldValue, value))
             {
                 _localValueStore[property] = value;
-                property.InvokePropertyChangedHandlers(this, new PropertyChangedEventArgs<T>(property, oldValue, value));
+                property.RaisePropertyChanged(_realType, this, new PropertyChangedEventArgs<T>(property, oldValue, value));
             }
         }
 
@@ -28,7 +30,12 @@ namespace MPF
         {
             object oldValue;
             if (!_localValueStore.TryGetValue(property, out oldValue))
-                return property.DefaultValue;
+            {
+                T value;
+                if (property.TryGetDefaultValue(_realType, out value))
+                    return value;
+                return default(T);
+            }
             return (T)oldValue;
         }
     }
