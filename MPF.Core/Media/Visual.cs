@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace MPF.Media
@@ -20,17 +21,30 @@ namespace MPF.Media
             set { SetValue(IsHitTestVisibleProperty, value); }
         }
 
-        private Geometry VisualClip
+        public Geometry VisualClip
         {
             get { return GetValue(VisualClipProperty); }
             set { SetValue(VisualClipProperty, value); }
         }
 
+        public Vector2 VisualOffset
+        {
+            get { return _visualOffset; }
+            protected set
+            {
+                if(_visualOffset != value)
+                {
+                    _visualOffset = value;
+                    UpdateVisualOffset(value);
+                }
+            }
+        }
+
+        private Vector2 _visualOffset;
         private RenderData _renderData;
         internal readonly IRenderableObject _renderableObject;
-        private bool _needRender = true;
 
-        public Visual()
+        internal Visual()
         {
             _renderableObject = DeviceContext.Current.CreateRenderableObject();
         }
@@ -48,13 +62,9 @@ namespace MPF.Media
 
         internal void Render()
         {
-            if (_needRender)
+            using (var drawingContext = RenderOpen())
             {
-                using (var drawingContext = RenderOpen())
-                {
-                    OnRender(drawingContext);
-                }
-                _needRender = false;
+                OnRender(drawingContext);
             }
         }
 
@@ -77,6 +87,11 @@ namespace MPF.Media
         internal void RenderContent()
         {
             _renderableObject.Render();
+        }
+
+        private void UpdateVisualOffset(Vector2 value)
+        {
+            _renderableObject.SetOffset(value.X, value.Y);
         }
 
         class VisualDrawingContext : RenderDataDrawingContext

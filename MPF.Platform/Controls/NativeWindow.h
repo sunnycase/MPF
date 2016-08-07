@@ -15,7 +15,8 @@ DEFINE_NS_PLATFORM
 enum NativeWindowMessages
 {
 	NWM_Closing,
-	NWM_Closed
+	NWM_Closed,
+	NWM_SizeChanged
 };
 
 typedef HRESULT (__stdcall *NativeWindowMessageHandler)(enum NativeWindowMessages);
@@ -29,7 +30,7 @@ class NativeWindow : private NonCopyable,
 	public WeakReferenceBase<NativeWindow, WRL::RuntimeClassFlags<WRL::ClassicCom>, INativeWindow, INativeWindowIntern>
 {
 public:
-	NativeWindow(NativeWindowMessageHandler messageHandler);
+	NativeWindow(INativeWindowCallback* callback);
 	virtual ~NativeWindow();
 
 	// Í¨¹ý WeakReferenceBase ¼Ì³Ð
@@ -40,6 +41,11 @@ public:
 	STDMETHODIMP get_Title(BSTR *value) override;
 	STDMETHODIMP put_Title(BSTR value) override;
 	STDMETHODIMP get_NativeHandle(INT_PTR * value) override;
+	STDMETHODIMP get_Location(Point *value);
+	STDMETHODIMP put_Location(Point value);
+	STDMETHODIMP get_Size(Point *value);
+	STDMETHODIMP put_Size(Point value);
+	STDMETHODIMP get_ClientSize(Point *value);
 	STDMETHODIMP Close() override;
 	STDMETHODIMP Destroy() override;
 
@@ -50,10 +56,11 @@ private:
 
 	static LRESULT CALLBACK NativeWindowProcWrapper(HWND hWnd, uint32_t uMsg, WPARAM wParam, LPARAM lParam);
 	static void RegisterNativeWindowClass();
+	void BroadcastMessage(NativeWindowMessages message);
 private:
+	WRL::ComPtr<INativeWindowCallback> _callback;
 	HWND _hWnd = nullptr;
 	WeakRef<NativeWindow>* _weakRef;
-	NativeWindowMessageHandler _messageHandler;
 	std::vector<std::function<void(NativeWindowMessages)>> _messageHandlers;
 };
 
@@ -61,5 +68,5 @@ END_NS_PLATFORM
 
 extern "C"
 {
-	HRESULT MPF_PLATFORM_API __stdcall CreateNativeWindow(NS_PLATFORM::NativeWindowMessageHandler messageHandler, NS_PLATFORM::INativeWindow** obj) noexcept;
+	HRESULT MPF_PLATFORM_API __stdcall CreateNativeWindow(NS_PLATFORM::INativeWindowCallback* callback, NS_PLATFORM::INativeWindow** obj) noexcept;
 }

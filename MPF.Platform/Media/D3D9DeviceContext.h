@@ -22,7 +22,7 @@ DEFINE_NS_PLATFORM
 class D3D9DeviceContext : public WeakReferenceBase<D3D9DeviceContext, WRL::RuntimeClassFlags<WRL::ClassicCom>, IDeviceContext>
 {
 public:
-	D3D9DeviceContext(DeviceContextMessagesHandler messageHandler);
+	D3D9DeviceContext(IDeviceContextCallback* callback);
 	virtual ~D3D9DeviceContext();
 
 	STDMETHODIMP CreateSwapChain(INativeWindow* window, ISwapChain** swapChain) override;
@@ -38,8 +38,11 @@ private:
 	void UpdateResourceManagers();
 	void ActiveDeviceAndStartRender();
 	static void __cdecl RenderLoop(void* weakRefVoid);
+	void BeginResetDevice();
+	void EndResetDevice();
 private:
-	DeviceContextMessagesHandler _messageHandler;
+	WRL::ComPtr<INativeWindow> _dummyWindow;
+	WRL::ComPtr<IDeviceContextCallback> _callback;
 	WRL::ComPtr<IDirect3D9> _d3d;
 	WRL::ComPtr<IDirect3DDevice9> _device;
 	std::atomic<bool> _isRenderLoopActive = false;

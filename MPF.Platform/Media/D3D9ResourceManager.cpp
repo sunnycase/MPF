@@ -141,22 +141,6 @@ void ::NS_PLATFORM::Transform(std::vector<D3D::StrokeVertex>& vertices, const Re
 	EmplaceLine(vertices, rightTop, rightBottom, rtDirVec, rbDirVec);
 	EmplaceLine(vertices, rightBottom, leftBottom, rbDirVec, lbDirVec);
 	EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
-
-	vertices.emplace_back(D3D::StrokeVertex
-	{
-		{ 0, 0, 0.f },
-		{ 0 ,1 },{ 0, 0 }, D3D::StrokeVertex::ST_QuadraticBezier
-	});
-	vertices.emplace_back(D3D::StrokeVertex
-	{
-		{ 100, 0, 0.f },
-		{ 0 ,1 },{ 0.5f, 0 }, D3D::StrokeVertex::ST_QuadraticBezier
-	});
-	vertices.emplace_back(D3D::StrokeVertex
-	{
-		{ 200, 200, 0.f },
-		{ 3.f ,1 },{ 1, 1 }, D3D::StrokeVertex::ST_QuadraticBezier
-	});
 }
 
 void ::NS_PLATFORM::Transform(std::vector<D3D::StrokeVertex>& vertices, const PathGeometry& geometry)
@@ -221,15 +205,19 @@ namespace
 		}
 
 		// Í¨¹ý IDrawCallList ¼Ì³Ð
-		virtual void Draw() override
+		virtual void Draw(const DirectX::XMFLOAT4X4& modelTransform) override
 		{
+			using namespace D3D;
+
+			ThrowIfFailed(_device->SetVertexShaderConstantF(VSCSlot_ModelTransform, modelTransform.m[0], VSCSize_ModelTransform));
 			float constants[4] = { 0 };
 			for (auto&& rc : _strokeRenderCalls)
 			{
-				ThrowIfFailed(_device->SetStreamSource(0, rc.VB.Get(), 0, rc.Stride));
+				auto vb = _resMgr->GetVertexBuffer(rc);
+				ThrowIfFailed(_device->SetStreamSource(0, vb, 0, rc.Stride));
 				constants[0] = rc.Thickness;
-				ThrowIfFailed(_device->SetVertexShaderConstantF(12, constants, 1));
-				ThrowIfFailed(_device->SetVertexShaderConstantF(16, rc.Color, 1));
+				ThrowIfFailed(_device->SetVertexShaderConstantF(VSCSlot_Thickness, constants, VSCSize_Thickness));
+				ThrowIfFailed(_device->SetVertexShaderConstantF(VSCSlot_Color, rc.Color, VSCSize_Color));
 				ThrowIfFailed(_device->DrawPrimitive(D3DPT_TRIANGLELIST, rc.StartVertex, rc.PrimitiveCount));
 			}
 		}
@@ -318,4 +306,14 @@ bool D3D9ResourceManager::TryGet(IResource* res, StorkeRenderCall& rc) const
 		break;
 	}
 	return false;
+}
+
+void D3D9ResourceManager::BeginResetDevice()
+{
+	_strokeVBMgr.BeginResetDevice();
+}
+
+void D3D9ResourceManager::EndResetDevice()
+{
+	_strokeVBMgr.EndResetDevice();
 }

@@ -6,11 +6,6 @@ using System.Threading.Tasks;
 
 namespace MPF.Interop
 {
-    enum DeviceContextMessage : uint
-    {
-        DCM_Render
-    }
-
     enum RenderBackendType : uint
     {
         RBT_Any,
@@ -18,7 +13,13 @@ namespace MPF.Interop
         RBT_OpenGL
     }
 
-    internal delegate void DeviceContextMessageHandler(DeviceContextMessage message);
+    [ComImport]
+    [Guid("B82A3B78-E27D-41B3-8EDE-6190D2FFD261")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    internal interface IDeviceContextCallback
+    {
+        void OnRender();
+    }
 
     [ComImport]
     [Guid("CDFF5B2C-2CFB-4D80-A378-1B0F1AD95B41")]

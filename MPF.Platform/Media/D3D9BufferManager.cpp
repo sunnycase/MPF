@@ -113,6 +113,17 @@ void D3D9VertexBufferManager::BufferEntry::Upload()
 	}
 }
 
+void D3D9VertexBufferManager::BufferEntry::BeginResetDevice()
+{
+	_buffer.Reset();
+}
+
+void D3D9VertexBufferManager::BufferEntry::EndResetDevice(IDirect3DDevice9* device)
+{
+	ThrowIfFailed(device->CreateVertexBuffer(UINT(_cpuData.size()), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &_buffer, nullptr));
+	_gpuDirty = true;
+}
+
 void D3D9VertexBufferManager::BufferEntry::CombineFreeNode(typename std::list<FreeEntry>::iterator it)
 {
 	assert(it != _freeList.end());
@@ -122,7 +133,9 @@ void D3D9VertexBufferManager::BufferEntry::CombineFreeNode(typename std::list<Fr
 		if (left->offset + left->length == it->offset)
 		{
 			left->length += it->length;
-			CombineFreeNode(_freeList.erase(it));
+			auto next = _freeList.erase(it);
+			if (next != _freeList.end())
+				CombineFreeNode(next);
 			return;
 		}
 	}
@@ -139,5 +152,22 @@ void D3D9VertexBufferManager::BufferEntry::CombineFreeNode(typename std::list<Fr
 
 RenderCall D3D9VertexBufferManager::GetDrawCall(const RentInfo& rent)
 {
-	return{ _buffers[rent.entryIdx].GetBuffer(), _stride, UINT(rent.offset), UINT(rent.length / 3) };
+	return{ this, rent.entryIdx, _stride, UINT(rent.offset), UINT(rent.length / 3) };
+}
+
+void D3D9VertexBufferManager::BeginResetDevice()
+{
+	for (auto&& entry : _buffers)
+		entry.BeginResetDevice();
+}
+
+void D3D9VertexBufferManager::EndResetDevice()
+{
+	for (auto&& entry : _buffers)
+		entry.EndResetDevice(_device.Get());
+}
+
+IDirect3DVertexBuffer9* D3D9VertexBufferManager::GetVertexBuffer(const RenderCall& renderCall) const noexcept
+{
+	return _buffers[renderCall.BufferIdx].GetBuffer();
 }

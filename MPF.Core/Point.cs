@@ -23,5 +23,10 @@ namespace MPF
         {
             return new Vector2(point.X, point.Y);
         }
+
+        public static explicit operator Point(Vector2 vector)
+        {
+            return new Point(vector.X, vector.Y);
+        }
     }
 }

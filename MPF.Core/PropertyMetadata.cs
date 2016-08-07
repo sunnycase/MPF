@@ -40,6 +40,7 @@ namespace MPF
 
         internal void RaisePropertyChanged(object sender, PropertyChangedEventArgs<T> e)
         {
+            OnPropertyChanged(sender, e);
             PropertyChanged?.Invoke(sender, e);
         }
 

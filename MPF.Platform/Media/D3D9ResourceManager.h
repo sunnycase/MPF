@@ -102,6 +102,13 @@ public:
 
 	virtual std::shared_ptr<IDrawCallList> CreateDrawCallList(RenderCommandBuffer* rcb) override;
 	bool TryGet(IResource* res, StorkeRenderCall& rc) const;
+
+	virtual void BeginResetDevice() override;
+	virtual void EndResetDevice() override;
+	IDirect3DVertexBuffer9* GetVertexBuffer(const StorkeRenderCall& renderCall) const noexcept
+	{
+		return _strokeVBMgr.GetVertexBuffer(renderCall);
+	}
 protected:
 	DECL_GET_TRC(LineGeometry);
 	DECL_GET_TRC(RectangleGeometry);

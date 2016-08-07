@@ -9,10 +9,12 @@
 #include "ResourceManagerBase.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
+using namespace DirectX;
 
 RenderableObject::RenderableObject()
 	:_isDirty(true), _isBufferDirty(true)
 {
+	XMStoreFloat4x4(&_modelTransform, XMMatrixTranspose(XMMatrixIdentity()));
 }
 
 void RenderableObject::SetContent(IRenderCommandBuffer * buffer)
@@ -25,14 +27,13 @@ void RenderableObject::SetContent(IRenderCommandBuffer * buffer)
 	}
 }
 
+void RenderableObject::SetOffset(float x, float y)
+{
+	XMStoreFloat4x4(&_modelTransform, XMMatrixTranspose(XMMatrixIdentity() * XMMatrixTranslation(x, y, 0)));
+}
+
 void RenderableObject::Update()
 {
-	if ((_flags | ROF_MeasureDirty) && _measureCallback)
-	{
-		_measureCallback();
-		_flags &= ~ROF_MeasureDirty;
-	}
-
 	if (_isDirty)
 	{
 		if (_buffer)
@@ -49,7 +50,7 @@ void RenderableObject::Update()
 void RenderableObject::Draw()
 {
 	if (auto drawCallList = _drawCallList)
-		drawCallList->Draw();
+		drawCallList->Draw(_modelTransform);
 }
 
 void RenderableObject::SetBufferDirty()

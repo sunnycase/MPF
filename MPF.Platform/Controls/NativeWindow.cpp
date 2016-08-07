@@ -10,11 +10,11 @@
 #include <algorithm>
 using namespace WRL;
 
-HRESULT __stdcall CreateNativeWindow(NS_PLATFORM::NativeWindowMessageHandler messageHandler, NS_PLATFORM::INativeWindow** obj) noexcept
+HRESULT __stdcall CreateNativeWindow(NS_PLATFORM::INativeWindowCallback* callback, NS_PLATFORM::INativeWindow** obj) noexcept
 {
 	try
 	{
-		*obj = Make<NS_PLATFORM::NativeWindow>(messageHandler).Detach();
+		*obj = Make<NS_PLATFORM::NativeWindow>(callback).Detach();
 		return S_OK;
 	}
 	CATCH_ALL();
@@ -51,6 +51,70 @@ void NativeWindow::RegisterNativeWindowClass()
 
 		ThrowWin32IfNot(RegisterClassEx(&wndCls));
 	}
+}
+
+void NativeWindow::BroadcastMessage(NativeWindowMessages message)
+{
+	std::for_each(_messageHandlers.begin(), _messageHandlers.end(), [=](auto&& handler) {handler(message); });
+}
+
+HRESULT NativeWindow::get_Location(MPF::Platform::Point *value)
+{
+	try
+	{
+		RECT rect;
+		ThrowWin32IfNot(GetWindowRect(_hWnd, &rect));
+		value->X = float(rect.left);
+		value->Y = float(rect.top);
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
+HRESULT NativeWindow::put_Location(MPF::Platform::Point value)
+{
+	try
+	{
+		ThrowWin32IfNot(SetWindowPos(_hWnd, nullptr, int(value.X), int(value.Y), 0, 0, SWP_NOSIZE));
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
+HRESULT NativeWindow::get_Size(MPF::Platform::Point *value)
+{
+	try
+	{
+		RECT rect;
+		ThrowWin32IfNot(GetWindowRect(_hWnd, &rect));
+		value->X = float(rect.right - rect.left);
+		value->Y = float(rect.bottom - rect.top);
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
+HRESULT NativeWindow::put_Size(MPF::Platform::Point value)
+{
+	try
+	{
+		ThrowWin32IfNot(SetWindowPos(_hWnd, nullptr, 0, 0, int(value.X), int(value.Y), SWP_NOMOVE));
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
+HRESULT NativeWindow::get_ClientSize(MPF::Platform::Point *value)
+{
+	try
+	{
+		RECT rect;
+		ThrowWin32IfNot(GetClientRect(_hWnd, &rect));
+		value->X = float(rect.right - rect.left);
+		value->Y = float(rect.bottom - rect.top);
+		return S_OK;
+	}
+	CATCH_ALL();
 }
 
 HRESULT NativeWindow::get_NativeHandle(INT_PTR * value)
@@ -177,8 +241,8 @@ LRESULT CALLBACK NativeWindow::NativeWindowProcWrapper(HWND hWnd, uint32_t uMsg,
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-NativeWindow::NativeWindow(NativeWindowMessageHandler messageHandler)
-	:_weakRef(new WeakRef<NativeWindow>(AsWeak())), _messageHandler(messageHandler)
+NativeWindow::NativeWindow(INativeWindowCallback* callback)
+	:_weakRef(new WeakRef<NativeWindow>(AsWeak())), _callback(callback)
 {
 	RegisterNativeWindowClass();
 	CreateWindow();
@@ -193,7 +257,7 @@ void NativeWindow::CreateWindow()
 	if (!_hWnd)
 	{
 		_hWnd = CreateWindowEx(0, MPFWindowClassName, nullptr,
-			WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+			WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_SIZEBOX | WS_CLIPCHILDREN,
 			CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 			nullptr, nullptr, GetModuleHandle(nullptr), _weakRef);
 		ThrowWin32IfNot(_hWnd);
@@ -205,9 +269,24 @@ LRESULT NativeWindow::WindowProc(HWND hWnd, uint32_t uMsg, WPARAM wParam, LPARAM
 	switch (uMsg)
 	{
 	case WM_CLOSE:
-		_messageHandler(NWM_Closing);
-		std::for_each(_messageHandlers.begin(), _messageHandlers.end(), [](auto&& handler) {handler(NWM_Closing); });
+		_callback->OnClosing();
+		BroadcastMessage(NWM_Closing);
 		return 0;
+	case WM_WINDOWPOSCHANGED:
+	{
+		auto args = reinterpret_cast<WINDOWPOS*>(lParam);
+		bool hasChange = !(args->flags & SWP_NOMOVE) || !(args->flags & SWP_NOSIZE);
+		if (hasChange)
+		{
+			if (!(args->flags & SWP_NOMOVE))
+				_callback->OnLocationChanged(Point{ float(args->x),float(args->y) });
+			if (!(args->flags & SWP_NOSIZE))
+				_callback->OnSizeChanged(Point{ float(args->cx),float(args->cy) });
+			BroadcastMessage(NWM_SizeChanged);
+			return 0;
+		}
+		break;
+	}
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;

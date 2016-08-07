@@ -12,6 +12,7 @@
 #include "Pen.h"
 #include "../../inc/WeakReferenceBase.h"
 #include "RenderCommandBuffer.h"
+#include "DirectXMath.h"
 
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
@@ -26,7 +27,7 @@ struct ITransformedResourceContainer
 
 struct IDrawCallList : std::enable_shared_from_this<IDrawCallList>
 {
-	virtual void Draw() = 0;
+	virtual void Draw(const DirectX::XMFLOAT4X4& modelTransform) = 0;
 	virtual void Update() = 0;
 };
 
@@ -66,6 +67,9 @@ public:
 	void Update();
 	virtual std::shared_ptr<IDrawCallList> CreateDrawCallList(RenderCommandBuffer* rcb) = 0;
 	void AddDependentDrawCallList(std::weak_ptr<IDrawCallList>&& dcl, IResource* res);
+
+	virtual void BeginResetDevice() {}
+	virtual void EndResetDevice() {}
 protected:
 	virtual ITransformedResourceContainer<LineGeometry>& GetLineGeometryTRC() noexcept = 0;
 	virtual ITransformedResourceContainer<RectangleGeometry>& GetRectangleGeometryTRC() noexcept = 0;

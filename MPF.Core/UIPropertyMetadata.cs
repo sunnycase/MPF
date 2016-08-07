@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MPF.Media
+namespace MPF
 {
     [Flags]
     public enum UIPropertyMetadataOptions
     {
-        None = 0,
-        AffectMeasure = 1
+        None = 0x0,
+        AffectMeasure = 0x1,
+        AffectRender = 0x2
     }
 
     public class UIPropertyMetadata<T> : PropertyMetadata<T>
@@ -37,7 +38,9 @@ namespace MPF.Media
         protected override void OnPropertyChanged(object sender, PropertyChangedEventArgs<T> e)
         {
             if (_uiOptions.HasFlag(UIPropertyMetadataOptions.AffectMeasure))
-                (sender as UIElement)?.RegisterMeasure();
+                (sender as UIElement)?.InvalidateMeasure();
+            if (_uiOptions.HasFlag(UIPropertyMetadataOptions.AffectRender))
+                (sender as UIElement)?.RegisterRender();
             base.OnPropertyChanged(sender, e);
         }
     }

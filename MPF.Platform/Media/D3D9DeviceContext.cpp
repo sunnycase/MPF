@@ -11,13 +11,34 @@
 #include "D3D9Vertex.h"
 #include "../resource.h"
 #include "../NativeApplication.h"
+#include "../Controls/NativeWindow.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 using namespace D3D;
 using namespace concurrency;
 
-D3D9DeviceContext::D3D9DeviceContext(DeviceContextMessagesHandler messageHandler)
-	:_rootSwapChainLock(5000), _messageHandler(messageHandler), _renderObjectContainer(std::make_shared<RenderableObjectContainer<D3D9RenderableObject>>())
+namespace
+{
+	class DummyWindowCallback : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, INativeWindowCallback>
+	{
+		// Í¨¹ý RuntimeClass ¼Ì³Ð
+		STDMETHODIMP OnClosing(void) override
+		{
+			return S_OK;
+		}
+		STDMETHODIMP OnLocationChanged(Point location) override
+		{
+			return S_OK;
+		}
+		STDMETHODIMP OnSizeChanged(Point size) override
+		{
+			return S_OK;
+		}
+	};
+}
+
+D3D9DeviceContext::D3D9DeviceContext(IDeviceContextCallback* callback)
+	:_rootSwapChainLock(5000), _callback(callback), _renderObjectContainer(std::make_shared<RenderableObjectContainer<D3D9RenderableObject>>())
 {
 	_d3d.Attach(Direct3DCreate9(D3D_SDK_VERSION));
 	ThrowIfNot(_d3d, L"Cannot Initialize Direct3D 9 Interface.");
@@ -28,6 +49,9 @@ D3D9DeviceContext::D3D9DeviceContext(DeviceContextMessagesHandler messageHandler
 		if (auto me = weakRef.Resolve())
 			me->_isRenderLoopActive = false;
 	});
+
+	auto dummyCallback = Make<DummyWindowCallback>();
+	ThrowIfFailed(CreateNativeWindow(dummyCallback.Get(), &_dummyWindow));
 }
 
 D3D9DeviceContext::~D3D9DeviceContext()
@@ -42,19 +66,16 @@ STDMETHODIMP D3D9DeviceContext::CreateSwapChain(INativeWindow * window, ISwapCha
 		auto locker = _rootSwapChainLock.Lock();
 		if (!_rootSwapChain)
 		{
-			auto d3dSwapChain = Make<D3D9SwapChain>(_d3d.Get(), window);
+			auto d3dSwapChain = Make<D3D9SwapChain>(_d3d.Get(), _dummyWindow.Get());
 			_device = d3dSwapChain->GetDevice();
 			_rootSwapChain = d3dSwapChain;
-			ThrowIfFailed(d3dSwapChain.CopyTo(swapChain));
 			ActiveDeviceAndStartRender();
 		}
-		else
-		{
-			ComPtr<D3D9ChildSwapChain> d3dSwapChain;
-			_rootSwapChain->CreateAdditionalSwapChain(window, &d3dSwapChain);
-			_childSwapChains.emplace_back(d3dSwapChain->GetWeakContext());
-			ThrowIfFailed(d3dSwapChain.CopyTo(swapChain));
-		}
+
+		ComPtr<D3D9ChildSwapChain> d3dSwapChain;
+		_rootSwapChain->CreateAdditionalSwapChain(window, &d3dSwapChain);
+		_childSwapChains.emplace_back(d3dSwapChain->GetWeakContext());
+		ThrowIfFailed(d3dSwapChain.CopyTo(swapChain));
 		return S_OK;
 	}
 	CATCH_ALL();
@@ -119,19 +140,21 @@ bool D3D9DeviceContext::IsActive() const noexcept
 
 void D3D9DeviceContext::DoFrame()
 {
-	_messageHandler(DeviceContextMessages::DCM_Render);
-	UpdateResourceManagers();
-	UpdateRenderObjects();
-
 	std::vector<ComPtr<D3D9SwapChainBase>> swapChains;
 	{
 		auto locker = _rootSwapChainLock.Lock();
-		if (_rootSwapChain)
-			swapChains.emplace_back(_rootSwapChain);
 		for (auto&& weakRef : _childSwapChains)
 			if (auto swapChain = weakRef.Resolve())
 				swapChains.emplace_back(swapChain);
 	}
+
+	for (auto&& swapChain : swapChains)
+		swapChain->Update();
+
+	_callback->OnRender();
+	UpdateResourceManagers();
+	UpdateRenderObjects();
+
 	for (auto&& swapChain : swapChains)
 		swapChain->DoFrame();
 }
@@ -185,6 +208,25 @@ void D3D9DeviceContext::RenderLoop(void * weakRefVoid)
 			me->DoFrameWrapper();
 		}
 	}
+}
+
+void D3D9DeviceContext::BeginResetDevice()
+{
+	for (auto&& resMgrRef : _resourceManagers)
+		if (auto resMgr = resMgrRef.Resolve())
+			resMgr->BeginResetDevice();
+	ThrowIfFailed(_device->SetPixelShader(nullptr));
+	ThrowIfFailed(_device->SetVertexShader(nullptr));
+	ThrowIfFailed(_device->SetVertexDeclaration(nullptr));
+	ThrowIfFailed(_device->SetStreamSource(0, nullptr, 0, 0));
+}
+
+void D3D9DeviceContext::EndResetDevice()
+{
+	CreateDeviceResourcesAsync().get();
+	for (auto&& resMgrRef : _resourceManagers)
+		if (auto resMgr = resMgrRef.Resolve())
+			resMgr->EndResetDevice();
 }
 
 HRESULT D3D9DeviceContext::CreateResourceManager(IResourceManager **resMgr)

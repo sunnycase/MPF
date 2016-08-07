@@ -8,7 +8,7 @@ using MPF.Media;
 
 namespace MPF.Controls
 {
-    public class Window : UIElement
+    public class Window : Decorator
     {
         private readonly CoreWindow _coreWindow = new CoreWindow();
 
@@ -16,6 +16,8 @@ namespace MPF.Controls
             new PropertyMetadata<bool>(true, propertyChangedHandler: OnHasMaximizePropertyChanged));
         public static readonly DependencyProperty<string> TitleProperty = DependencyProperty.Register(nameof(Title), typeof(Window), 
             new PropertyMetadata<string>(string.Empty, propertyChangedHandler: OnTitlePropertyChanged));
+        public static readonly DependencyProperty<Size> SizeProperty = DependencyProperty.Register(nameof(Size), typeof(Window),
+            new UIPropertyMetadata<Size>(DependencyProperty.UnsetValue, UIPropertyMetadataOptions.AffectMeasure, OnSizePropertyChanged));
 
         public bool HasMaximize
         {
@@ -29,51 +31,35 @@ namespace MPF.Controls
             set { SetValue(TitleProperty, value); }
         }
 
+        public Size Size
+        {
+            get { return GetValue(SizeProperty); }
+            set { SetValue(SizeProperty, value); }
+        }
+
         public Window()
         {
             _coreWindow.HasMaximize = HasMaximize;
             _coreWindow.Title = Title;
+            Size = _coreWindow.Size;
+            _coreWindow.SizeChanged += coreWindow_SizeChanged;
 
             _coreWindow.SetRootVisual(this);
-
-            using (var ctx = _testGeometry4.Open())
-            {
-                ctx.MoveTo(new Point(10, 10));
-                ctx.LineTo(new Point(350, 420));
-                ctx.ArcTo(new Point(450, 420), 110);
-            }
         }
 
+        private void coreWindow_SizeChanged(object sender, EventArgs e)
+        {
+            Size = _coreWindow.Size;
+        }
 
-        private readonly Geometry _testGeometry = new RectangleGeometry
+        private static void OnSizePropertyChanged(object sender, PropertyChangedEventArgs<Size> e)
         {
-            LeftTop = new Point(200, 300),
-            RigthBottom = new Point(400, 100)
-        };
-        private readonly Geometry _testGeometry2 = new RectangleGeometry
-        {
-            LeftTop = new Point(300, 400),
-            RigthBottom = new Point(500, 200)
-        };
-        private readonly Geometry _testGeometry3 = new LineGeometry
-        {
-            StartPoint = new Point(300, 400),
-            EndPoint = new Point(500, 200)
-        };
-        private readonly StreamGeometry _testGeometry4 = new StreamGeometry();
-        private readonly Pen _testPen = new Pen
-        {
-            Brush = new SolidColorBrush { Color = Color.FromArgb(0xFF33EECC) },
-            Thickness = 1
-        };
+            ((Window)sender)._coreWindow.Size = e.NewValue;
+        }
 
-        protected override void OnRender(IDrawingContext drawingContext)
+        protected override Size ArrangeOverride(Size finalSize)
         {
-            base.OnRender(drawingContext);
-            //drawingContext.DrawGeometry(_testGeometry, _testPen);
-            drawingContext.DrawGeometry(_testGeometry2, _testPen);
-            //drawingContext.DrawGeometry(_testGeometry3, _testPen);
-            drawingContext.DrawGeometry(_testGeometry4, _testPen);
+            return _coreWindow.ClientSize;
         }
 
         public void Show()

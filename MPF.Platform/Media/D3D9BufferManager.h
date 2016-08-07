@@ -19,9 +19,12 @@ struct RentInfo
 	size_t length;
 };
 
+class D3D9VertexBufferManager;
+
 struct RenderCall
 {
-	WRL::ComPtr<IDirect3DVertexBuffer9> VB;
+	D3D9VertexBufferManager* VBMgr;
+	size_t BufferIdx;
 	UINT Stride;
 	UINT StartVertex;
 	UINT PrimitiveCount;
@@ -49,6 +52,8 @@ class D3D9VertexBufferManager
 		void Retire(const RentInfo& rent);
 		void Update(const RentInfo& rent, size_t offset, const void* src, size_t length);
 		void Upload();
+		void BeginResetDevice();
+		void EndResetDevice(IDirect3DDevice9* device);
 
 		IDirect3DVertexBuffer9* GetBuffer() const noexcept { return _buffer.Get(); }
 	private:
@@ -63,11 +68,15 @@ class D3D9VertexBufferManager
 public:
 	D3D9VertexBufferManager(IDirect3DDevice9* device, UINT stride);
 
+	IDirect3DVertexBuffer9* GetVertexBuffer(const RenderCall& renderCall) const noexcept;
 	RentInfo Allocate(size_t length);
 	void Retire(const RentInfo& rent);
 	void Update(const RentInfo& rent, size_t offset, const void* src, size_t length);
 	void Upload();
 	RenderCall GetDrawCall(const RentInfo& rent);
+
+	void BeginResetDevice();
+	void EndResetDevice();
 private:
 private:
 	const UINT _stride;

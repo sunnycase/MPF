@@ -11,6 +11,23 @@ interface IResource : IUnknown
 
 };
 
+typedef struct
+{
+	float X, Y;
+} Point;
+
+[
+	uuid(12DCA941-A675-4A79-81E0-2378753D6DAF),
+	helpstring("Native Window Callback Interface"),
+	version(1.0)
+]
+interface INativeWindowCallback : IUnknown
+{
+	HRESULT OnClosing();
+	HRESULT OnLocationChanged([in]Point location);
+	HRESULT OnSizeChanged([in]Point size);
+};
+
 [
 	uuid(2705FA1D-68BA-4E2B-92D4-846AE0A8D208),
 	helpstring("Native Window Interface"),
@@ -30,6 +47,19 @@ interface INativeWindow : IUnknown
 
 	[propget]
 	HRESULT NativeHandle([out]INT_PTR* value);
+	
+	[propget]
+	HRESULT Location([out]Point* value);
+	[propput]
+	HRESULT Location([in]Point value);
+
+	[propget]
+	HRESULT Size([out]Point* value);
+	[propput]
+	HRESULT Size([in]Point value);
+
+	[propget]
+	HRESULT ClientSize([out]Point* value);
 
 	HRESULT Show();
 	HRESULT Hide();
@@ -50,12 +80,6 @@ interface INativeApplication : IUnknown
 interface ISwapChain;
 interface IRenderCommandBuffer;
 
-typedef enum
-{
-	ROF_None = 0,
-	ROF_MeasureDirty = 1
-} RenderableObjectFlags;
-
 [
 	uuid(7316E516-0357-4F99-82D8-181F2BD289C6),
 	helpstring("Renderable Object Interface"),
@@ -63,9 +87,8 @@ typedef enum
 ]
 interface IRenderableObject : IUnknown
 {
+	HRESULT SetOffset([in]float x, [in]float y);
 	HRESULT SetContent([in]IRenderCommandBuffer* buffer);
-	HRESULT SetFlags([in]RenderableObjectFlags flags);
-	HRESULT SetMeasureCallback([in]INT_PTR callback);
 	HRESULT Render();
 };
 
@@ -76,6 +99,7 @@ interface IRenderableObject : IUnknown
 ]
 interface ISwapChainCallback : IUnknown
 {
+	HRESULT OnUpdate();
 	HRESULT OnDraw();
 };
 
@@ -110,11 +134,6 @@ typedef enum
 
 typedef struct
 {
-	float X, Y;
-} Point;
-
-typedef struct
-{
 	float A, R, G, B;
 } ColorF;
 
@@ -144,6 +163,16 @@ interface IResourceManager : IUnknown
 	HRESULT UpdatePathGeometry([in]IResource* res, [in, size_is(length)]byte* data, [in]UINT32 length);
 	HRESULT UpdateSolidColorBrush([in]IResource* res, [in]ColorF* color);
 	HRESULT UpdatePen([in]IResource* res, [in]float thickness, [in]IResource* brush);
+};
+
+[
+	uuid(B82A3B78-E27D-41B3-8EDE-6190D2FFD261),
+	helpstring("Device Context Callback Interface"),
+	version(1.0)
+]
+interface IDeviceContextCallback : IUnknown
+{
+	HRESULT OnRender();
 };
 
 [

@@ -13,11 +13,11 @@ using namespace WRL;
 namespace
 {
 	template<class T>
-	HRESULT CreateDeviceContext(NS_PLATFORM::DeviceContextMessagesHandler messageHandler, NS_PLATFORM::IDeviceContext** obj) noexcept
+	HRESULT CreateDeviceContext(NS_PLATFORM::IDeviceContextCallback* callback, NS_PLATFORM::IDeviceContext** obj) noexcept
 	{
 		try
 		{
-			*obj = Make<T>(messageHandler).Detach();
+			*obj = Make<T>(callback).Detach();
 			return S_OK;
 		}
 		CATCH_ALL();
@@ -25,7 +25,7 @@ namespace
 
 #define RETURN_IF_SUCCEEDED(hr) if(SUCCEEDED(hr)) return hr
 
-	typedef HRESULT(*fnCreateDeviceContext)(NS_PLATFORM::DeviceContextMessagesHandler, NS_PLATFORM::IDeviceContext**);
+	typedef HRESULT(*fnCreateDeviceContext)(NS_PLATFORM::IDeviceContextCallback*, NS_PLATFORM::IDeviceContext**);
 	static fnCreateDeviceContext cdcFns[NS_PLATFORM::RBT_COUNT] =
 	{
 		nullptr,
@@ -34,18 +34,18 @@ namespace
 	};
 }
 
-HRESULT __stdcall CreateDeviceContext(NS_PLATFORM::RenderBackendType preferredBackend, NS_PLATFORM::DeviceContextMessagesHandler messageHandler, NS_PLATFORM::IDeviceContext** obj) noexcept
+HRESULT __stdcall CreateDeviceContext(NS_PLATFORM::RenderBackendType preferredBackend, NS_PLATFORM::IDeviceContextCallback* callback, NS_PLATFORM::IDeviceContext** obj) noexcept
 {
 	auto hr = E_FAIL;
 	if (preferredBackend != NS_PLATFORM::RBT_Any)
 	{
-		hr = cdcFns[preferredBackend](messageHandler, obj);
+		hr = cdcFns[preferredBackend](callback, obj);
 		RETURN_IF_SUCCEEDED(hr);
 	}
 	for (size_t i = 1; i < _countof(cdcFns); ++i)
 	{
 		if (i == preferredBackend)continue;
-		hr = cdcFns[i](messageHandler, obj);
+		hr = cdcFns[i](callback, obj);
 		RETURN_IF_SUCCEEDED(hr);
 	}
 	return hr;

@@ -56,21 +56,11 @@ STDMETHODIMP RenderableObjectRef::Render()
 	CATCH_ALL();
 }
 
-STDMETHODIMP RenderableObjectRef::SetFlags(RenderableObjectFlags flags)
+STDMETHODIMP RenderableObjectRef::SetOffset(float x, float y)
 {
 	try
 	{
-		_container->FindObject(_handle).SetFlags(flags);
-		return S_OK;
-	}
-	CATCH_ALL();
-}
-
-STDMETHODIMP RenderableObjectRef::SetMeasureCallback(INT_PTR callback)
-{
-	try
-	{
-		_container->FindObject(_handle).SetMeasureCallback(reinterpret_cast<RenderableObjectAction>(callback));
+		_container->FindObject(_handle).SetOffset(x, y);
 		return S_OK;
 	}
 	CATCH_ALL();

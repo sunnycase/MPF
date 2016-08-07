@@ -21,15 +21,21 @@ namespace MPF.HelloWorld
     {
         private readonly Window _window;
         private Window _window2;
-        private Geometry _geometry;
 
         public Application()
         {
-            _window = new Window();
+            _window = new Window
+            {
+                Size = new Size(300, 180)
+            };
+            _window.Child = new Border
+            {
+                BorderThickness = new Thickness(1.0f),
+                BorderBrush = new SolidColorBrush { Color = Color.FromArgb(0xFF888888) },
+                Margin = new Thickness(5),
+            };
             _window.Show();
             ChangeMaximizeBox();
-            _geometry = new LineGeometry();
-            //ShowWindow2();
         }
 
         private void ShowWindow2()

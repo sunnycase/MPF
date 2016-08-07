@@ -15,14 +15,14 @@ DEFINE_NS_PLATFORM
 class GLDeviceContext : public WeakReferenceBase<GLDeviceContext, WRL::RuntimeClassFlags<WRL::ClassicCom>, IDeviceContext>
 {
 public:
-	GLDeviceContext(DeviceContextMessagesHandler messageHandler);
+	GLDeviceContext(IDeviceContextCallback* callback);
 	virtual ~GLDeviceContext();
 
 	STDMETHODIMP CreateSwapChain(INativeWindow* window, ISwapChain** swapChain) override;
 	STDMETHODIMP CreateRenderableObject(IRenderableObject ** obj) override;
 	STDMETHODIMP CreateResourceManager(IResourceManager **resMgr);
 private:
-	DeviceContextMessagesHandler _messageHandler;
+	WRL::ComPtr<IDeviceContextCallback> _callback;
 	std::shared_ptr<RenderableObjectContainer<RenderableObject>> _renderObjectContainer;
 };
 

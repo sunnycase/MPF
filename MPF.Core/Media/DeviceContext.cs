@@ -19,19 +19,7 @@ namespace MPF.Media
         private readonly IDeviceContext _deviceContext;
         private DeviceContext()
         {
-            _deviceContext = Platform.CreateDeviceContext(RenderBackendType.RBT_Direct3D9, OnDeviceContextMessage);
-        }
-
-        private void OnDeviceContextMessage(DeviceContextMessage message)
-        {
-            switch (message)
-            {
-                case DeviceContextMessage.DCM_Render:
-                    OnRender();
-                    break;
-                default:
-                    break;
-            }
+            _deviceContext = Platform.CreateDeviceContext(RenderBackendType.RBT_Direct3D9, new Callback(this));
         }
 
         private void OnRender()
@@ -54,6 +42,29 @@ namespace MPF.Media
         public IResourceManager CreateResourceManager()
         {
             return _deviceContext.CreateResourceManager();
+        }
+        
+        private class Callback : IDeviceContextCallback
+        {
+            private readonly WeakReference<DeviceContext> _deviceContext;
+
+            public Callback(DeviceContext deviceContext)
+            {
+                _deviceContext = new WeakReference<DeviceContext>(deviceContext);
+            }
+
+            public void OnRender()
+            {
+                GetTarget()?.OnRender();
+            }
+
+            private DeviceContext GetTarget()
+            {
+                DeviceContext obj;
+                if (_deviceContext.TryGetTarget(out obj))
+                    return obj;
+                return null;
+            }
         }
     }
 }

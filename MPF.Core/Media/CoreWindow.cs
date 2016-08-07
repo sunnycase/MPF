@@ -17,6 +17,8 @@ namespace MPF.Media
         private readonly SwapChain _swapChain;
 
         public event EventHandler<CancellableEventArgs> Closing;
+        public event EventHandler LocationChanged;
+        public event EventHandler SizeChanged;
 
         public bool HasMaximize
         {
@@ -30,46 +32,29 @@ namespace MPF.Media
             set { _nativeWindow.Title = value; }
         }
 
-        private Visual _rootVisual;
+        public Point Location
+        {
+            get { return _nativeWindow.Location; }
+            set { _nativeWindow.Location = value; }
+        }
+
+        public Size Size
+        {
+            get { return _nativeWindow.Size; }
+            set { _nativeWindow.Size = value; }
+        }
+
+        public Size ClientSize
+        {
+            get { return _nativeWindow.ClientSize; }
+        }
+
+        private UIElement _rootVisual;
 
         public CoreWindow()
         {
-            _nativeWindow = Platform.CreateNativeWindow(OnNativeWindowMessage);
+            _nativeWindow = Platform.CreateNativeWindow(new Callback(this));
             _swapChain = DeviceContext.Current.CreateSwapChain(_nativeWindow);
-            DeviceContext.Current.Render += OnDeviceContextRender;
-            _swapChain.Draw += OnSwapChainDraw;
-        }
-
-        private void OnSwapChainDraw(object sender, EventArgs e)
-        {
-            OnRenderContent();
-        }
-
-        private void OnRenderContent()
-        {
-            _rootVisual?.RenderContent();
-        }
-
-        private void OnDeviceContextRender(object sender, EventArgs e)
-        {
-            OnRender();
-        }
-
-        private void OnNativeWindowMessage(NativeWindowMessages message)
-        {
-            switch (message)
-            {
-                case NativeWindowMessages.Closing:
-                    OnClosing();
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        private void OnRender()
-        {
-            _rootVisual?.Render();
         }
 
         private void OnClosing()
@@ -78,6 +63,16 @@ namespace MPF.Media
             Closing?.Invoke(this, e);
             if (!e.Cancelled)
                 _nativeWindow.Destroy();
+        }
+
+        private void OnSizeChanged(Size size)
+        {
+            SizeChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnLocationChanged(Point location)
+        {
+            LocationChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void Show()
@@ -90,11 +85,45 @@ namespace MPF.Media
             _nativeWindow.Hide();
         }
 
-        public void SetRootVisual(Visual visual)
+        public void SetRootVisual(UIElement visual)
         {
             if (_rootVisual != null)
                 throw new InvalidOperationException("Root Visual is already set.");
             _rootVisual = visual;
+            _swapChain.RootVisual = _rootVisual;
+        }
+
+        private class Callback : INativeWindowCallback
+        {
+            private readonly WeakReference<CoreWindow> _window;
+
+            public Callback(CoreWindow window)
+            {
+                _window = new WeakReference<CoreWindow>(window);
+            }
+
+            private CoreWindow GetTarget()
+            {
+                CoreWindow obj;
+                if (_window.TryGetTarget(out obj))
+                    return obj;
+                return null;
+            }
+
+            public void OnClosing()
+            {
+                GetTarget()?.OnClosing();
+            }
+
+            public void OnLocationChanged(Point location)
+            {
+                GetTarget()?.OnLocationChanged(location);
+            }
+
+            public void OnSizeChanged(Size size)
+            {
+                GetTarget()?.OnSizeChanged(size);
+            }
         }
     }
 }

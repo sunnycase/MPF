@@ -11,8 +11,8 @@
 using namespace WRL;
 using namespace NS_PLATFORM;
 
-GLDeviceContext::GLDeviceContext(DeviceContextMessagesHandler messageHandler)
-	:_messageHandler(messageHandler), _renderObjectContainer(std::make_shared<RenderableObjectContainer<RenderableObject>>())
+GLDeviceContext::GLDeviceContext(IDeviceContextCallback* callback)
+	:_callback(callback), _renderObjectContainer(std::make_shared<RenderableObjectContainer<RenderableObject>>())
 {
 
 }

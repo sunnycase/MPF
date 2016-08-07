@@ -47,6 +47,7 @@ namespace
 				<< identifier.DriverVersion.HighPart << '.' << identifier.DriverVersion.LowPart << '\n'
 				<< "Vertex Shader Version: " << D3DSHADER_VERSION_MAJOR(caps.VertexShaderVersion) << '.' << D3DSHADER_VERSION_MINOR(caps.VertexShaderVersion) << '\n'
 				<< "Pixel Shader Version: " << D3DSHADER_VERSION_MAJOR(caps.PixelShaderVersion) << '.' << D3DSHADER_VERSION_MINOR(caps.PixelShaderVersion) << '\n'
+				<< "Maximum Pixel Shader Instructions: " << caps.PS20Caps.NumInstructionSlots << '\n'
 				<< "Texture Memory Size: " << device->GetAvailableTextureMem() << " Bytes." << std::endl;
 			if (caps.PS20Caps.Caps)
 			{
@@ -94,6 +95,13 @@ void D3D9ChildSwapChain::DoFrame()
 	ComPtr<IDirect3DSurface9> backSurface;
 	ThrowIfFailed(_swapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &backSurface));
 	Draw(backSurface.Get());
+	ThrowIfFailed(_swapChain->Present(nullptr, nullptr, nullptr, nullptr, 0));
+}
+
+void D3D9ChildSwapChain::OnReset()
+{
+	auto params = CreatePresentParameters(_hWnd);
+	ThrowIfFailed(_device->CreateAdditionalSwapChain(&params, &_swapChain));
 }
 
 D3D9SwapChain::D3D9SwapChain(IDirect3D9 * d3d, INativeWindow * window)
@@ -115,9 +123,19 @@ void D3D9SwapChain::DoFrame()
 	ComPtr<IDirect3DSurface9> backSurface;
 	ThrowIfFailed(_device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backSurface));
 	Draw(backSurface.Get());
+	ThrowIfFailed(_device->Present(nullptr, nullptr, nullptr, nullptr));
 }
 
-D3DPRESENT_PARAMETERS D3D9SwapChain::CreatePresentParameters(HWND hWnd) const noexcept
+void D3D9SwapChain::OnReset()
+{
+	if (NeedReset)
+	{
+		auto params = CreatePresentParameters(_hWnd);
+		ThrowIfFailed(_device->Reset(&params));
+	}
+}
+
+D3DPRESENT_PARAMETERS D3D9SwapChainBase::CreatePresentParameters(HWND hWnd) const noexcept
 {
 	D3DPRESENT_PARAMETERS params{};
 	params.BackBufferCount = std::min(D3DPRESENT_BACK_BUFFERS_MAX, 2L);
@@ -163,6 +181,13 @@ void D3D9SwapChain::CreateDeviceResource(IDirect3D9 * d3d)
 D3D9SwapChainBase::D3D9SwapChainBase(INativeWindow* window)
 	:_hWnd(GetNativeHandle(window))
 {
+	ComPtr<INativeWindowIntern> windowIntern;
+	ThrowIfFailed(window->QueryInterface(IID_PPV_ARGS(&windowIntern)));
+	windowIntern->AppendMessageHandler([weakRef = AsWeak()](NativeWindowMessages message)
+	{
+		if (auto me = weakRef.Resolve())
+			me->OnNativeWindowMessage(message);
+	});
 	CreateWindowSizeDependentResources();
 }
 
@@ -174,6 +199,17 @@ HRESULT D3D9SwapChainBase::SetCallback(ISwapChainCallback * callback)
 		return S_OK;
 	}
 	CATCH_ALL();
+}
+
+void D3D9SwapChainBase::Update()
+{
+	if (_needResize)
+	{
+		OnReset();
+		_needResize = false;
+	}
+	if (auto callback = _callback)
+		callback->OnUpdate();
 }
 
 void D3D9SwapChainBase::CreateWindowSizeDependentResources()
@@ -206,5 +242,32 @@ void D3D9SwapChainBase::Draw(IDirect3DSurface9 * surface)
 		callback->OnDraw();
 
 	ThrowIfFailed(_device->EndScene());
-	ThrowIfFailed(_device->Present(nullptr, nullptr, nullptr, nullptr));
+}
+
+void D3D9SwapChainBase::OnNativeWindowMessage(NativeWindowMessages message)
+{
+	switch (message)
+	{
+	case MPF::Platform::NWM_Closing:
+		break;
+	case MPF::Platform::NWM_Closed:
+		break;
+	case MPF::Platform::NWM_SizeChanged:
+		OnResize();
+		break;
+	default:
+		break;
+	}
+}
+
+void D3D9SwapChainBase::OnResize()
+{
+	CreateWindowSizeDependentResources();
+	_needResize = true;
+}
+
+void D3D9SwapChain::OnResize()
+{
+	D3D9SwapChainBase::OnResize();
+	//NeedReset = true;
 }

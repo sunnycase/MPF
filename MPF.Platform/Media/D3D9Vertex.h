@@ -41,6 +41,12 @@ namespace D3D
 	{
 		VSCSlot_WorldViewProjection = 0,
 		VSCSize_WorldViewProjection = sizeof(WorldViewProjectionData) / 16,
+		VSCSlot_Thickness = VSCSlot_WorldViewProjection + VSCSize_WorldViewProjection,
+		VSCSize_Thickness = 1,
+		VSCSlot_Color = VSCSlot_Thickness + VSCSize_Thickness,
+		VSCSize_Color = 1,
+		VSCSlot_ModelTransform = VSCSlot_Color + VSCSize_Color,
+		VSCSize_ModelTransform = 4
 	};
 
 #pragma pack(pop)

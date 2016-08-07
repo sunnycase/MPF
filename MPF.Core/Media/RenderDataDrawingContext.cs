@@ -29,6 +29,7 @@ namespace MPF.Media
                 if (disposing)
                 {
                     CloseOverride(_renderData);
+                    _renderData.Dispose();
                 }
                 disposedValue = true;
             }
