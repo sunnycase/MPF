@@ -11,5 +11,5 @@ using namespace NS_PLATFORM;
 
 GlyphRun::GlyphRun()
 {
-
+	ThrowIfNot(FT_Init_FreeType(&_freetype) == 0, L"Cannot initialize Freetype.");
 }

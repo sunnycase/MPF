@@ -102,7 +102,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;freetype265MTd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
@@ -127,7 +127,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;freetype265MTd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
@@ -152,7 +152,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;freetype265MT.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
@@ -177,7 +177,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;freetype265MT.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>

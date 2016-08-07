@@ -192,7 +192,7 @@
       <Filter>源文件\Media\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Media\GlyphRun.cpp">
-      <Filter>源文件</Filter>
+      <Filter>源文件\Media</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

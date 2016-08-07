@@ -71,7 +71,6 @@ STDMETHODIMP D3D9DeviceContext::CreateSwapChain(INativeWindow * window, ISwapCha
 			_rootSwapChain = d3dSwapChain;
 			ActiveDeviceAndStartRender();
 		}
-
 		ComPtr<D3D9ChildSwapChain> d3dSwapChain;
 		_rootSwapChain->CreateAdditionalSwapChain(window, &d3dSwapChain);
 		_childSwapChains.emplace_back(d3dSwapChain->GetWeakContext());
