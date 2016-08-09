@@ -109,9 +109,6 @@
     <Midl>
       <HeaderFileName>%(Filename)_i.h</HeaderFileName>
     </Midl>
-    <PostBuildEvent>
-      <Command>copy /y $(TargetPath) $(SolutionDir)Tutorial\MPF.HelloDesktop\bin\Debug\</Command>
-    </PostBuildEvent>
     <FxCompile>
       <ObjectFileOutput>$(IntDir)%(Filename).cso</ObjectFileOutput>
     </FxCompile>
