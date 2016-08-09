@@ -141,7 +141,6 @@ protected:
 	};
 public:
 	ResourceContainer(size_t capacity = 231)
-		:_cleanupListCS(100)
 	{
 		Enlarge(capacity);
 	}
@@ -192,10 +191,7 @@ public:
 			auto& obj = _data[handle];
 			obj.Free();
 			obj.SetUnused();
-			{
-				auto locker = _cleanupListCS.Lock();
-				_cleanupList.emplace_back(size_t(handle));
-			}
+			_cleanupList.emplace_back(size_t(handle));
 			return S_OK;
 		}
 		CATCH_ALL();
@@ -203,7 +199,6 @@ public:
 
 	void CleanUp()
 	{
-		auto locker = _cleanupListCS.Lock();
 		for (auto&& handle : _cleanupList)
 		{
 			if (_freeList.empty())
@@ -262,7 +257,6 @@ private:
 		}
 	}
 protected:
-	WRL::Wrappers::CriticalSection _cleanupListCS;
 	std::vector<ObjectStorage> _data;
 	std::list<FreeListEntry> _freeList;
 	std::vector<UINT_PTR> _cleanupList;

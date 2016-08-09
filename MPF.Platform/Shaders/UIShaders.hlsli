@@ -15,3 +15,8 @@ struct PixelShaderInput
 	float2 ParamFormValue : TEXCOORD1;
 	int SegmentType : TEXCOORD2;
 };
+
+#define	ST_Linear				0
+#define	ST_QuadraticBezier		1
+#define	ST_CubicBezier			2
+#define	ST_Arc					3

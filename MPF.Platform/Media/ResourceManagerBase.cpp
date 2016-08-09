@@ -8,6 +8,7 @@
 #include "ResourceManagerBase.h"
 #include "ResourceRef.h"
 #include "RenderCommandBuffer.h"
+#include "FontManager.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 
@@ -15,7 +16,8 @@ using namespace NS_PLATFORM;
 _container##T(std::make_shared<ResourceContainer<T>>())
 
 ResourceManagerBase::ResourceManagerBase()
-	:CTOR_IMPL1(LineGeometry), CTOR_IMPL1(RectangleGeometry), CTOR_IMPL1(PathGeometry), CTOR_IMPL1(SolidColorBrush), CTOR_IMPL1(Pen)
+	:CTOR_IMPL1(LineGeometry), CTOR_IMPL1(RectangleGeometry), CTOR_IMPL1(PathGeometry), CTOR_IMPL1(SolidColorBrush), CTOR_IMPL1(Pen),
+	_containerCS(1000), _fontManager(std::make_shared<FontManager>())
 {
 }
 
@@ -30,6 +32,8 @@ HRESULT ResourceManagerBase::CreateResource(ResourceType resType, IResource ** r
 {
 	try
 	{
+		auto locker = _containerCS.Lock();
+
 		UINT_PTR handle;
 		std::shared_ptr<IResourceContainer> container = nullptr;
 		switch (resType)
@@ -44,7 +48,7 @@ HRESULT ResourceManagerBase::CreateResource(ResourceType resType, IResource ** r
 		}
 		if (container)
 		{
-			*res = Make<ResourceRef>(std::move(container), resType, handle).Detach();
+			*res = Make<ResourceRef>(GetWeakContext(), resType, handle).Detach();
 			return S_OK;
 		}
 		return E_INVALIDARG;
@@ -60,6 +64,7 @@ try																		\
 	auto& resObj = _container##T->FindResource(handle);
 
 #define UPDATE_RES_IMPL1_AFT(T)											\
+auto locker = _containerCS.Lock();										\
 _updated##T.emplace_back(handle);										\
 {																			   \
 	auto& ddcls = resObj.GetDependentDrawCallLists(); \
@@ -131,6 +136,15 @@ STDMETHODIMP ResourceManagerBase::UpdatePathGeometry(IResource * res, byte * dat
 	UPDATE_RES_IMPL1_AFT(PathGeometry);
 }
 
+HRESULT ResourceManagerBase::UpdatePathGeometry(IResource * res, std::vector<PathGeometrySegments::Segment>&& segments) noexcept
+{
+	UPDATE_RES_IMPL1_PRE(PathGeometry)
+		using namespace PathGeometrySegments;
+
+	resObj.Segments.swap(std::move(segments));
+	UPDATE_RES_IMPL1_AFT(PathGeometry);
+}
+
 HRESULT ResourceManagerBase::UpdateSolidColorBrush(IResource * res, ColorF * color)
 {
 	UPDATE_RES_IMPL1_PRE(SolidColorBrush)
@@ -179,6 +193,7 @@ trc##T.Remove(_container##T->GetCleanupList());
 
 void ResourceManagerBase::Update()
 {
+	auto locker = _containerCS.Lock();
 	{
 		UPDATE_IMPL2(LineGeometry);
 		UPDATE_IMPL1(LineGeometry);
@@ -212,6 +227,7 @@ void ResourceManagerBase::Update()
 
 void ResourceManagerBase::AddDependentDrawCallList(std::weak_ptr<IDrawCallList>&& dcl, IResource* res)
 {
+	auto locker = _containerCS.Lock();
 	if (!res) return;
 	auto resRef = static_cast<ResourceRef*>(res);
 	switch (resRef->GetType())
@@ -223,4 +239,35 @@ void ResourceManagerBase::AddDependentDrawCallList(std::weak_ptr<IDrawCallList>&
 	default:
 		break;
 	}
+}
+
+#define RETIRERES_IMPL1(T)														\
+	case RT_##T:																\
+		_container##T->RetireResource(resRef->GetHandle());						\
+		break;
+
+void ResourceManagerBase::RetireResource(IResource * res)
+{
+	auto locker = _containerCS.Lock();
+	if (!res) return;
+	auto resRef = static_cast<ResourceRef*>(res);
+	switch (resRef->GetType())
+	{
+		RETIRERES_IMPL1(LineGeometry);
+		RETIRERES_IMPL1(RectangleGeometry);
+		RETIRERES_IMPL1(PathGeometry);
+		RETIRERES_IMPL1(Pen);
+	default:
+		break;
+	}
+}
+
+HRESULT ResourceManagerBase::CreateFontFaceFromMemory(INT_PTR buffer, UINT64 size, UINT faceIndex, IFontFace **fontFace)
+{
+	try
+	{
+		_fontManager->CreateFontFaceFromMemory(buffer, size, faceIndex, fontFace);
+		return S_OK;
+	}
+	CATCH_ALL();
 }

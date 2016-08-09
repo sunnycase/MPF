@@ -4,6 +4,7 @@
   "dependencies": {
     "NETStandard.Library": "1.6.0",
     "System.Diagnostics.Contracts": "4.0.1",
+    "System.IO.MemoryMappedFiles": "4.0.0",
     "System.Numerics.Vectors": "4.1.1",
     "System.Reflection.TypeExtensions": "4.1.0"
   },

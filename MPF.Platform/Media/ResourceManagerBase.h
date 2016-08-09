@@ -17,6 +17,8 @@
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
+class FontManager;
+
 template<typename T>
 struct ITransformedResourceContainer
 {
@@ -51,12 +53,16 @@ public:
 
 	// Í¨¹ý RuntimeClass ¼Ì³Ð
 	STDMETHODIMP CreateRenderCommandBuffer(IRenderCommandBuffer ** buffer) override;
+	STDMETHODIMP CreateFontFaceFromMemory(INT_PTR buffer, UINT64 size, UINT faceIndex, IFontFace **fontFace) override;
 	STDMETHODIMP CreateResource(ResourceType resType, IResource ** res) override;
 	STDMETHODIMP UpdateLineGeometry(IResource * res, LineGeometryData * data) override;
 	STDMETHODIMP UpdateRectangleGeometry(IResource * res, RectangleGeometryData * data) override;
+	HRESULT UpdatePathGeometry(IResource * res, std::vector<PathGeometrySegments::Segment>&& segments) noexcept;
 	STDMETHODIMP UpdatePathGeometry(IResource * res, byte* data, UINT32 length) override;
 	STDMETHODIMP UpdateSolidColorBrush(IResource * res, ColorF * color) override;
 	STDMETHODIMP UpdatePen(IResource * res, float thickness, IResource* brush) override;
+
+	void RetireResource(IResource * res);
 
 	DEFINE_RESOURCEMGR_IMPL1(LineGeometry);
 	DEFINE_RESOURCEMGR_IMPL1(RectangleGeometry);
@@ -82,5 +88,7 @@ private:
 	DECL_RESCONTAINERAWARE(SolidColorBrush);
 	DECL_RESCONTAINERAWARE(Pen);
 	std::vector<std::shared_ptr<IDrawCallList>> _updatedDrawCallList;
+	WRL::Wrappers::CriticalSection _containerCS;
+	std::shared_ptr<FontManager> _fontManager;
 };
 END_NS_PLATFORM

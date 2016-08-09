@@ -56,5 +56,22 @@ namespace MPF.Media
             GC.SuppressFinalize(this);
         }
         #endregion
+
+        private class ResourceGeometry : Geometry
+        {
+            private readonly IResource _resource;
+
+            internal override IResource GetResourceOverride() => _resource;
+
+            public ResourceGeometry(IResource resource)
+            {
+                _resource = resource;
+            }
+        }
+
+        internal static Geometry FromResource(IResource resource)
+        {
+            return new ResourceGeometry(resource);
+        }
     }
 }

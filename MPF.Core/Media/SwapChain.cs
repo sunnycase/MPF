@@ -37,12 +37,15 @@ namespace MPF.Media
 
         private void RenderContent(UIElement element)
         {
-            element.RenderContent();
+            if(element.UIFlags.HasFlag(UIElementFlags.Visible))
+            {
+                element.RenderContent();
 
-            var children = element.LogicalChildren;
-            if (children != null)
-                foreach (var child in children)
-                    RenderContent(child);
+                var children = element.LogicalChildren;
+                if (children != null)
+                    foreach (var child in children)
+                        RenderContent(child);
+            }
         }
 
         private void OnUpdate()

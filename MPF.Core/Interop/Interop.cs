@@ -17,6 +17,9 @@ namespace MPF.Interop
         [DllImport(Libraries.Platform, CallingConvention = CallingConvention.StdCall)]
         private static extern int CreateDeviceContext(RenderBackendType preferredBackend, [MarshalAs(UnmanagedType.Interface), In]IDeviceContextCallback callback, [MarshalAs(UnmanagedType.Interface)]out IDeviceContext obj);
 
+        [DllImport(Libraries.Platform, CallingConvention = CallingConvention.StdCall)]
+        private static extern int GetSystemFontFaceLocation([MarshalAs(UnmanagedType.BStr), In]string faceName, [MarshalAs(UnmanagedType.BStr), Out]out string location);
+
         public static INativeApplication CreateNativeApplication()
         {
             INativeApplication obj;
@@ -36,6 +39,13 @@ namespace MPF.Interop
             IDeviceContext obj;
             Marshal.ThrowExceptionForHR(CreateDeviceContext(prefferedBackend, callback, out obj));
             return obj;
+        }
+
+        public static Uri GetSystemFontFaceLocation(string faceName)
+        {
+            string location;
+            Marshal.ThrowExceptionForHR(GetSystemFontFaceLocation(faceName, out location));
+            return new Uri(location, UriKind.Absolute);
         }
     }
 

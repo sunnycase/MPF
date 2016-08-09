@@ -63,14 +63,7 @@ STDMETHODIMP D3D9DeviceContext::CreateSwapChain(INativeWindow * window, ISwapCha
 {
 	try
 	{
-		auto locker = _rootSwapChainLock.Lock();
-		if (!_rootSwapChain)
-		{
-			auto d3dSwapChain = Make<D3D9SwapChain>(_d3d.Get(), _dummyWindow.Get());
-			_device = d3dSwapChain->GetDevice();
-			_rootSwapChain = d3dSwapChain;
-			ActiveDeviceAndStartRender();
-		}
+		EnsureDevice();
 		ComPtr<D3D9ChildSwapChain> d3dSwapChain;
 		_rootSwapChain->CreateAdditionalSwapChain(window, &d3dSwapChain);
 		_childSwapChains.emplace_back(d3dSwapChain->GetWeakContext());
@@ -228,10 +221,23 @@ void D3D9DeviceContext::EndResetDevice()
 			resMgr->EndResetDevice();
 }
 
+void D3D9DeviceContext::EnsureDevice()
+{
+	auto locker = _rootSwapChainLock.Lock();
+	if (!_rootSwapChain)
+	{
+		auto d3dSwapChain = Make<D3D9SwapChain>(_d3d.Get(), _dummyWindow.Get());
+		_device = d3dSwapChain->GetDevice();
+		_rootSwapChain = d3dSwapChain;
+		ActiveDeviceAndStartRender();
+	}
+}
+
 HRESULT D3D9DeviceContext::CreateResourceManager(IResourceManager **resMgr)
 {
 	try
 	{
+		EnsureDevice();
 		auto myResMgr = Make<D3D9ResourceManager>(_device.Get());
 		_resourceManagers.emplace_back(myResMgr->GetWeakContext());
 		*resMgr = myResMgr.Detach();

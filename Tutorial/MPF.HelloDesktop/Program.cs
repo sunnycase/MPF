@@ -24,6 +24,7 @@ namespace MPF.HelloDesktop
 
         public Application()
         {
+            var fontFamily = new FontFamily("Arial");
             _window = new Window
             {
                 Size = new Size(300, 180)
@@ -49,6 +50,9 @@ namespace MPF.HelloDesktop
         {
             _window.HasMaximize = false;
             _window.Title = "Hello MPF";
+
+            await Task.Delay(3000);
+            //_window.Child.Visibility = Visibility.Collapsed;
         }
     }
 }

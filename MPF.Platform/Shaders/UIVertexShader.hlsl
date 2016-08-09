@@ -23,13 +23,15 @@ PixelShaderInput main(VertexShaderInput input)
 
 	pos = mul(pos, Model);
 	pos = mul(pos, _wvp.WorldView);
-	pos.xy += _stroke.thickness * input.Normal / 2.f;
+	int segmentType = input.SegmentType;
+	if (segmentType == ST_Linear)
+		pos.xy += _stroke.thickness * input.Normal / 2.f;
 	pos = mul(pos, _wvp.Projection);
 
 	output.Position = pos;
 	output.NormalAndThickness = float3(input.Normal, _stroke.thickness);
 	output.Color = _color;
 	output.ParamFormValue = input.ParamFormValue;
-	output.SegmentType = input.SegmentType;
+	output.SegmentType = segmentType;
 	return output;
 }

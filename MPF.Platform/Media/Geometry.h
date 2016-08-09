@@ -27,7 +27,9 @@ namespace PathGeometrySegments
 	{
 		MoveTo,
 		LineTo,
-		ArcTo
+		ArcTo,
+		QuadraticBezierTo,
+		CubicBezierTo
 	};
 
 	struct Segment
@@ -50,6 +52,19 @@ namespace PathGeometrySegments
 				Point Point;
 				float Angle;
 			} ArcTo;
+
+			struct tagQuadraticBezierTo
+			{
+				Point Control;
+				Point Point;
+			} QuadraticBezierTo;
+
+			struct tagCubicBezierTo
+			{
+				Point Control1;
+				Point Control2;
+				Point Point;
+			} CubicBezierTo;
 		} Data;
 	};
 }

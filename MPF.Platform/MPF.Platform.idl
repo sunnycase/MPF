@@ -149,6 +149,21 @@ typedef struct
 	Point RightBottom;
 } RectangleGeometryData;
 
+interface IResourceManager;
+
+[
+	uuid(E9B540D3-DF9B-4619-9251-886AC2B86646),
+	helpstring("Font Face Interface"),
+	version(1.0)
+]
+interface IFontFace : IUnknown
+{
+	[propget]
+	HRESULT FaceCount([out, retval]UINT* value);
+
+	HRESULT CreateGlyphGeometry([in]IResourceManager* resMgr, [in]UINT unicode, [out, retval]IResource** geometry);
+};
+
 [
 	uuid(C8E784D3-3EBD-40D0-A421-55B3B52EF590),
 	helpstring("Resource Container Interface"),
@@ -157,6 +172,7 @@ typedef struct
 interface IResourceManager : IUnknown
 {
 	HRESULT CreateRenderCommandBuffer([out, retval]IRenderCommandBuffer ** buffer);
+	HRESULT CreateFontFaceFromMemory([in]INT_PTR buffer, [in]UINT64 size, [in]UINT faceIndex, [out, retval]IFontFace ** fontFace);
 	HRESULT CreateResource([in]ResourceType resType, [out, retval]IResource** res);
 	HRESULT UpdateLineGeometry([in]IResource* res, [in]LineGeometryData* data);
 	HRESULT UpdateRectangleGeometry([in]IResource* res, [in]RectangleGeometryData* data);

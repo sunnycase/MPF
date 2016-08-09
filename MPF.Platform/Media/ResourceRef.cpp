@@ -7,11 +7,12 @@
 #include "stdafx.h"
 #include "ResourceRef.h"
 #include "ResourceContainer.h"
+#include "ResourceManagerBase.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 
-ResourceRef::ResourceRef(std::shared_ptr<IResourceContainer>&& container, ResourceType resType, UINT_PTR handle)
-	:_container(std::move(container)), _handle(handle), _resType(resType)
+ResourceRef::ResourceRef(WeakRef<ResourceManagerBase>&& resMgr, ResourceType resType, UINT_PTR handle)
+	:_resMgr(std::move(resMgr)), _handle(handle), _resType(resType)
 {
 
 }
@@ -21,7 +22,8 @@ STDMETHODIMP_(ULONG) ResourceRef::Release()
 	ULONG ref = InternalRelease();
 	if (ref == 0)
 	{
-		_container->RetireResource(_handle);
+		if (auto resMgr = _resMgr.Resolve())
+			resMgr->RetireResource(this);
 		delete this;
 
 		auto module = ::Microsoft::WRL::GetModuleBase();

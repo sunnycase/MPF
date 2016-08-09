@@ -104,6 +104,52 @@ namespace
 		});
 	}
 
+	void EmplaceQudraticBezier(std::vector<D3D::StrokeVertex>& vertices, XMFLOAT2 startPoint, XMFLOAT2 endPoint, XMFLOAT2 control, const XMVECTOR& normalStartVec, const XMVECTOR& normalEndVec)
+	{
+		XMFLOAT2 normalStart, normalStartOpp;
+		XMFLOAT2 normalEnd, normalEndOpp;
+		XMStoreFloat2(&normalStart, normalStartVec);
+		XMStoreFloat2(&normalStartOpp, XMVectorScale(normalStartVec, -1.f));
+		XMStoreFloat2(&normalEnd, normalEndVec);
+		XMStoreFloat2(&normalEndOpp, XMVectorScale(normalEndVec, -1.f));
+
+		XMVECTOR aVec = XMLoadFloat2(&startPoint);
+		XMVECTOR bVec = XMLoadFloat2(&endPoint);
+		XMVECTOR cVec = XMLoadFloat2(&control);
+		auto mVec = (aVec + bVec + cVec) / 3.f;
+		const float scale = 1.5f;
+
+		auto aaVec = mVec + (aVec - mVec) * scale;
+		auto bbVec = mVec + (bVec - mVec) * scale;
+		auto ccVec = mVec + (cVec - mVec) * scale;
+
+		XMVECTOR aTcVec = XMLoadFloat2(&XMFLOAT2{ 0, 0 });
+		XMVECTOR bTcVec = XMLoadFloat2(&XMFLOAT2{ 1, 1 });
+		XMVECTOR cTcVec = XMLoadFloat2(&XMFLOAT2{ 0.5f, 0 });
+		auto mTcVec = (aTcVec + bTcVec + cTcVec) / 3.f;
+
+		auto aaTcVec = mTcVec + (aTcVec - mTcVec) * scale;
+		auto bbTcVec = mTcVec + (bTcVec - mTcVec) * scale;
+		auto ccTcVec = mTcVec + (cTcVec - mTcVec) * scale;
+
+
+		vertices.emplace_back(D3D::StrokeVertex
+		{
+			{ aaVec.m128_f32[0], aaVec.m128_f32[1], 0.f },
+			{ 0 ,1 },{ aaTcVec.m128_f32[0], aaTcVec.m128_f32[1] }, D3D::StrokeVertex::ST_QuadraticBezier
+		});
+		vertices.emplace_back(D3D::StrokeVertex
+		{
+			{ ccVec.m128_f32[0], ccVec.m128_f32[1], 0.f },
+			{ 0 ,1 },{ ccTcVec.m128_f32[0], ccTcVec.m128_f32[1] }, D3D::StrokeVertex::ST_QuadraticBezier
+		});
+		vertices.emplace_back(D3D::StrokeVertex
+		{
+			{ bbVec.m128_f32[0], bbVec.m128_f32[1], 0.f },
+			{ 3.f ,1 },{ bbTcVec.m128_f32[0], bbTcVec.m128_f32[1] }, D3D::StrokeVertex::ST_QuadraticBezier
+		});
+	}
+
 	void SwapIfGeater(float& a, float& b)
 	{
 		if (a > b)
@@ -179,6 +225,18 @@ void ::NS_PLATFORM::Transform(std::vector<D3D::StrokeVertex>& vertices, const Pa
 			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
 
 			EmplaceArc(vertices, lastPoint, endPoint, data.Angle, normalVec, normalVec);
+			lastPoint = endPoint;
+		}
+		break;
+		case QuadraticBezierTo:
+		{
+			const auto& data = seg.Data.QuadraticBezierTo;
+			XMFLOAT2 endPoint(data.Point.X, data.Point.Y);
+
+			const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
+			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
+
+			EmplaceQudraticBezier(vertices, lastPoint, endPoint, {data.Control.X, data.Control.Y}, normalVec, normalVec);
 			lastPoint = endPoint;
 		}
 		break;

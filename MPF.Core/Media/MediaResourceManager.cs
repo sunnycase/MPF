@@ -13,6 +13,8 @@ namespace MPF.Media
         public static MediaResourceManager Current => _current.Value;
 
         private readonly IResourceManager _resourceManager;
+        public IResourceManager Handle => _resourceManager;
+
         private MediaResourceManager()
         {
             _resourceManager = DeviceContext.Current.CreateResourceManager();
@@ -51,6 +53,11 @@ namespace MPF.Media
         public void UpdatePen(IResource res, float thickness, Brush brush)
         {
             _resourceManager.UpdatePen(res, thickness, ((IResourceProvider)brush)?.Resource);
+        }
+
+        public IFontFace CreateFontFaceFromMemory(IntPtr buffer, ulong size, uint faceIndex)
+        {
+            return _resourceManager.CreateFontFaceFromMemory(buffer, size, faceIndex);
         }
     }
 

@@ -14,7 +14,8 @@ namespace MPF
         None = 0x0,
         MeasureDirty = 0x1,
         RenderDirty = 0x2,
-        ArrangeDirty = 0x4
+        ArrangeDirty = 0x4,
+        Visible = 0x8
     }
 
     public class UIElement : Visual
@@ -34,9 +35,21 @@ namespace MPF
             set { _renderSize = value; }
         }
 
+        public static readonly DependencyProperty<Visibility> VisibilityProperty = DependencyProperty.Register(nameof(Visibility), typeof(UIElement),
+            new PropertyMetadata<Visibility>(Visibility.Visible, OnVisibilityPropertyChanged));
+
+        public Visibility Visibility
+        {
+            get { return GetValue(VisibilityProperty); }
+            set { SetValue(VisibilityProperty, value); }
+        }
+
+        private Size _desiredSize;
+        public Size DesiredSize => Visibility == Visibility.Collapsed ? default(Size) : _desiredSize;
+
         public UIElement()
         {
-
+            UpdateVisibilityFlag(Visibility);
         }
 
         internal new void Render()
@@ -73,7 +86,7 @@ namespace MPF
         {
             _measureRegistered = false;
             ClearFlags(UIElementFlags.MeasureDirty);
-            MeasureOverride(availableSize);
+            _desiredSize = MeasureOverride(availableSize);
         }
 
         protected virtual Size MeasureOverride(Size availableSize)
@@ -100,6 +113,19 @@ namespace MPF
                 _renderRegistered = true;
                 SetUIFlags(UIElementFlags.RenderDirty);
             }
+        }
+
+        private void UpdateVisibilityFlag(Visibility value)
+        {
+            if (value == Visibility.Visible)
+                SetUIFlags(UIElementFlags.Visible);
+            else
+                ClearFlags(UIElementFlags.Visible);
+        }
+
+        private static void OnVisibilityPropertyChanged(object sender, PropertyChangedEventArgs<Visibility> e)
+        {
+            ((UIElement)sender).UpdateVisibilityFlag(e.NewValue);
         }
     }
 }

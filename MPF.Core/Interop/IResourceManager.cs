@@ -67,6 +67,7 @@ namespace MPF.Interop
     internal interface IResourceManager
     {
         IRenderCommandBuffer CreateRenderCommandBuffer();
+        IFontFace CreateFontFaceFromMemory([In]IntPtr buffer, [In]ulong size, [In] uint faceIndex);
         IResource CreateResource([In]ResourceType resType);
         void UpdateLineGeometry([In]IResource resouce, [In] ref LineGeometryData data);
         void UpdateRectangleGeometry([In]IResource resouce, [In] ref RectangleGeometryData data);

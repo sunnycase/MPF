@@ -40,6 +40,7 @@ private:
 	static void __cdecl RenderLoop(void* weakRefVoid);
 	void BeginResetDevice();
 	void EndResetDevice();
+	void EnsureDevice();
 private:
 	WRL::ComPtr<INativeWindow> _dummyWindow;
 	WRL::ComPtr<IDeviceContextCallback> _callback;

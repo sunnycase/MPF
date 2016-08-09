@@ -129,6 +129,12 @@
     <ClInclude Include="Media\GlyphRun.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
+    <ClInclude Include="Media\FontFamily.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\FontManager.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -192,6 +198,12 @@
       <Filter>源文件\Media\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Media\GlyphRun.cpp">
+      <Filter>源文件\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\FontFamily.cpp">
+      <Filter>源文件\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\FontManager.cpp">
       <Filter>源文件\Media</Filter>
     </ClCompile>
   </ItemGroup>

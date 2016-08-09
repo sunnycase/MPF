@@ -202,6 +202,8 @@
     <ClInclude Include="Media\D3D9RenderableObject.h" />
     <ClInclude Include="Media\D3D9Vertex.h" />
     <ClInclude Include="Media\DeviceContext.h" />
+    <ClInclude Include="Media\FontFamily.h" />
+    <ClInclude Include="Media\FontManager.h" />
     <ClInclude Include="Media\Geometry.h" />
     <ClInclude Include="Media\GLDeviceContext.h" />
     <ClInclude Include="Media\glewUtil.h" />
@@ -244,6 +246,8 @@
     <ClCompile Include="Media\D3D9ResourceManager.cpp" />
     <ClCompile Include="Media\D3D9SwapChain.cpp" />
     <ClCompile Include="Media\DeviceContext.cpp" />
+    <ClCompile Include="Media\FontFamily.cpp" />
+    <ClCompile Include="Media\FontManager.cpp" />
     <ClCompile Include="Media\GLDeviceContext.cpp" />
     <ClCompile Include="Media\GLSwapChain.cpp" />
     <ClCompile Include="Media\GlyphRun.cpp" />
