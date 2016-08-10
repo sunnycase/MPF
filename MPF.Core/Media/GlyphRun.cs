@@ -23,10 +23,17 @@ namespace MPF.Media
             _drawingEntries = BuildDrawingEntries();
         }
 
+        public void Draw(IDrawingContext context, Pen pen)
+        {
+            foreach (var entry in _drawingEntries)
+                context.DrawGeometry(entry.Geometry, pen, ref entry.Transform);
+        }
+
         private IReadOnlyList<GlyphDrawingEntry> BuildDrawingEntries()
         {
             var geometries = new List<GlyphDrawingEntry>(_characters.Count);
 
+            float advance = 0.0f;
             char highSurrogate = '\0';
             foreach (var character in _characters)
             {
@@ -50,10 +57,17 @@ namespace MPF.Media
                     var glyph = _fontFamily.FindGlyph(code);
                     if(glyph != null)
                     {
+                        float scale = 0.05f;
+                        var fontMetrics = glyph.FontMetrics;
+                        var glyphMetrics = glyph.GlyphMetrics;
+                        var height = (int)fontMetrics.Ascent + (int)fontMetrics.Descent;
+                        var transform = Matrix3x2.CreateTranslation(glyphMetrics.RightSideBearing + advance, fontMetrics.Descent) *
+                            Matrix3x2.CreateScale(scale, -scale) * Matrix3x2.CreateTranslation(0, height * scale);
+                        advance += glyphMetrics.AdvanceWidth;
                         geometries.Add(new GlyphDrawingEntry
                         {
                             Geometry = glyph.Geometry,
-                            Transform = Matrix3x2.Identity
+                            Transform = transform
                         });
                         continue;
                     }

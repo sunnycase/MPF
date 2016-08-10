@@ -1,4 +1,5 @@
 ﻿using MPF.Controls;
+using MPF.Documents;
 using MPF.Media;
 using System;
 using System.Collections.Generic;
@@ -24,17 +25,20 @@ namespace MPF.HelloDesktop
 
         public Application()
         {
-            var font = new FontFamily("Arial");
-            var run = new GlyphRun(font, new[] { 'A', 'B', 'C' }, 12);
             _window = new Window
             {
-                Size = new Size(300, 180)
+                Size = new Size(1024, 768)
             };
             _window.Child = new Border
             {
                 BorderThickness = new Thickness(1.0f),
                 BorderBrush = new SolidColorBrush { Color = Color.FromArgb(0xFF888888) },
                 Margin = new Thickness(5),
+                Child = new Run
+                {
+                    FontFamily = new FontFamily("Arial"),
+                    Text = "Di Qiu"
+                }
             };
             _window.Show();
             ChangeMaximizeBox();

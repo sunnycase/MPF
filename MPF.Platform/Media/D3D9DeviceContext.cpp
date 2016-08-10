@@ -112,6 +112,10 @@ task<void> D3D9DeviceContext::CreateDeviceResourcesAsync()
 	ThrowIfFailed(_device->SetVertexShader(vs.Get()));
 	ThrowIfFailed(_device->SetPixelShader(ps.Get()));
 
+	ThrowIfFailed(_device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE));
+	ThrowIfFailed(_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+	ThrowIfFailed(_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+
 	return task_from_result();
 }
 

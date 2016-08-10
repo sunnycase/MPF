@@ -57,7 +57,7 @@ HRESULT FontFace::get_FontMetrics(FontMetrics *value)
 	try
 	{
 		value->Ascent = _face->ascender;
-		value->Descent = _face->descender;
+		value->Descent = -_face->descender;
 		value->DesignUnitsPerEM = _face->units_per_EM;
 		return S_OK;
 	}

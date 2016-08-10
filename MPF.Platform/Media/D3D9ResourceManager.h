@@ -25,7 +25,9 @@ public:
 		static std::vector<D3D::StrokeVertex> vertices;
 		for (auto&& handle : handles)
 		{
-			auto& source = container.FindResource(handle);
+			T const* refer;
+			if (!container.TryFindResource(handle, refer))continue;
+			const auto& source = *refer;
 			vertices.clear();
 			Transform(vertices, source);
 			auto rent = _strokeVBMgr.Allocate(vertices.size());
@@ -39,7 +41,9 @@ public:
 		static std::vector<D3D::StrokeVertex> vertices;
 		for (auto&& handle : handles)
 		{
-			auto& source = container.FindResource(handle);
+			T const* refer;
+			if (!container.TryFindResource(handle, refer))continue;
+			const auto& source = *refer;
 			vertices.clear();
 			Transform(vertices, source);
 
@@ -58,8 +62,11 @@ public:
 		for (auto&& handle : handles)
 		{
 			auto oldRent = _strokeRentInfos.find(handle);
-			_strokeVBMgr.Retire(oldRent->second);
-			_strokeRentInfos.erase(oldRent);
+			if (oldRent != _strokeRentInfos.end())
+			{
+				_strokeVBMgr.Retire(oldRent->second);
+				_strokeRentInfos.erase(oldRent);
+			}
 		}
 	}
 

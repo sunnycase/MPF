@@ -36,7 +36,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 			sd = GetArcSignedDistance(px, py, input.ParamFormValue);
 		float alpha = thickness - abs(sd);
 		clip(alpha);
-		return input.Color + float4(1.f, 1.f, 1.f, 1.f) * (1.f - saturate(alpha));
+		return float4(input.Color.rgb, saturate(alpha));
 	}
 	return input.Color;
 }

@@ -226,6 +226,17 @@ public:
 		return value.GetObject();
 	}
 
+	bool TryFindResource(UINT_PTR handle, T const*& refer) const noexcept
+	{
+		auto& value = _data[handle];
+		if (value.GetUsed())
+		{
+			refer = &value.GetObject();
+			return true;
+		}
+		return false;
+	}
+
 	const std::vector<UINT_PTR> GetCleanupList() const noexcept
 	{
 		return _cleanupList;
