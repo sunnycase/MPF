@@ -7,6 +7,7 @@
 #pragma once
 #include "../../inc/common.h"
 #include "ResourceContainer.h"
+#include <DirectXMath.h>
 
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"

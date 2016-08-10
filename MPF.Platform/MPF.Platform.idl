@@ -120,7 +120,7 @@ interface ISwapChain : IUnknown
 ]
 interface IRenderCommandBuffer : IUnknown
 {
-	HRESULT DrawGeometry([in]IResource* geometry, [in]IResource* pen);
+	HRESULT DrawGeometry([in]IResource* geometry, [in]IResource* pen, [in]float* values);
 };
 
 typedef enum
@@ -151,6 +151,31 @@ typedef struct
 
 interface IResourceManager;
 
+typedef struct
+{
+	UINT16 DesignUnitsPerEM;
+	UINT16 Ascent;
+	UINT16 Descent;
+	INT16 LineGap;
+	UINT16 CapHeight;
+	UINT16 XHeight;
+	INT16 UnderlinePosition;
+	INT16 UnderlineThickness;
+	INT16 StrikethroughPosition;
+	UINT16 StrikethroughThickness;
+} FontMetrics;
+
+typedef struct
+{
+	INT32 LeftSideBearing;
+	UINT32 AdvanceWidth;
+	INT32 RightSideBearing;
+	INT32 TopSideBearing;
+	UINT32 AdvanceHeight;
+	INT32 BottomSideBearing;
+	INT32 VerticalOriginY;
+} GlyphMetrics;
+
 [
 	uuid(E9B540D3-DF9B-4619-9251-886AC2B86646),
 	helpstring("Font Face Interface"),
@@ -161,7 +186,10 @@ interface IFontFace : IUnknown
 	[propget]
 	HRESULT FaceCount([out, retval]UINT* value);
 
-	HRESULT CreateGlyphGeometry([in]IResourceManager* resMgr, [in]UINT unicode, [out, retval]IResource** geometry);
+	[propget]
+	HRESULT FontMetrics([out, retval]FontMetrics* value);
+
+	HRESULT CreateGlyphGeometry([in]IResourceManager* resMgr, [in]UINT unicode, [out]GlyphMetrics* metrics, [out, retval]IResource** geometry);
 };
 
 [

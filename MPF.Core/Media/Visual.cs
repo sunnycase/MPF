@@ -81,7 +81,6 @@ namespace MPF.Media
 
         protected virtual void OnRender(IDrawingContext drawingContext)
         {
-
         }
 
         internal void RenderContent()

@@ -1,4 +1,5 @@
 ﻿using MPF.Internal.FontCache;
+using MPF.Internal.Text;
 using MPF.Interop;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,22 @@ namespace MPF.Media
             :this(null, familyName)
         {
 
+        }
+
+        internal GlyphFace FindGlyph(uint code)
+        {
+            GlyphFace glyph = null;
+            for (int i = 0; i < _familyIdentifier.TokenCount; i++)
+            {
+                try
+                {
+                    var fontFace = LookupFontFamily(_familyIdentifier[i]);
+                    if (fontFace?.TryFindGlyph(code, out glyph) ?? false)
+                        break;
+                }
+                catch { }
+            }
+            return glyph;
         }
 
         private IFontFamily LookupFirstFontFamily()

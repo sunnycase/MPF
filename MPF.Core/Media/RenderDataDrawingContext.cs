@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace MPF.Media
@@ -8,15 +9,22 @@ namespace MPF.Media
     internal class RenderDataDrawingContext : IDrawingContext
     {
         private readonly RenderData _renderData = new RenderData();
+        private Matrix4x4 _identityMat4x4 = Matrix4x4.Identity;
 
         public RenderDataDrawingContext()
         {
 
         }
 
+        public void DrawGeometry(Geometry geometry, Pen pen, ref Matrix3x2 transform)
+        {
+            var mat = new Matrix4x4(transform);
+            _renderData.DrawGeometry(geometry, pen, ref mat);
+        }
+
         public void DrawGeometry(Geometry geometry, Pen pen)
         {
-            _renderData.DrawGeometry(geometry, pen);
+            _renderData.DrawGeometry(geometry, pen, ref _identityMat4x4);
         }
 
         #region IDisposable Support

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -17,9 +18,9 @@ namespace MPF.Media
             GC.AddMemoryPressure(512);
         }
 
-        public void DrawGeometry(Geometry geometry, Pen pen)
+        public void DrawGeometry(Geometry geometry, Pen pen, ref Matrix4x4 transform)
         {
-            _buffer.DrawGeometry(((IResourceProvider)geometry).Resource, ((IResourceProvider)pen)?.Resource);
+            _buffer.DrawGeometry(((IResourceProvider)geometry).Resource, ((IResourceProvider)pen)?.Resource, ref transform);
         }
 
         public IRenderCommandBuffer Close()

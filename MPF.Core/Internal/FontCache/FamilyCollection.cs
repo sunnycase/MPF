@@ -7,28 +7,40 @@ using System.IO.MemoryMappedFiles;
 using System.IO;
 using MPF.Media;
 using System.Runtime.InteropServices;
+using CodeProject.ObjectPool;
+using MPF.Internal.Text;
 
 namespace MPF.Internal.FontCache
 {
     internal class FamilyCollection
     {
+        private static readonly ParameterizedObjectPool<Uri, PooledObjectWrapper<FamilyCollection>> _familyCollectionCache;
         public static FamilyCollection Default { get; } = new FamilyCollection();
 
         private readonly Uri _locationUri;
+        private readonly ParameterizedObjectPool<string, PooledObjectWrapper<IFontFamily>> _familyCache;
+
+        static FamilyCollection()
+        {
+            _familyCollectionCache = new ParameterizedObjectPool<Uri, PooledObjectWrapper<FamilyCollection>>(5, 64, uri =>
+                new PooledObjectWrapper<FamilyCollection>(new FamilyCollection(uri)));
+        }
 
         private FamilyCollection()
         {
-
+            _familyCache = new ParameterizedObjectPool<string, PooledObjectWrapper<IFontFamily>>(5, 64, location =>
+                new PooledObjectWrapper<IFontFamily>(new FileFontFamily(location)));
         }
 
         private FamilyCollection(Uri locationUri)
+            :this()
         {
             _locationUri = locationUri;
         }
 
         public static FamilyCollection FromUri(Uri locationUri)
         {
-            return new FamilyCollection(locationUri);
+            return _familyCollectionCache.GetObject(locationUri).InternalResource;
         }
 
         public IFontFamily LookupFamily(string familyName)
@@ -42,13 +54,14 @@ namespace MPF.Internal.FontCache
             if (!locationUri.IsFile)
                 throw new NotSupportedException("Uri scheme is not supported.");
 
-            return new FileFontFamily(locationUri.LocalPath);
+            return _familyCache.GetObject(locationUri.LocalPath).InternalResource;
         }
     }
 
     internal interface IFontFamily
     {
         IReadOnlyCollection<FontFace> FontFaces { get; }
+        bool TryFindGlyph(uint code, out GlyphFace glyph);
     }
 
     internal class FileFontFamily : IFontFamily, IDisposable
@@ -74,6 +87,33 @@ namespace MPF.Internal.FontCache
             _file = MemoryMappedFile.CreateFromFile(stream, null, 0, MemoryMappedFileAccess.Read, HandleInheritability.None, false);
             _accessor = _file.CreateViewAccessor(0, 0, MemoryMappedFileAccess.Read);
             _buffer = _accessor.SafeMemoryMappedViewHandle;
+        }
+
+        public bool TryFindGlyph(uint code, out GlyphFace glyph)
+        {
+            foreach(var face in FontFaces)
+            {
+                var theGlyph = FindGlyph(face, code);
+                if(theGlyph != null)
+                {
+                    glyph = theGlyph;
+                    return true;
+                }
+            }
+            glyph = null;
+            return false;
+        }
+
+        private GlyphFace FindGlyph(FontFace face, uint code)
+        {
+            try
+            {
+                return face.GetGlyph(code);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         #region IDisposable Support

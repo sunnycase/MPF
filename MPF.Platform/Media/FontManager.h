@@ -20,7 +20,8 @@ public:
 
 	// 通过 RuntimeClass 继承
 	STDMETHODIMP get_FaceCount(UINT *value) override;
-	STDMETHODIMP CreateGlyphGeometry(IResourceManager *resMgr, UINT unicode, IResource **geometry) override;
+	STDMETHODIMP get_FontMetrics(FontMetrics *value) override;
+	STDMETHODIMP CreateGlyphGeometry(IResourceManager *resMgr, UINT unicode, GlyphMetrics* metrics, IResource **geometry) override;
 private:
 	FT_Face _face;
 };

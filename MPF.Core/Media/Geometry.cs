@@ -12,15 +12,6 @@ namespace MPF.Media
     {
         public static readonly Geometry Empty = new StreamGeometry();
 
-        public static readonly DependencyProperty<Matrix3x2> TransformProperty = DependencyProperty.Register(nameof(Transform),
-            typeof(Geometry), new PropertyMetadata<Matrix3x2>(Matrix3x2.Identity));
-
-        public Matrix3x2 Transform
-        {
-            get { return GetValue(TransformProperty); }
-            set { SetValue(TransformProperty, value); }
-        }
-
         IResource IResourceProvider.Resource => GetResourceOverride();
 
         internal Geometry()

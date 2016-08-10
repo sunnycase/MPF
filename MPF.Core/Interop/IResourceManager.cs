@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -69,9 +70,9 @@ namespace MPF.Interop
         IRenderCommandBuffer CreateRenderCommandBuffer();
         IFontFace CreateFontFaceFromMemory([In]IntPtr buffer, [In]ulong size, [In] uint faceIndex);
         IResource CreateResource([In]ResourceType resType);
-        void UpdateLineGeometry([In]IResource resouce, [In] ref LineGeometryData data);
-        void UpdateRectangleGeometry([In]IResource resouce, [In] ref RectangleGeometryData data);
-        void UpdatePathGeometry([In]IResource resouce, [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] data, [In] uint length);
+        void UpdateLineGeometry([In]IResource resource, [In] ref LineGeometryData data);
+        void UpdateRectangleGeometry([In]IResource resource, [In] ref RectangleGeometryData data);
+        void UpdatePathGeometry([In]IResource resource, [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] data, [In] uint length);
         void UpdateSolidColorBrush([In]IResource resource, [In] ref ColorF color);
         void UpdatePen([In]IResource resource, [In] float thickness, [In]IResource brush);
     }

@@ -69,4 +69,7 @@
   </Target>
   -->
   <Import Project="$(SolutionDir)MPF.Platform\MPF.Platform.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>copy /y $(SolutionDir)$(ConfigurationName)\MPF.Platform.dll $(TargetDir)</PreBuildEvent>
+  </PropertyGroup>
 </Project>

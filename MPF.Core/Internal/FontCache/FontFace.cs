@@ -1,4 +1,6 @@
-﻿using MPF.Interop;
+﻿using CodeProject.ObjectPool;
+using MPF.Internal.Text;
+using MPF.Interop;
 using MPF.Media;
 using System;
 using System.Collections.Generic;
@@ -12,18 +14,31 @@ namespace MPF.Internal.FontCache
     {
         private readonly IFontFamily _family;
         private readonly IFontFace _face;
+        private readonly ParameterizedObjectPool<uint, PooledObjectWrapper<GlyphFace>> _glyphCache;
+
+        public FontMetrics FontMetrics { get; }
 
         public FontFace(IFontFamily family, IFontFace face)
         {
             _family = family;
             _face = face;
+
+            var fontMetrics = new FontMetrics();
+            _face.get_FontMetrics(fontMetrics);
+            FontMetrics = fontMetrics;
+
+            _glyphCache = new ParameterizedObjectPool<uint, PooledObjectWrapper<GlyphFace>>(37, 4096, code =>
+            {
+                GlyphMetrics metrics;
+                var resource = _face.CreateGlyphGeometry(MediaResourceManager.Current.Handle, code, out metrics);
+                return new PooledObjectWrapper<GlyphFace>(new GlyphFace(Geometry.FromResource(resource), FontMetrics, metrics));
+            });
             GC.AddMemoryPressure(10240);
         }
 
-        public Geometry GetGlyphGeometry(char code)
+        public GlyphFace GetGlyph(uint code)
         {
-            var resource = _face.CreateGlyphGeometry(MediaResourceManager.Current.Handle, (uint)code);
-            return Geometry.FromResource(resource);
+            return _glyphCache.GetObject(code).InternalResource;
         }
 
         #region IDisposable Support

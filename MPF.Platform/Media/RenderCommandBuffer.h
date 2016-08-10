@@ -18,6 +18,7 @@ struct GeometryRenderCommand
 {
 	WRL::ComPtr<ResourceRef> Geometry;
 	WRL::ComPtr<ResourceRef> Pen;
+	DirectX::XMFLOAT4X4 Transform;
 };
 
 class RenderCommandBuffer : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, IRenderCommandBuffer>
@@ -26,7 +27,7 @@ public:
 	RenderCommandBuffer(ResourceManagerBase* resourceManager);
 
 	// Í¨¹ý RuntimeClass ¼Ì³Ð
-	STDMETHODIMP DrawGeometry(IResource * geometry, IResource* pen) override;
+	STDMETHODIMP DrawGeometry(IResource * geometry, IResource* pen, float* values) override;
 
 	const std::vector<GeometryRenderCommand>& GetGeometries() const noexcept { return _geometries; }
 	ResourceManagerBase* GetResourceManager() const noexcept { return _resourceManager.Get(); }

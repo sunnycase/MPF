@@ -255,6 +255,10 @@ namespace
 {
 	class DrawCallList : public IDrawCallList
 	{
+		struct MyStrokeDrawCall : public StorkeRenderCall
+		{
+			DirectX::XMFLOAT4X4 Transform;
+		};
 	public:
 		DrawCallList(IDirect3DDevice9* device, D3D9ResourceManager* resMgr, RenderCommandBuffer* rcb)
 			:_device(device), _resMgr(resMgr), _rcb(rcb)
@@ -276,6 +280,7 @@ namespace
 				constants[0] = rc.Thickness;
 				ThrowIfFailed(_device->SetVertexShaderConstantF(VSCSlot_Thickness, constants, VSCSize_Thickness));
 				ThrowIfFailed(_device->SetVertexShaderConstantF(VSCSlot_Color, rc.Color, VSCSize_Color));
+				ThrowIfFailed(_device->SetVertexShaderConstantF(VSCSlot_GeometryTransform, rc.Transform.m[0], VSCSize_GeometryTransform));
 				ThrowIfFailed(_device->DrawPrimitive(D3DPT_TRIANGLELIST, rc.StartVertex, rc.PrimitiveCount));
 			}
 		}
@@ -291,11 +296,11 @@ namespace
 		}
 	private:
 		// Í¨¹ý IDrawCallList ¼Ì³Ð
-		void PushGeometryDrawCall(IResource* resource, IResource* pen)
+		void PushGeometryDrawCall(IResource* resource, IResource* pen, const DirectX::XMFLOAT4X4 transform)
 		{
 			if (pen)
 			{
-				StorkeRenderCall rc;
+				MyStrokeDrawCall rc;
 				auto& penObj = _resMgr->GetPen(static_cast<ResourceRef*>(pen)->GetHandle());
 				rc.Thickness = penObj.Thickness;
 				if (penObj.Brush)
@@ -310,7 +315,10 @@ namespace
 						rc.Color[3] = color.A;
 					}
 					if (_resMgr->TryGet(resource, rc))
+					{
+						rc.Transform = transform;
 						_strokeRenderCalls.emplace_back(rc);
+					}
 					else
 					{
 						assert(false && "Geometry not found.");
@@ -324,7 +332,7 @@ namespace
 			_strokeRenderCalls.clear();
 			for (auto&& geoRef : _rcb->GetGeometries())
 			{
-				PushGeometryDrawCall(geoRef.Geometry.Get(), geoRef.Pen.Get());
+				PushGeometryDrawCall(geoRef.Geometry.Get(), geoRef.Pen.Get(), geoRef.Transform);
 				if (addResDependent)
 				{
 					auto me = shared_from_this();
@@ -337,7 +345,7 @@ namespace
 		ComPtr<IDirect3DDevice9> _device;
 		ComPtr<D3D9ResourceManager> _resMgr;
 		ComPtr<RenderCommandBuffer> _rcb;
-		std::vector<StorkeRenderCall> _strokeRenderCalls;
+		std::vector<MyStrokeDrawCall> _strokeRenderCalls;
 	};
 }
 

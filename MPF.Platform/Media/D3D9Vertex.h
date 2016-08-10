@@ -46,7 +46,9 @@ namespace D3D
 		VSCSlot_Color = VSCSlot_Thickness + VSCSize_Thickness,
 		VSCSize_Color = 1,
 		VSCSlot_ModelTransform = VSCSlot_Color + VSCSize_Color,
-		VSCSize_ModelTransform = 4
+		VSCSize_ModelTransform = 4,
+		VSCSlot_GeometryTransform = VSCSlot_ModelTransform + VSCSize_ModelTransform,
+		VSCSize_GeometryTransform = 4
 	};
 
 #pragma pack(pop)

@@ -52,6 +52,18 @@ HRESULT FontFace::get_FaceCount(UINT *value)
 	CATCH_ALL();
 }
 
+HRESULT FontFace::get_FontMetrics(FontMetrics *value)
+{
+	try
+	{
+		value->Ascent = _face->ascender;
+		value->Descent = _face->descender;
+		value->DesignUnitsPerEM = _face->units_per_EM;
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
 namespace
 {
 	struct OutlineDecomposeContext
@@ -133,13 +145,21 @@ namespace
 	};
 }
 
-HRESULT FontFace::CreateGlyphGeometry(IResourceManager *resMgr, UINT unicode, IResource **geometry)
+HRESULT FontFace::CreateGlyphGeometry(IResourceManager *resMgr, UINT unicode, GlyphMetrics* metrics, IResource **geometry)
 {
 	try
 	{
 		auto id = FT_Get_Char_Index(_face, unicode);
 		ThrowIfNot(id, L"Cannot find char.");
 		ThrowIfNot(FT_Load_Glyph(_face, id, FT_LOAD_NO_SCALE) == 0, L"Cannot load glyph.");
+
+		const auto& srcMtcs = _face->glyph->metrics;
+		metrics->AdvanceWidth = UINT32(srcMtcs.horiAdvance);
+		metrics->AdvanceWidth = UINT32(srcMtcs.vertAdvance);
+		metrics->LeftSideBearing = srcMtcs.vertBearingX;
+		metrics->BottomSideBearing = srcMtcs.vertBearingY;
+		metrics->RightSideBearing = srcMtcs.horiBearingX;
+		metrics->TopSideBearing = srcMtcs.horiBearingY;
 
 		OutlineDecomposeContext context;
 		ThrowIfNot(FT_Outline_Decompose(&_face->glyph->outline, &OutlineDecomposeFuncs, &context) == 0, L"Cannot decompose outline.");

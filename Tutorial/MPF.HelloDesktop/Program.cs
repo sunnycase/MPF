@@ -24,7 +24,8 @@ namespace MPF.HelloDesktop
 
         public Application()
         {
-            var fontFamily = new FontFamily("Arial");
+            var font = new FontFamily("Arial");
+            var run = new GlyphRun(font, new[] { 'A', 'B', 'C' }, 12);
             _window = new Window
             {
                 Size = new Size(300, 180)

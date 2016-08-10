@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MPF.Internal.Text;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -12,6 +13,7 @@ namespace MPF.Interop
     internal interface IFontFace
     {
         uint FaceCount { get; }
-        IResource CreateGlyphGeometry(IResourceManager resMgr, uint code);
+        void get_FontMetrics([In, Out, MarshalAs(UnmanagedType.LPStruct)]FontMetrics fontMetrics);
+        IResource CreateGlyphGeometry(IResourceManager resMgr, uint code, [Out]out GlyphMetrics metrics);
     }
 }
