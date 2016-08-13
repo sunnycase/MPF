@@ -11,7 +11,7 @@
 using namespace WRL;
 using namespace NS_PLATFORM;
 
-ResourceRef::ResourceRef(WeakRef<ResourceManagerBase>&& resMgr, ResourceType resType, UINT_PTR handle)
+ResourceRef::ResourceRef(NS_PLATFORM::WeakRef<ResourceManagerBase>&& resMgr, ResourceType resType, UINT_PTR handle)
 	:_resMgr(std::move(resMgr)), _handle(handle), _resType(resType)
 {
 

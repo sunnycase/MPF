@@ -13,8 +13,9 @@ DEFINE_NS_PLATFORM
 enum RenderBackendType : uint32_t
 {
 	RBT_Any,
-	RBT_Direct3D9,
 	RBT_OpenGL,
+	RBT_Direct3D9,
+	RBT_Direct3D11,
 	RBT_COUNT
 };
 

@@ -21,4 +21,4 @@
 #undef CreateWindow
 #undef GetObject
 #undef FindResource
-#define InitializeCriticalSectionEx NotSupported
+#define InitializeCriticalSectionEx(lp, count, flag) InitializeCriticalSectionAndSpinCount(lp, count)

@@ -37,6 +37,12 @@
     <Filter Include="资源文件\Shaders">
       <UniqueIdentifier>{761055da-57ad-4761-bb93-48b6d7f0effc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\Shaders\D3D9">
+      <UniqueIdentifier>{a13eed24-42c0-473d-a511-f10cf06ae912}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件\Shaders\D3D11">
+      <UniqueIdentifier>{f3302a60-10cc-4e8c-9132-7620daafcc79}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -135,6 +141,15 @@
     <ClInclude Include="Media\FontManager.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
+    <ClInclude Include="Media\D3D11DeviceContext.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\D3D11SwapChain.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\D3D11Vertex.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -206,6 +221,12 @@
     <ClCompile Include="Media\FontManager.cpp">
       <Filter>源文件\Media</Filter>
     </ClCompile>
+    <ClCompile Include="Media\D3D11DeviceContext.cpp">
+      <Filter>源文件\Media\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\D3D11SwapChain.cpp">
+      <Filter>源文件\Media\Platform</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="MPF.Platform.idl">
@@ -213,21 +234,30 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\UIVertexShader.hlsl">
-      <Filter>资源文件\Shaders</Filter>
+    <FxCompile Include="Shaders\D3D9.UIPixelShader.hlsl">
+      <Filter>资源文件\Shaders\D3D9</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\UIPixelShader.hlsl">
-      <Filter>资源文件\Shaders</Filter>
+    <FxCompile Include="Shaders\D3D9.UIVertexShader.hlsl">
+      <Filter>资源文件\Shaders\D3D9</Filter>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Shaders\UIShaders.hlsli">
-      <Filter>资源文件\Shaders</Filter>
-    </None>
+    <FxCompile Include="Shaders\D3D11.UIPixelShader.hlsl">
+      <Filter>资源文件\Shaders\D3D11</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\D3D11.UIVertexShader.hlsl">
+      <Filter>资源文件\Shaders\D3D11</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\D3D9.UIShaders.hlsli">
+      <Filter>资源文件\Shaders\D3D9</Filter>
+    </None>
+    <None Include="Shaders\D3D11.UIShaders.hlsli">
+      <Filter>资源文件\Shaders\D3D11</Filter>
+    </None>
   </ItemGroup>
 </Project>

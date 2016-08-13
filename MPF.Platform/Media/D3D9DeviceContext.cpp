@@ -104,11 +104,11 @@ task<void> D3D9DeviceContext::CreateDeviceResourcesAsync()
 	ThrowIfFailed(_device->CreateVertexDeclaration(elements, &vertexDeclaration));
 	ThrowIfFailed(_device->SetVertexDeclaration(vertexDeclaration.Get()));
 
-	auto uiVSData = LoadShaderResource(IDR_UIVERTEXSHADER);
+	auto uiVSData = LoadShaderResource(IDR_D3D9_UIVERTEXSHADER);
 	ComPtr<IDirect3DVertexShader9> vs;
 	ThrowIfFailed(_device->CreateVertexShader(uiVSData, &vs));
 
-	auto uiPSData = LoadShaderResource(IDR_UIPIXELSHADER);
+	auto uiPSData = LoadShaderResource(IDR_D3D9_UIPIXELSHADER);
 	ComPtr<IDirect3DPixelShader9> ps;
 	ThrowIfFailed(_device->CreatePixelShader(uiPSData, &ps));
 

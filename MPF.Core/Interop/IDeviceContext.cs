@@ -9,8 +9,9 @@ namespace MPF.Interop
     enum RenderBackendType : uint
     {
         RBT_Any,
+        RBT_OpenGL,
         RBT_Direct3D9,
-        RBT_OpenGL
+        RBT_Direct3D11
     }
 
     [ComImport]
