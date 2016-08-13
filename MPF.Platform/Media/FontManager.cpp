@@ -102,7 +102,6 @@ namespace
 			segment.Data.LineTo.Point = { float(to->x), float(to->y) };
 			context.segments.emplace_back(std::move(segment));
 			return 0;
-			return 0;
 		}
 		catch (...)
 		{
@@ -132,6 +131,7 @@ namespace
 
 	int CubicBezierTo(const FT_Vector* control1, const FT_Vector* control2, const FT_Vector* to, void* user)
 	{
+		assert(false && "Not Implemented.");
 		return 0;
 	}
 

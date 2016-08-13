@@ -31,7 +31,6 @@ namespace MPF.Controls
 
         public Border()
         {
-
         }
 
         protected override void OnRender(IDrawingContext drawingContext)

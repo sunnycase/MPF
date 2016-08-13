@@ -2,9 +2,12 @@
 struct VertexShaderInput
 {
 	float3 Position : POSITION;
-	float2 Normal : NORMAL;
-	float2 ParamFormValue : TEXCOORD0;
+	float2 Data1 : NORMAL;
+	float2 Data2 : TEXCOORD0;
 	float SegmentType : TEXCOORD1;
+	float2 Data3 : TEXCOORD2;
+	float2 Data4 : TEXCOORD3;
+	float2 Data5 : TEXCOORD4;
 };
 
 struct PixelShaderInput

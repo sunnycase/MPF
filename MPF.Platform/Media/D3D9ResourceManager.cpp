@@ -117,36 +117,26 @@ namespace
 		XMVECTOR bVec = XMLoadFloat2(&endPoint);
 		XMVECTOR cVec = XMLoadFloat2(&control);
 		auto mVec = (aVec + bVec + cVec) / 3.f;
-		const float scale = 1.5f;
+		auto minLen = std::min(XMVector2Length(aVec - mVec).m128_f32[0], XMVector2Length(bVec - mVec).m128_f32[0]);
+		minLen = std::min(minLen, XMVector2Length(cVec - mVec).m128_f32[0]);
 
-		auto aaVec = mVec + (aVec - mVec) * scale;
-		auto bbVec = mVec + (bVec - mVec) * scale;
-		auto ccVec = mVec + (cVec - mVec) * scale;
-
-		XMVECTOR aTcVec = XMLoadFloat2(&XMFLOAT2{ 0, 0 });
-		XMVECTOR bTcVec = XMLoadFloat2(&XMFLOAT2{ 1, 1 });
-		XMVECTOR cTcVec = XMLoadFloat2(&XMFLOAT2{ 0.5f, 0 });
-		auto mTcVec = (aTcVec + bTcVec + cTcVec) / 3.f;
-
-		auto aaTcVec = mTcVec + (aTcVec - mTcVec) * scale;
-		auto bbTcVec = mTcVec + (bTcVec - mTcVec) * scale;
-		auto ccTcVec = mTcVec + (cTcVec - mTcVec) * scale;
-
+		XMFLOAT2 mPoint;
+		XMStoreFloat2(&mPoint, mVec);
 
 		vertices.emplace_back(D3D::StrokeVertex
 		{
-			{ aaVec.m128_f32[0], aaVec.m128_f32[1], 0.f },
-			{ 0 ,1 },{ aaTcVec.m128_f32[0], aaTcVec.m128_f32[1] }, D3D::StrokeVertex::ST_QuadraticBezier
+			{ startPoint.x, startPoint.y, 0.f },
+			mPoint, { 0, 0 }, D3D::StrokeVertex::ST_QuadraticBezier, {minLen, 0}
 		});
 		vertices.emplace_back(D3D::StrokeVertex
 		{
-			{ ccVec.m128_f32[0], ccVec.m128_f32[1], 0.f },
-			{ 0 ,1 },{ ccTcVec.m128_f32[0], ccTcVec.m128_f32[1] }, D3D::StrokeVertex::ST_QuadraticBezier
+			{ control.x, control.y, 0.f },
+			mPoint, { 0.5f, 0 }, D3D::StrokeVertex::ST_QuadraticBezier,{ minLen, 0 }
 		});
 		vertices.emplace_back(D3D::StrokeVertex
 		{
-			{ bbVec.m128_f32[0], bbVec.m128_f32[1], 0.f },
-			{ 3.f ,1 },{ bbTcVec.m128_f32[0], bbTcVec.m128_f32[1] }, D3D::StrokeVertex::ST_QuadraticBezier
+			{ endPoint.x, endPoint.y, 0.f },
+			mPoint, { 1, 1 }, D3D::StrokeVertex::ST_QuadraticBezier,{ minLen, 0 }
 		});
 	}
 

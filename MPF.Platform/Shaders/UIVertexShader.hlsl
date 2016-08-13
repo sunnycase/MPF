@@ -25,15 +25,44 @@ PixelShaderInput main(VertexShaderInput input)
 	pos = mul(pos, Model);
 	pos = mul(pos, GeometryTransform);
 	pos = mul(pos, _wvp.WorldView);
+
 	int segmentType = input.SegmentType;
 	if (segmentType == ST_Linear)
-		pos.xy += _stroke.thickness * input.Normal / 2.f;
-	pos = mul(pos, _wvp.Projection);
+	{
+		float2 normal = input.Data1;
+		normal = mul(normal, (float2x2)Model);
+		normal = mul(normal, (float2x2)GeometryTransform);
+		normal = mul(normal, (float2x2)_wvp.WorldView);
+		normal = normalize(normal) * length(input.Data1);
+		pos.xy += _stroke.thickness / 2.f * normal;
+		output.NormalAndThickness = float3(normal, _stroke.thickness);
+		output.ParamFormValue = input.Data2;
+	}
+	else
+	{
+		output.NormalAndThickness = float3(0, 0, _stroke.thickness);
+		if (segmentType == ST_QuadraticBezier)
+		{
+			float4 mPoint = float4(input.Data1, 0, 1);
+			mPoint = mul(mPoint, Model);
+			mPoint = mul(mPoint, GeometryTransform);
+			mPoint = mul(mPoint, _wvp.WorldView);
 
+			float minLen = input.Data3.x * 0.1f;
+
+			float scale = _stroke.thickness / minLen + 1.f;
+			pos = mPoint + (pos - mPoint) * scale;
+
+			float2 mTc = (float2(0, 0) + float2(1, 1) + float2(0.5f, 0)) / 3.f;
+			float2 tc = input.Data2;
+			tc = mTc + (tc - mTc) * scale;
+			output.ParamFormValue = tc;
+		}
+	}
+
+	pos = mul(pos, _wvp.Projection);
 	output.Position = pos;
-	output.NormalAndThickness = float3(input.Normal, _stroke.thickness);
 	output.Color = _color;
-	output.ParamFormValue = input.ParamFormValue;
 	output.SegmentType = segmentType;
 	return output;
 }

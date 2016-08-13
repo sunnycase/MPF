@@ -43,7 +43,7 @@ namespace MPF.Documents
             if (glyph != null)
                 glyph.Draw(drawingContext, new Pen
                 {
-                    Brush = new SolidColorBrush { Color = Color.FromArgb(0xFF3388ee) },
+                    Brush = new SolidColorBrush { Color = Color.FromArgb(0xFF777777) },
                     Thickness = 1
                 });
         }

@@ -7,29 +7,23 @@ using System.IO.MemoryMappedFiles;
 using System.IO;
 using MPF.Media;
 using System.Runtime.InteropServices;
-using CodeProject.ObjectPool;
 using MPF.Internal.Text;
 
 namespace MPF.Internal.FontCache
 {
     internal class FamilyCollection
     {
-        private static readonly ParameterizedObjectPool<Uri, PooledObjectWrapper<FamilyCollection>> _familyCollectionCache;
+        private static readonly WeakConcurrentDictionary<Uri, FamilyCollection> _familyCollectionCache =
+            new WeakConcurrentDictionary<Uri, FamilyCollection>();
         public static FamilyCollection Default { get; } = new FamilyCollection();
 
         private readonly Uri _locationUri;
-        private readonly ParameterizedObjectPool<string, PooledObjectWrapper<IFontFamily>> _familyCache;
-
-        static FamilyCollection()
-        {
-            _familyCollectionCache = new ParameterizedObjectPool<Uri, PooledObjectWrapper<FamilyCollection>>(5, 64, uri =>
-                new PooledObjectWrapper<FamilyCollection>(new FamilyCollection(uri)));
-        }
+        private readonly WeakConcurrentDictionary<string, IFontFamily> _familyCache =
+            new WeakConcurrentDictionary<string, IFontFamily>();
 
         private FamilyCollection()
         {
-            _familyCache = new ParameterizedObjectPool<string, PooledObjectWrapper<IFontFamily>>(5, 64, location =>
-                new PooledObjectWrapper<IFontFamily>(new FileFontFamily(location)));
+
         }
 
         private FamilyCollection(Uri locationUri)
@@ -40,7 +34,7 @@ namespace MPF.Internal.FontCache
 
         public static FamilyCollection FromUri(Uri locationUri)
         {
-            return _familyCollectionCache.GetObject(locationUri).InternalResource;
+            return _familyCollectionCache.GetOrAdd(locationUri, k => FamilyCollection.FromUri(k));
         }
 
         public IFontFamily LookupFamily(string familyName)
@@ -54,7 +48,7 @@ namespace MPF.Internal.FontCache
             if (!locationUri.IsFile)
                 throw new NotSupportedException("Uri scheme is not supported.");
 
-            return _familyCache.GetObject(locationUri.LocalPath).InternalResource;
+            return _familyCache.GetOrAdd(locationUri.LocalPath, k => new FileFontFamily(k));
         }
     }
 

@@ -1,5 +1,4 @@
-﻿using CodeProject.ObjectPool;
-using MPF.Internal.Text;
+﻿using MPF.Internal.Text;
 using MPF.Interop;
 using MPF.Media;
 using System;
@@ -14,7 +13,7 @@ namespace MPF.Internal.FontCache
     {
         private readonly IFontFamily _family;
         private readonly IFontFace _face;
-        private readonly ParameterizedObjectPool<uint, PooledObjectWrapper<GlyphFace>> _glyphCache;
+        private readonly WeakConcurrentDictionary<uint, GlyphFace> _glyphCache = new WeakConcurrentDictionary<uint, GlyphFace>();
 
         public FontMetrics FontMetrics { get; }
 
@@ -26,19 +25,21 @@ namespace MPF.Internal.FontCache
             var fontMetrics = new FontMetrics();
             _face.get_FontMetrics(fontMetrics);
             FontMetrics = fontMetrics;
-
-            _glyphCache = new ParameterizedObjectPool<uint, PooledObjectWrapper<GlyphFace>>(37, 4096, code =>
-            {
-                GlyphMetrics metrics;
-                var resource = _face.CreateGlyphGeometry(MediaResourceManager.Current.Handle, code, out metrics);
-                return new PooledObjectWrapper<GlyphFace>(new GlyphFace(Geometry.FromResource(resource), FontMetrics, metrics));
-            });
+            
             GC.AddMemoryPressure(10240);
         }
 
         public GlyphFace GetGlyph(uint code)
         {
-            return _glyphCache.GetObject(code).InternalResource;
+            return _glyphCache.GetOrAdd(code, k =>
+            {
+                GlyphMetrics metrics;
+                var res = _face.CreateGlyphGeometry(MediaResourceManager.Current.Handle, k, out metrics);
+                return new GlyphFace(Geometry.FromResource(res), FontMetrics, metrics)
+                {
+                    Owner = this
+                };
+            });
         }
 
         #region IDisposable Support

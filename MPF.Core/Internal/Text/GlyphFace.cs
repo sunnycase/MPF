@@ -8,6 +8,7 @@ namespace MPF.Internal.Text
 {
     internal class GlyphFace
     {
+        internal object Owner { get; set; }
         public Geometry Geometry { get; }
         public FontMetrics FontMetrics { get; }
         public GlyphMetrics GlyphMetrics { get; }

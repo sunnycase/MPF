@@ -2,10 +2,6 @@
 
 float GetQuadraticBezierSignedDistance(float2 px, float2 py, float2 value)
 {
-	if ((value.x < 0.f || value.x > 1.f) &&
-		(value.y < 0.f || value.y > 1.f))
-		clip(-1);
-
 	float fx = (2 * value.x)*px.x - px.y;
 	float fy = (2 * value.x)*py.x - py.y;
 	// Signed distance  

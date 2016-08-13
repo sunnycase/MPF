@@ -6,6 +6,7 @@
 //
 #pragma once
 #include "../../inc/common.h"
+#include "../../inc/NonCopyable.h"
 #include <vector>
 #include <list>
 #include <algorithm>
@@ -42,7 +43,7 @@ class ResourceContainer : public IResourceContainer
 		size_t length;
 	};
 protected:
-	struct ObjectStorage
+	struct ObjectStorage : NonCopyable
 	{
 		static_assert(std::is_nothrow_destructible<T>::value, "T must be nothrow destructible.");
 
@@ -52,42 +53,32 @@ protected:
 
 		}
 
-		ObjectStorage(const ObjectStorage& other)
-			:Inited(other.Inited)
+		~ObjectStorage()
 		{
 			if (Inited)
-				new (_data) T(other.GetObject());
+				Free();
 		}
 
 		ObjectStorage(ObjectStorage&& other) noexcept
-			:Inited(other.Inited)
+			:Inited(other.Inited), Used(other.Used)
 		{
 			if (Inited)
 			{
 				new (_data) T(std::move(other.GetObject()));
-				other.Inited = false;
+				other.Free();
 			}
-		}
-
-		ObjectStorage& operator=(const ObjectStorage& other)
-		{
-			Free();
-			if (other.Inited)
-			{
-				new (_data) T(other.GetObject());
-				Inited = true;
-			}
-			return *this;
 		}
 
 		ObjectStorage& operator=(ObjectStorage&& other) noexcept
 		{
-			Free();
+			if (Inited)
+				Free();
 			if (other.Inited)
 			{
 				new (_data) T(std::move(other.GetObject()));
 				Inited = true;
-				other.Inited = false;
+				Used = other.Used;
+				other.Free();
 			}
 			return *this;
 		}
@@ -95,7 +86,8 @@ protected:
 		template<class ...P>
 		void Create(P&&... params)
 		{
-			Free();
+			if (Inited)
+				Free();
 			new (_data) T(std::forward<P>(params)...);
 			Inited = true;
 		}
@@ -114,11 +106,9 @@ protected:
 
 		void Free() noexcept
 		{
-			if (Inited)
-			{
-				GetObject().~T();
-				Inited = false;
-			}
+			GetObject().~T();
+			Inited = false;
+			Used = false;
 		}
 
 		bool GetUsed() const noexcept { return Used; }
@@ -143,12 +133,6 @@ public:
 	ResourceContainer(size_t capacity = 231)
 	{
 		Enlarge(capacity);
-	}
-
-	virtual ~ResourceContainer()
-	{
-		for (auto&& item : _data)
-			item.Free();
 	}
 
 	virtual UINT_PTR Allocate() override

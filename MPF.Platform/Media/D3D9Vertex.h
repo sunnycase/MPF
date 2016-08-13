@@ -18,9 +18,12 @@ namespace D3D
 	struct StrokeVertex
 	{
 		DirectX::XMFLOAT3 Position;
-		DirectX::XMFLOAT2 Normal;
-		DirectX::XMFLOAT2 ParamFormValue;
+		DirectX::XMFLOAT2 Data1;		// ST_Linear: Normal, ST_QuadraticBezier: 
+		DirectX::XMFLOAT2 Data2;
 		float SegmentType;
+		DirectX::XMFLOAT2 Data3;
+		DirectX::XMFLOAT2 Data4;
+		DirectX::XMFLOAT2 Data5;
 
 		static constexpr float ST_Linear = 0;
 		static constexpr float ST_QuadraticBezier = 1;
