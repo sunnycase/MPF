@@ -11,6 +11,7 @@
 #include "../NativeApplication.h"
 #include "resource.h"
 #include "D3D11Vertex.h"
+#include "D3D11ResourceManager.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 using namespace concurrency;
@@ -119,15 +120,19 @@ D3D11DeviceContext::D3D11DeviceContext(IDeviceContextCallback * callback)
 
 D3D11DeviceContext::~D3D11DeviceContext()
 {
-	_deviceContext->Unmap(_wvpmCB.Get(), 0);
-	ZeroMemory(&_swapChainUpdateContext, sizeof(_swapChainUpdateContext));
+
 }
 
 STDMETHODIMP D3D11DeviceContext::CreateSwapChain(INativeWindow * window, ISwapChain ** swapChain)
 {
 	try
 	{
-		*swapChain = Make<D3D11SwapChain>(window, _dxgiFactory.Get(), _deviceContext.Get()).Detach();
+		auto mySwapChain = Make<D3D11SwapChain>(window, _dxgiFactory.Get(), _deviceContext.Get());
+		{
+			auto locker = _swapChainLock.Lock();
+			_swapChains.emplace_back(mySwapChain->GetWeakContext());
+		}
+		*swapChain = mySwapChain.Detach();
 		return S_OK;
 	}
 	CATCH_ALL();
@@ -145,7 +150,14 @@ STDMETHODIMP D3D11DeviceContext::CreateRenderableObject(IRenderableObject ** obj
 
 STDMETHODIMP D3D11DeviceContext::CreateResourceManager(IResourceManager ** resMgr)
 {
-	return E_NOTIMPL;
+	try
+	{
+		auto myResMgr = Make<D3D11ResourceManager>(_device.Get(), _deviceContext.Get(), _swapChainUpdateContext);
+		_resourceManagers.emplace_back(myResMgr->GetWeakContext());
+		*resMgr = myResMgr.Detach();
+		return S_OK;
+	}
+	CATCH_ALL();
 }
 
 namespace
@@ -164,12 +176,48 @@ namespace
 	}
 }
 
+namespace
+{
+	template<typename T>
+	WRL::ComPtr<ID3D11Buffer> CreateConstantBuffer(ID3D11Device* device)
+	{
+		static_assert(sizeof(T) % 16 == 0, "Constant Buffer Byte Width Restriction.");
+		static_assert(sizeof(T) >= 192, "Size of Constant Buffer must be at least 192 bytes.");
+
+		WRL::ComPtr<ID3D11Buffer> buffer;
+		D3D11_BUFFER_DESC desc{};
+		desc.ByteWidth = sizeof(T);
+		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		desc.Usage = D3D11_USAGE_DYNAMIC;
+
+		ThrowIfFailed(device->CreateBuffer(&desc, nullptr, &buffer));
+		return buffer;
+	}
+
+	template<typename T>
+	void CreateConstantBuffer(ID3D11Device* device, ConstantBuffer<T>& buffer)
+	{
+		auto myBuffer = CreateConstantBuffer<T>(device);
+		buffer.Attach(myBuffer.Get());
+	}
+}
+
 concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 {
+	CreateConstantBuffer(_device.Get(), _swapChainUpdateContext.WVP);
+	CreateConstantBuffer(_device.Get(), _swapChainUpdateContext.Model);
+
 	auto uiVSData = LoadShaderResource(IDR_D3D11_UIVERTEXSHADER);
 	static const D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
-		{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(StrokeVertex, Position), D3D11_INPUT_PER_VERTEX_DATA, 0}
+		{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(StrokeVertex, Position), D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data1), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data2), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, offsetof(StrokeVertex, SegmentType), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data3), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 3, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data4), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 4, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data5), D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 	ComPtr<ID3D11InputLayout> inputLayout;
 	ThrowIfFailed(_device->CreateInputLayout(inputElementDesc, _countof(inputElementDesc), uiVSData.first,
@@ -181,18 +229,17 @@ concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 	ComPtr<ID3D11PixelShader> pixelShader;
 	ThrowIfFailed(_device->CreatePixelShader(uiPSData.first, uiPSData.second, nullptr, &pixelShader));
 
-	{
-		D3D11_BUFFER_DESC desc{};
-		static_assert(sizeof(WorldViewProjectionModelData) % 16 == 0, "Constant Buffer Byte Width Restriction.");
-		desc.ByteWidth = sizeof(WorldViewProjectionModelData);
-		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		desc.Usage = D3D11_USAGE_DYNAMIC;
+	_deviceContext->IASetInputLayout(inputLayout.Get());
+	_deviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
+	_deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
 
-		ThrowIfFailed(_device->CreateBuffer(&desc, nullptr, &_wvpmCB));
-		D3D11_MAPPED_SUBRESOURCE mapped;
-		ThrowIfFailed(_deviceContext->Map(_wvpmCB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped));
-		_swapChainUpdateContext.WVPMDataPointer = reinterpret_cast<WorldViewProjectionModelData*>(mapped.pData);
+	{
+		ComPtr<ID3D11RasterizerState> rasterizerState;
+		auto desc = CD3D11_RASTERIZER_DESC(D3D11_DEFAULT);
+		desc.CullMode = D3D11_CULL_NONE;
+		ThrowIfFailed(_device->CreateRasterizerState(&desc, &rasterizerState));
+
+		_deviceContext->RSSetState(rasterizerState.Get());
 	}
 
 	return task_from_result();
@@ -222,9 +269,13 @@ void D3D11DeviceContext::DoFrame()
 			if (auto swapChain = weakRef.Resolve())
 				swapChains.emplace_back(swapChain);
 	}
-
+	
 	for (auto&& swapChain : swapChains)
 		swapChain->Update();
+
+	ID3D11Buffer* buffers[] = { _swapChainUpdateContext.WVP.Get(), _swapChainUpdateContext.Model.Get() };
+	_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	_deviceContext->VSSetConstantBuffers(0, _countof(buffers), buffers);
 
 	_callback->OnRender();
 	UpdateResourceManagers();
@@ -246,6 +297,7 @@ void D3D11DeviceContext::DoFrameWrapper() noexcept
 
 void D3D11DeviceContext::UpdateRenderObjects()
 {
+	_renderObjectContainer->Update();
 }
 
 void D3D11DeviceContext::UpdateResourceManagers()

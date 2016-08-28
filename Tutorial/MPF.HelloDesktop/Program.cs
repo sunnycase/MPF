@@ -37,7 +37,7 @@ namespace MPF.HelloDesktop
                 Child = new Run
                 {
                     FontFamily = new FontFamily("Microsoft YaHei"),
-                    Text = "123" 
+                    Text = "123"
                 }
             };
             _window.Show();

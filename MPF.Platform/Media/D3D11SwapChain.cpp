@@ -41,26 +41,7 @@ D3D11SwapChain::D3D11SwapChain(INativeWindow * window, IDXGIFactory* dxgiFactory
 		desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		ThrowIfFailed(dxgiFactory->CreateSwapChain(device.Get(), &desc, &_swapChain));
 
-		ComPtr<ID3D11Texture2D> backBuffer;
-		ThrowIfFailed(_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
-		ThrowIfFailed(device->CreateRenderTargetView(backBuffer.Get(), nullptr, &_renderTargetView));
-		{
-			//D3D11_TEXTURE2D_DESC dsDesc{};
-			//dsDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-			//dsDesc.Width = 640;
-			//dsDesc.Height = 480;
-			//dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-			//dsDesc.MipLevels = 1;
-			//dsDesc.ArraySize = 1;
-			//dsDesc.CPUAccessFlags = 0;
-			//dsDesc.SampleDesc.Count = 1;
-			//dsDesc.SampleDesc.Quality = 0;
-			//dsDesc.MiscFlags = 0;
-			//dsDesc.Usage = D3D11_USAGE_DEFAULT;
-
-			//ThrowIfFailed(device->CreateTexture2D(&dsDesc, nullptr, &_depthStencilBuffer));
-			//
-		}
+		CreateWindowSizeDependentResources();
 	}
 	ComPtr<INativeWindowIntern> windowIntern;
 	ThrowIfFailed(window->QueryInterface(IID_PPV_ARGS(&windowIntern)));
@@ -69,7 +50,6 @@ D3D11SwapChain::D3D11SwapChain(INativeWindow * window, IDXGIFactory* dxgiFactory
 		if (auto me = weakRef.Resolve())
 			me->OnNativeWindowMessage(message);
 	});
-	CreateWindowSizeDependentResources();
 }
 
 D3D11SwapChain::~D3D11SwapChain()
@@ -95,7 +75,7 @@ void D3D11SwapChain::OnNativeWindowMessage(NativeWindowMessages message)
 	case MPF::Platform::NWM_Closed:
 		break;
 	case MPF::Platform::NWM_SizeChanged:
-		OnResize();
+		_needResize = true;
 		break;
 	default:
 		break;
@@ -112,22 +92,53 @@ void D3D11SwapChain::CreateWindowSizeDependentResources()
 
 	XMStoreFloat4x4(&_wvp.WorldView, XMMatrixTranspose(XMMatrixIdentity()));
 	XMStoreFloat4x4(&_wvp.Projection, XMMatrixTranspose(projection));
+
+	ComPtr<ID3D11Device> device;
+	_deviceContext->GetDevice(&device);
+	ComPtr<ID3D11Texture2D> backBuffer;
+	ThrowIfFailed(_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
+	ThrowIfFailed(device->CreateRenderTargetView(backBuffer.Get(), nullptr, &_renderTargetView));
+
+	{
+		//D3D11_TEXTURE2D_DESC dsDesc{};
+		//dsDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		//dsDesc.Width = 640;
+		//dsDesc.Height = 480;
+		//dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		//dsDesc.MipLevels = 1;
+		//dsDesc.ArraySize = 1;
+		//dsDesc.CPUAccessFlags = 0;
+		//dsDesc.SampleDesc.Count = 1;
+		//dsDesc.SampleDesc.Quality = 0;
+		//dsDesc.MiscFlags = 0;
+		//dsDesc.Usage = D3D11_USAGE_DEFAULT;
+
+		//ThrowIfFailed(device->CreateTexture2D(&dsDesc, nullptr, &_depthStencilBuffer));
+		//
+	}
 }
 
 void D3D11SwapChain::OnResize()
 {
-	CreateWindowSizeDependentResources();
+	_renderTargetView.Reset();
 	ThrowIfFailed(_swapChain->ResizeBuffers(3, 0, 0, DXGI_FORMAT_UNKNOWN, 0));
+	CreateWindowSizeDependentResources();
 }
 
 void D3D11SwapChain::UpdateShaderConstants(SwapChainUpdateContext& context)
 {
-	context.WVPMDataPointer->WorldView = _wvp.WorldView;
-	context.WVPMDataPointer->Projection = _wvp.Projection;
+	auto wvp = context.WVP.Map(_deviceContext.Get());
+	wvp->WorldView = _wvp.WorldView;
+	wvp->Projection = _wvp.Projection;
 }
 
 void D3D11SwapChain::Update()
 {
+	if (_needResize)
+	{
+		OnResize();
+		_needResize = false;
+	}
 	if (auto callback = _callback)
 		callback->OnUpdate();
 }
@@ -137,9 +148,9 @@ void D3D11SwapChain::DoFrame(SwapChainUpdateContext& context)
 	UpdateShaderConstants(context);
 
 	ID3D11RenderTargetView* const renderTargetViews[] = { _renderTargetView.Get() };
-	XMVECTORF32 color = { 0.f, 1.f, 0.f, 1.6f };
+	XMVECTORF32 color = { 0.f, 0.f, 0.f, 1.f };
 
-	_deviceContext->RSSetViewports(0, &_viewport);
+	_deviceContext->RSSetViewports(1, &_viewport);
 	_deviceContext->OMSetRenderTargets(1, renderTargetViews, nullptr);
 	_deviceContext->ClearRenderTargetView(_renderTargetView.Get(), color.f);
 

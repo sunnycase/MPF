@@ -15,11 +15,6 @@
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
-struct SwapChainUpdateContext
-{
-	D3D11::WorldViewProjectionModelData* WVPMDataPointer;
-};
-
 class D3D11SwapChain : public WeakReferenceBase<D3D11SwapChain, WRL::RuntimeClassFlags<WRL::ClassicCom>, ISwapChain>
 {
 public:
@@ -37,6 +32,7 @@ private:
 	void OnResize();
 private:
 	HWND _hWnd;
+	bool _needResize = false;
 	WRL::ComPtr<ISwapChainCallback> _callback;
 	WRL::ComPtr<ID3D11DeviceContext> _deviceContext;
 	WRL::ComPtr<IDXGISwapChain> _swapChain;
@@ -44,7 +40,7 @@ private:
 	WRL::ComPtr<ID3D11Texture2D> _depthStencilBuffer;
 	WRL::ComPtr<ID3D11DepthStencilView> _depthStencilView;
 	D3D11_VIEWPORT _viewport;
-	D3D11::WorldViewProjectionModelData _wvp;
+	D3D11::WorldViewProjectionData _wvp;
 };
 
 END_NS_PLATFORM

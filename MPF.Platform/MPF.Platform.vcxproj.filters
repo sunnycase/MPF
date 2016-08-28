@@ -150,6 +150,15 @@
     <ClInclude Include="Media\D3D11Vertex.h">
       <Filter>头文件\Media\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Media\D3D11ResourceManager.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\D3D11BufferManager.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\FreeList.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -225,6 +234,15 @@
       <Filter>源文件\Media\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Media\D3D11SwapChain.cpp">
+      <Filter>源文件\Media\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="FreeList.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\D3D11BufferManager.cpp">
+      <Filter>源文件\Media\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\D3D11ResourceManager.cpp">
       <Filter>源文件\Media\Platform</Filter>
     </ClCompile>
   </ItemGroup>

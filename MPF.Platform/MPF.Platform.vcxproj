@@ -195,11 +195,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\inc\common.h" />
+    <ClInclude Include="..\inc\FreeList.h" />
     <ClInclude Include="..\inc\NonCopyable.h" />
     <ClInclude Include="..\inc\WeakReferenceBase.h" />
     <ClInclude Include="Controls\NativeWindow.h" />
     <ClInclude Include="Media\Brush.h" />
+    <ClInclude Include="Media\D3D11BufferManager.h" />
     <ClInclude Include="Media\D3D11DeviceContext.h" />
+    <ClInclude Include="Media\D3D11ResourceManager.h" />
     <ClInclude Include="Media\D3D11SwapChain.h" />
     <ClInclude Include="Media\D3D11Vertex.h" />
     <ClInclude Include="Media\D3D9BufferManager.h" />
@@ -247,7 +250,10 @@
     </ClCompile>
     <ClCompile Include="Encoding.cpp" />
     <ClCompile Include="EncodingDetector.cpp" />
+    <ClCompile Include="FreeList.cpp" />
+    <ClCompile Include="Media\D3D11BufferManager.cpp" />
     <ClCompile Include="Media\D3D11DeviceContext.cpp" />
+    <ClCompile Include="Media\D3D11ResourceManager.cpp" />
     <ClCompile Include="Media\D3D11SwapChain.cpp" />
     <ClCompile Include="Media\D3D9BufferManager.cpp" />
     <ClCompile Include="Media\D3D9DeviceContext.cpp" />

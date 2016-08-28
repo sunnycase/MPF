@@ -19,7 +19,7 @@ namespace MPF.Media
         private readonly IDeviceContext _deviceContext;
         private DeviceContext()
         {
-            _deviceContext = Platform.CreateDeviceContext(RenderBackendType.RBT_Direct3D9, new Callback(this));
+            _deviceContext = Platform.CreateDeviceContext(RenderBackendType.RBT_Direct3D11, new Callback(this));
         }
 
         private void OnRender()

@@ -43,8 +43,7 @@ private:
 	WRL::ComPtr<IDXGIFactory> _dxgiFactory;
 	WRL::ComPtr<ID3D11Device> _device;
 	WRL::ComPtr<ID3D11DeviceContext> _deviceContext;
-	WRL::ComPtr<ID3D11Buffer> _wvpmCB;
-	SwapChainUpdateContext _swapChainUpdateContext;
+	SwapChainUpdateContext _swapChainUpdateContext = {};
 	D3D_FEATURE_LEVEL _featureLevel;
 	std::atomic<bool> _isRenderLoopActive = false;
 	WRL::Wrappers::CriticalSection _swapChainLock;
