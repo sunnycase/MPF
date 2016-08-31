@@ -55,6 +55,88 @@ namespace
 			normalStart,{ 0, 0 }, D3D11::StrokeVertex::ST_Linear
 		});
 	}
+
+	void EmplaceArc(std::vector<D3D11::StrokeVertex>& vertices, XMFLOAT2 startPoint, XMFLOAT2 endPoint, float angle, const XMVECTOR& normalStartVec, const XMVECTOR& normalEndVec)
+	{
+		XMFLOAT2 normalStart, normalStartOpp;
+		XMFLOAT2 normalEnd, normalEndOpp;
+		XMStoreFloat2(&normalStart, normalStartVec);
+		XMStoreFloat2(&normalStartOpp, XMVectorScale(normalStartVec, -1.f));
+		XMStoreFloat2(&normalEnd, normalEndVec);
+		XMStoreFloat2(&normalEndOpp, XMVectorScale(normalEndVec, -1.f));
+
+		const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - startPoint.x, endPoint.y - startPoint.y });
+		const auto halfVec = XMVectorScale(dirVec, 0.5f);
+		const auto centerDir = XMVector2Normalize(XMVector3Orthogonal(dirVec));
+		const auto radian = XMConvertToRadians(angle);
+		const auto radius = XMVector2Length(halfVec).m128_f32[0] / std::sin(radian / 2.f);
+		const auto centerVec = XMLoadFloat2(&startPoint) + halfVec + centerDir * (radius * std::cos(radian / 2.f));
+		const auto slopeLength = radius / std::cos(radian / 2.f) * 1.1f;
+		const auto point2Vec = XMVector2Normalize(XMLoadFloat2(&startPoint) - centerVec) * slopeLength + centerVec;
+		const auto point3Vec = XMVector2Normalize(XMLoadFloat2(&endPoint) - centerVec) * slopeLength + centerVec;
+		XMFLOAT2 centerPoint, point2, point3;
+		XMStoreFloat2(&centerPoint, centerVec);
+		XMStoreFloat2(&point2, point2Vec);
+		XMStoreFloat2(&point3, point3Vec);
+
+		vertices.emplace_back(D3D11::StrokeVertex
+		{
+			{ centerPoint.x, centerPoint.y, 0.f },
+			{ 0 ,1 },{ 0, 0 }, D3D11::StrokeVertex::ST_Arc
+		});
+		vertices.emplace_back(D3D11::StrokeVertex
+		{
+			{ point2.x, point2.y, 0.f },
+			{ 0 ,1 },{ slopeLength / radius, 0 }, D3D11::StrokeVertex::ST_Arc
+		});
+		vertices.emplace_back(D3D11::StrokeVertex
+		{
+			{ point3.x, point3.y, 0.f },
+			{ 3.f ,1 },{ slopeLength * std::cos(radian) / radius, slopeLength * std::sin(radian) / radius }, D3D11::StrokeVertex::ST_Arc
+		});
+	}
+
+	void EmplaceQudraticBezier(std::vector<D3D11::StrokeVertex>& vertices, XMFLOAT2 startPoint, XMFLOAT2 endPoint, XMFLOAT2 control, const XMVECTOR& normalStartVec, const XMVECTOR& normalEndVec)
+	{
+		XMFLOAT2 normalStart, normalStartOpp;
+		XMFLOAT2 normalEnd, normalEndOpp;
+		XMStoreFloat2(&normalStart, normalStartVec);
+		XMStoreFloat2(&normalStartOpp, XMVectorScale(normalStartVec, -1.f));
+		XMStoreFloat2(&normalEnd, normalEndVec);
+		XMStoreFloat2(&normalEndOpp, XMVectorScale(normalEndVec, -1.f));
+
+		XMVECTOR aVec = XMLoadFloat2(&startPoint);
+		XMVECTOR bVec = XMLoadFloat2(&endPoint);
+		XMVECTOR cVec = XMLoadFloat2(&control);
+		auto mVec = (aVec + bVec + cVec) / 3.f;
+		auto minLen = std::min(XMVector2Length(aVec - mVec).m128_f32[0], XMVector2Length(bVec - mVec).m128_f32[0]);
+		minLen = std::min(minLen, XMVector2Length(cVec - mVec).m128_f32[0]);
+
+		XMFLOAT2 mPoint;
+		XMStoreFloat2(&mPoint, mVec);
+
+		vertices.emplace_back(D3D11::StrokeVertex
+		{
+			{ startPoint.x, startPoint.y, 0.f },
+			mPoint,{ 0, 0 }, D3D11::StrokeVertex::ST_QuadraticBezier,{ minLen, 0 }
+		});
+		vertices.emplace_back(D3D11::StrokeVertex
+		{
+			{ control.x, control.y, 0.f },
+			mPoint,{ 0.5f, 0 }, D3D11::StrokeVertex::ST_QuadraticBezier,{ minLen, 0 }
+		});
+		vertices.emplace_back(D3D11::StrokeVertex
+		{
+			{ endPoint.x, endPoint.y, 0.f },
+			mPoint,{ 1, 1 }, D3D11::StrokeVertex::ST_QuadraticBezier,{ minLen, 0 }
+		});
+	}
+
+	void SwapIfGeater(float& a, float& b)
+	{
+		if (a > b)
+			std::swap(a, b);
+	}
 }
 
 void ::NS_PLATFORM::Transform(std::vector<D3D11::StrokeVertex>& vertices, const LineGeometry& geometry)
@@ -68,7 +150,25 @@ void ::NS_PLATFORM::Transform(std::vector<D3D11::StrokeVertex>& vertices, const 
 
 void ::NS_PLATFORM::Transform(std::vector<D3D11::StrokeVertex>& vertices, const RectangleGeometry& geometry)
 {
+	auto leftTopPoint = geometry.Data.LeftTop;
+	auto rightBottomPoint = geometry.Data.RightBottom;
+	SwapIfGeater(leftTopPoint.X, rightBottomPoint.X);
+	SwapIfGeater(leftTopPoint.Y, rightBottomPoint.Y);
 
+	XMFLOAT2 leftTop{ leftTopPoint.X, leftTopPoint.Y };
+	XMFLOAT2 rightTop{ rightBottomPoint.X, leftTopPoint.Y };
+	XMFLOAT2 rightBottom{ rightBottomPoint.X, rightBottomPoint.Y };
+	XMFLOAT2 leftBottom{ leftTopPoint.X, rightBottomPoint.Y };
+
+	const auto ltDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, -1.f });
+	const auto rtDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, -1.f });
+	const auto lbDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, 1.f });
+	const auto rbDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, 1.f });
+
+	EmplaceLine(vertices, leftTop, rightTop, ltDirVec, rtDirVec);
+	EmplaceLine(vertices, rightTop, rightBottom, rtDirVec, rbDirVec);
+	EmplaceLine(vertices, rightBottom, leftBottom, rbDirVec, lbDirVec);
+	EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
 }
 
 void ::NS_PLATFORM::Transform(std::vector<D3D11::StrokeVertex>& vertices, const PathGeometry& geometry)
@@ -106,7 +206,7 @@ void ::NS_PLATFORM::Transform(std::vector<D3D11::StrokeVertex>& vertices, const 
 			const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
 			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
 
-			//EmplaceArc(vertices, lastPoint, endPoint, data.Angle, normalVec, normalVec);
+			EmplaceArc(vertices, lastPoint, endPoint, data.Angle, normalVec, normalVec);
 			lastPoint = endPoint;
 		}
 		break;
@@ -118,7 +218,7 @@ void ::NS_PLATFORM::Transform(std::vector<D3D11::StrokeVertex>& vertices, const 
 			const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
 			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
 
-			//EmplaceQudraticBezier(vertices, lastPoint, endPoint, { data.Control.X, data.Control.Y }, normalVec, normalVec);
+			EmplaceQudraticBezier(vertices, lastPoint, endPoint, { data.Control.X, data.Control.Y }, normalVec, normalVec);
 			lastPoint = endPoint;
 		}
 		break;
@@ -157,9 +257,14 @@ namespace
 			for (auto&& rc : _strokeRenderCalls)
 			{
 				auto vb = _resMgr->GetVertexBuffer(rc);
-				
 				_deviceContext->IASetVertexBuffers(0, 1, &vb, &rc.Stride, &offset);
-				constants[0] = rc.Thickness;
+
+				{
+					auto geo = _updateContext.Geometry.Map(_deviceContext.Get());
+					ThrowIfNot(memcpy_s(geo->Color, sizeof(geo->Color), rc.Color, sizeof(rc.Color)) == 0, L"Cannot copy color.");
+					geo->Thickness = rc.Thickness;
+					geo->Transform = rc.Transform;
+				}
 				_deviceContext->Draw(rc.VertexCount, rc.StartVertex);
 			}
 		}

@@ -182,7 +182,6 @@ namespace
 	WRL::ComPtr<ID3D11Buffer> CreateConstantBuffer(ID3D11Device* device)
 	{
 		static_assert(sizeof(T) % 16 == 0, "Constant Buffer Byte Width Restriction.");
-		static_assert(sizeof(T) >= 192, "Size of Constant Buffer must be at least 192 bytes.");
 
 		WRL::ComPtr<ID3D11Buffer> buffer;
 		D3D11_BUFFER_DESC desc{};
@@ -207,6 +206,7 @@ concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 {
 	CreateConstantBuffer(_device.Get(), _swapChainUpdateContext.WVP);
 	CreateConstantBuffer(_device.Get(), _swapChainUpdateContext.Model);
+	CreateConstantBuffer(_device.Get(), _swapChainUpdateContext.Geometry);
 
 	auto uiVSData = LoadShaderResource(IDR_D3D11_UIVERTEXSHADER);
 	static const D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
@@ -242,6 +242,22 @@ concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 		_deviceContext->RSSetState(rasterizerState.Get());
 	}
 
+	{
+		ComPtr<ID3D11BlendState> blendState;
+		auto desc = CD3D11_BLEND_DESC(D3D11_DEFAULT);
+		desc.RenderTarget[0].BlendEnable = true;
+		desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+		desc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+		desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+		desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+		ThrowIfFailed(_device->CreateBlendState(&desc, &blendState));
+
+		_deviceContext->OMSetBlendState(blendState.Get(), nullptr, 0xFFFFFFFF);
+	}
+
 	return task_from_result();
 }
 
@@ -273,7 +289,8 @@ void D3D11DeviceContext::DoFrame()
 	for (auto&& swapChain : swapChains)
 		swapChain->Update();
 
-	ID3D11Buffer* buffers[] = { _swapChainUpdateContext.WVP.Get(), _swapChainUpdateContext.Model.Get() };
+	ID3D11Buffer* buffers[] = { _swapChainUpdateContext.WVP.Get(), _swapChainUpdateContext.Model.Get(),
+		_swapChainUpdateContext.Geometry.Get() };
 	_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	_deviceContext->VSSetConstantBuffers(0, _countof(buffers), buffers);
 

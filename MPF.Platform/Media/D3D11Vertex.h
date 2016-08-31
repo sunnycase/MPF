@@ -6,6 +6,7 @@
 //
 #pragma once
 #include "../../inc/common.h"
+#include "../../inc/NonCopyable.h"
 #include <DirectXMath.h>
 #include <d3d11.h>
 
@@ -38,22 +39,26 @@ namespace D3D11
 	{
 		DirectX::XMFLOAT4X4 WorldView;
 		DirectX::XMFLOAT4X4 Projection;
-	private:
-		float _padding[128];
 	};
 
 	struct ModelData
 	{
 		DirectX::XMFLOAT4X4 Model;
-	private:
-		float _padding[128];
+	};
+
+	struct GeometryData
+	{
+		DirectX::XMFLOAT4X4 Transform;
+		float Color[4];
+		float Thickness;
+		float padding[3];
 	};
 
 #pragma pack(pop)
 }
 
 template<typename T>
-struct MappedConstantBuffer
+struct MappedConstantBuffer : NonCopyable
 {
 	MappedConstantBuffer(T* data, ID3D11DeviceContext* deviceContext, ID3D11Buffer* buffer)
 		:_deviceContext(deviceContext), _buffer(buffer), _data(data)
@@ -61,9 +66,18 @@ struct MappedConstantBuffer
 
 	}
 
+	MappedConstantBuffer(MappedConstantBuffer&& other)
+		:_deviceContext(other._deviceContext), _buffer(other._buffer), _data(other._data)
+	{
+		other._deviceContext = nullptr;
+		other._buffer = nullptr;
+		other._data = nullptr;
+	}
+
 	~MappedConstantBuffer()
 	{
-		_deviceContext->Unmap(_buffer, 0);
+		if (_deviceContext)
+			_deviceContext->Unmap(_buffer, 0);
 	}
 
 	T* operator->()
@@ -77,7 +91,7 @@ private:
 };
 
 template<typename T>
-class ConstantBuffer
+class ConstantBuffer : NonCopyable
 {
 public:
 	ConstantBuffer(ID3D11Buffer* buffer = nullptr)
@@ -110,6 +124,7 @@ struct SwapChainUpdateContext
 {
 	ConstantBuffer<D3D11::WorldViewProjectionData> WVP;
 	ConstantBuffer<D3D11::ModelData> Model;
+	ConstantBuffer<D3D11::GeometryData> Geometry;
 };
 
 END_NS_PLATFORM

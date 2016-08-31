@@ -124,7 +124,7 @@ private:
 	WRL::ComPtr<ID3D11Device> _device;
 	WRL::ComPtr<ID3D11DeviceContext> _deviceContext;
 	D3D11VertexBufferManager _strokeVBMgr;
-	SwapChainUpdateContext _updateContext;
+	SwapChainUpdateContext& _updateContext;
 	DECL_TRC_MEMBER(LineGeometry);
 	DECL_TRC_MEMBER(RectangleGeometry);
 	DECL_TRC_MEMBER(PathGeometry);

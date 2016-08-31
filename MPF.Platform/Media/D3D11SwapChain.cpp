@@ -120,6 +120,11 @@ void D3D11SwapChain::CreateWindowSizeDependentResources()
 
 void D3D11SwapChain::OnResize()
 {
+	RECT viewRect;
+	ThrowWin32IfNot(GetClientRect(_hWnd, &viewRect));
+
+	if (viewRect.right - viewRect.left == 0) return;
+
 	_renderTargetView.Reset();
 	ThrowIfFailed(_swapChain->ResizeBuffers(3, 0, 0, DXGI_FORMAT_UNKNOWN, 0));
 	CreateWindowSizeDependentResources();
@@ -148,7 +153,7 @@ void D3D11SwapChain::DoFrame(SwapChainUpdateContext& context)
 	UpdateShaderConstants(context);
 
 	ID3D11RenderTargetView* const renderTargetViews[] = { _renderTargetView.Get() };
-	XMVECTORF32 color = { 0.f, 0.f, 0.f, 1.f };
+	XMVECTORF32 color = { 1.f, 1.f, 1.f, 1.f };
 
 	_deviceContext->RSSetViewports(1, &_viewport);
 	_deviceContext->OMSetRenderTargets(1, renderTargetViews, nullptr);
