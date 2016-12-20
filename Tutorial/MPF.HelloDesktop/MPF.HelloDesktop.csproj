@@ -35,14 +35,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MPF.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\MPF.Core\bin\Debug\net46\MPF.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="MPF.Visual, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\MPF.Visual\bin\Debug\net46\MPF.Visual.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
@@ -59,6 +51,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\MPF.Core\MPF.Core.csproj">
+      <Project>{44d846a5-dbeb-41e2-b7f2-be9b028e69a6}</Project>
+      <Name>MPF.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MPF.Visual\MPF.Visual.csproj">
+      <Project>{4eb26a72-57a0-492d-8e6d-0a734b0a6c3b}</Project>
+      <Name>MPF.Visual</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -43,14 +43,12 @@ namespace MPF
             return _globalId.GetHashCode();
         }
 
-        public static DependencyProperty<T> Register<T>(string name, Type ownerType, PropertyMetadata<T> metadata)
+        public static DependencyProperty<T> Register<T>(string name, Type ownerType, PropertyMetadata<T> metadata = null)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
             if (ownerType == null)
                 throw new ArgumentNullException(nameof(ownerType));
-            if (metadata == null)
-                throw new ArgumentNullException(nameof(metadata));
 
             return new DependencyProperty<T>(name, ownerType, metadata ?? new PropertyMetadata<T>(UnsetValue));
         }
@@ -85,6 +83,9 @@ namespace MPF
             if (metadata == null)
                 throw new ArgumentNullException(nameof(metadata));
 
+            if(!_ownerType.GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
+                throw new InvalidOperationException("The new type must be same as or derived from the owner type of this property.");
+
             if (type == _ownerType)
                 _baseMetadata = MergeMetadata(_baseMetadata, metadata);
             else
@@ -96,7 +97,30 @@ namespace MPF
                 });
         }
 
+        public DependencyProperty<T> AddOwner(Type ownerType, PropertyMetadata<T> metadata)
+        {
+            if (ownerType == null)
+                throw new ArgumentNullException(nameof(ownerType));
+            if (metadata == null)
+                throw new ArgumentNullException(nameof(metadata));
+
+            if (_ownerType.GetTypeInfo().IsAssignableFrom(ownerType.GetTypeInfo()))
+                throw new InvalidOperationException("The new type must not be same as or derived from the owner type of this property.");
+
+            return new DependencyProperty<T>(Name, ownerType, metadata);
+        }
+
         public bool TryGetDefaultValue(Type type, out T value)
+        {
+            return GetMetadata(type).TryGetDefaultValue(out value);
+        }
+
+        internal void RaisePropertyChanged(Type type, object sender, PropertyChangedEventArgs<T> e)
+        {
+            GetMetadata(type).RaisePropertyChanged(sender, e);
+        }
+
+        private PropertyMetadata<T> GetMetadata(Type type)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
@@ -105,42 +129,17 @@ namespace MPF
             {
                 PropertyMetadata<T> metadata;
                 if (_metadatas.TryGetValue(type, out metadata))
-                    return metadata.TryGetDefaultValue(out value);
+                    return metadata;
             }
-            return _baseMetadata.TryGetDefaultValue(out value);
-        }
-
-        internal void RaisePropertyChanged(Type type, object sender, PropertyChangedEventArgs<T> e)
-        {
-            if (type != _ownerType)
-            {
-                PropertyMetadata<T> metadata;
-                if (_metadatas.TryGetValue(type, out metadata))
-                {
-                    metadata.RaisePropertyChanged(sender, e);
-                    return;
-                }
-            }
-            _baseMetadata.RaisePropertyChanged(sender, e);
+            return _baseMetadata;
         }
 
         private PropertyMetadata<T> MergeMetadata(PropertyMetadata<T> oldMetadata, PropertyMetadata<T> newMetadata)
         {
-            if (!oldMetadata.GetType().IsAssignableFrom(newMetadata.GetType()))
+            if (!oldMetadata.GetType().GetTypeInfo().IsAssignableFrom(newMetadata.GetType().GetTypeInfo()))
                 throw new InvalidOperationException("The type of new metadata must be derived from the type of old metadata.");
             newMetadata.Merge(oldMetadata);
             return newMetadata;
-        }
-
-        public DependencyProperty<T> AddOwner(Type ownerType, PropertyMetadata<T> metadata)
-        {
-            if (ownerType == null)
-                throw new ArgumentNullException(nameof(ownerType));
-            if (metadata == null)
-                throw new ArgumentNullException(nameof(metadata));
-
-            OverrideMetadata(ownerType, metadata ?? new PropertyMetadata<T>(UnsetValue));
-            return this;
         }
     }
 }

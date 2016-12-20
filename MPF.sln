@@ -1,25 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26014.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPF.Platform", "MPF.Platform\MPF.Platform.vcxproj", "{371A67E4-442A-4F9D-9AC9-BF08BC92FA28}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MPF.Core", "MPF.Core\MPF.Core.xproj", "{44D846A5-DBEB-41E2-B7F2-BE9B028E69A6}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MPF.Visual", "MPF.Visual\MPF.Visual.xproj", "{4EB26A72-57A0-492D-8E6D-0A734B0A6C3B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{371A67E4-442A-4F9D-9AC9-BF08BC92FA28} = {371A67E4-442A-4F9D-9AC9-BF08BC92FA28}
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tutorial", "Tutorial", "{35332891-13CD-4752-935C-48DD59BF3641}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MPF.HelloWorld", "Tutorial\MPF.HelloWorld\MPF.HelloWorld.xproj", "{962FD27B-8E12-4211-BA32-4F4755204C9A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F10E9195-8C8F-4F49-B2FF-64C0CB70E618}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPF.Platform", "MPF.Platform\MPF.Platform.vcxproj", "{371A67E4-442A-4F9D-9AC9-BF08BC92FA28}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MPF.Core", "MPF.Core\MPF.Core.csproj", "{44D846A5-DBEB-41E2-B7F2-BE9B028E69A6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MPF.Visual", "MPF.Visual\MPF.Visual.csproj", "{4EB26A72-57A0-492D-8E6D-0A734B0A6C3B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{371A67E4-442A-4F9D-9AC9-BF08BC92FA28} = {371A67E4-442A-4F9D-9AC9-BF08BC92FA28}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MPF.HelloWorld", "Tutorial\MPF.HelloWorld\MPF.HelloWorld.csproj", "{962FD27B-8E12-4211-BA32-4F4755204C9A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MPF.HelloDesktop", "Tutorial\MPF.HelloDesktop\MPF.HelloDesktop.csproj", "{ADE38F82-1D57-4835-8CBC-DF99637A9A19}"
 	ProjectSection(ProjectDependencies) = postProject
