@@ -57,7 +57,7 @@ namespace MPF.Media
                     var glyph = _fontFamily.FindGlyph(code);
                     if(glyph != null)
                     {
-                        float scale = 0.1f;
+                        float scale = 0.05f;
                         var fontMetrics = glyph.FontMetrics;
                         var glyphMetrics = glyph.GlyphMetrics;
                         var height = (int)fontMetrics.Ascent + (int)fontMetrics.Descent;

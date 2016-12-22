@@ -264,6 +264,9 @@
     <FxCompile Include="Shaders\D3D11.UIVertexShader.hlsl">
       <Filter>资源文件\Shaders\D3D11</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\D3D11.UIGeometryShader.hlsl">
+      <Filter>资源文件\Shaders\D3D11</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">

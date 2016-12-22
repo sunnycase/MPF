@@ -35,32 +35,15 @@ PixelShaderInput main(VertexShaderInput input)
 		normal = mul(normal, (float2x2)GeometryTransform);
 		normal = mul(normal, (float2x2)WorldView);
 		normal = normalize(normal) * length(input.Data1);
-		pos.xy += Thickness / 2.f * normal;
 		output.NormalAndThickness = float3(normal, Thickness);
-		output.ParamFormValue = input.Data2;
 	}
 	else
 	{
 		output.NormalAndThickness = float3(0, 0, Thickness);
-		if (segmentType == ST_QuadraticBezier)
-		{
-			float4 mPoint = float4(input.Data1, 0, 1);
-			mPoint = mul(mPoint, Model);
-			mPoint = mul(mPoint, GeometryTransform);
-			mPoint = mul(mPoint, WorldView);
-
-			float minLen = input.Data3.x * 0.1f;
-			float scale = Thickness / minLen + 1.f;
-			pos = mPoint + (pos - mPoint) * scale;
-
-			float2 mTc = (float2(0, 0) + float2(1, 1) + float2(0.5f, 0)) / 3.f;
-			float2 tc = input.Data2;
-			tc = mTc + (tc - mTc) * scale;
-			output.ParamFormValue = tc;
-		}
+		output.ParamFormValue = input.Data2;
 	}
 
-	pos = mul(pos, Projection);
+	//pos = mul(pos, Projection);
 	output.Position = pos;
 	output.Color = Color;
 	output.SegmentType = segmentType;

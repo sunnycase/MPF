@@ -22,8 +22,8 @@ float4 main(PixelShaderInput input) : SV_TARGET
 	if (segmentType == ST_Linear);
 	else
 	{
-		if (all(input.ParamFormValue < 0)) clip(-1);
-		if (all(input.ParamFormValue > 1)) clip(-1);
+		if (input.Position.x < input.LeftTopRightBottom.x || input.Position.x > input.LeftTopRightBottom.z) clip(-1);
+		if (input.Position.y < input.LeftTopRightBottom.y || input.Position.y > input.LeftTopRightBottom.w) clip(-1);
 		float thickness = input.NormalAndThickness.z;
 		float2 px = ddx(input.ParamFormValue);
 		float2 py = ddy(input.ParamFormValue);

@@ -228,10 +228,14 @@ concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 	auto uiPSData = LoadShaderResource(IDR_D3D11_UIPIXELSHADER);
 	ComPtr<ID3D11PixelShader> pixelShader;
 	ThrowIfFailed(_device->CreatePixelShader(uiPSData.first, uiPSData.second, nullptr, &pixelShader));
+	auto uiGSData = LoadShaderResource(IDR_D3D11_UIGEOMETRYSHADER);
+	ComPtr<ID3D11GeometryShader> geometryShader;
+	ThrowIfFailed(_device->CreateGeometryShader(uiGSData.first, uiGSData.second, nullptr, &geometryShader));
 
 	_deviceContext->IASetInputLayout(inputLayout.Get());
 	_deviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
 	_deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
+	_deviceContext->GSSetShader(geometryShader.Get(), nullptr, 0);
 
 	{
 		ComPtr<ID3D11RasterizerState> rasterizerState;
@@ -293,6 +297,7 @@ void D3D11DeviceContext::DoFrame()
 		_swapChainUpdateContext.Geometry.Get() };
 	_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	_deviceContext->VSSetConstantBuffers(0, _countof(buffers), buffers);
+	_deviceContext->GSSetConstantBuffers(0, _countof(buffers), buffers);
 
 	_callback->OnRender();
 	UpdateResourceManagers();

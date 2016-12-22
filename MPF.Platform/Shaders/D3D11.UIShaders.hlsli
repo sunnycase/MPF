@@ -17,6 +17,7 @@ struct PixelShaderInput
 	float4 Color : COLOR;
 	float2 ParamFormValue : TEXCOORD1;
 	int SegmentType : TEXCOORD2;
+	nointerpolation float4 LeftTopRightBottom : TEXCOORD3;
 };
 
 #define	ST_Linear				0
