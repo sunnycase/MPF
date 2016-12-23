@@ -7,7 +7,7 @@
 #include "stdafx.h"
 #include "D3D9RenderableObject.h"
 using namespace WRL;
-using namespace NS_PLATFORM;
+using namespace NS_PLATFORM_D3D9;
 
 D3D9RenderableObject::D3D9RenderableObject()
 {

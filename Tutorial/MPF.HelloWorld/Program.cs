@@ -1,4 +1,5 @@
 ﻿using MPF.Controls;
+using MPF.Documents;
 using MPF.Media;
 using System;
 using System.Collections.Generic;
@@ -28,11 +29,19 @@ namespace MPF.HelloWorld
             {
                 Size = new Size(300, 180)
             };
+
             _window.Child = new Border
             {
                 BorderThickness = new Thickness(1.0f),
                 BorderBrush = new SolidColorBrush { Color = Color.FromArgb(0xFF888888) },
                 Margin = new Thickness(5),
+                Child = new Run
+                {
+                    Margin = new Thickness(5),
+                    FontFamily = new FontFamily("Microsoft YaHei"),
+                    FontSize = 20,
+                    Text = "帝球baka"
+                }
             };
             _window.Show();
             ChangeMaximizeBox();

@@ -8,13 +8,12 @@
 #include "D3D9DeviceContext.h"
 #include <process.h>
 #include "D3D9ResourceManager.h"
-#include "D3D9Vertex.h"
-#include "../resource.h"
-#include "../NativeApplication.h"
-#include "../Controls/NativeWindow.h"
+#include "resource.h"
+#include "NativeApplication.h"
+#include "Controls/NativeWindow.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
-using namespace D3D;
+using namespace NS_PLATFORM_D3D9;
 using namespace concurrency;
 
 namespace

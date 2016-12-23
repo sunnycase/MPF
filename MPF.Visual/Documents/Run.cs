@@ -1,4 +1,5 @@
-﻿using MPF.Media;
+﻿using MPF.Controls;
+using MPF.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,13 +7,14 @@ using System.Threading.Tasks;
 
 namespace MPF.Documents
 {
-    public class Run : UIElement
+    public class Run : FrameworkElement
     {
         private GlyphRun _glyphRun;
 
-        public static readonly DependencyProperty<FontFamily> FontFamilyProperty = DependencyProperty.Register(nameof(FontFamily),
-            typeof(Run), new UIPropertyMetadata<FontFamily>(new FontFamily("Arial"), UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender,
-                OnFontFamilyPropertyChanged));
+        public static readonly DependencyProperty<FontFamily> FontFamilyProperty = TextBlock.FontFamilyProperty.AddOwner(typeof(Run),
+            new UIPropertyMetadata<FontFamily>(new FontFamily("Arial"), UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender, OnFontFamilyPropertyChanged));
+        public static readonly DependencyProperty<float> FontSizeProperty = TextBlock.FontSizeProperty.AddOwner(typeof(Run),
+            new UIPropertyMetadata<float>(12, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender, OnFontSizePropertyChanged));
 
         public static readonly DependencyProperty<string> TextProperty = DependencyProperty.Register(nameof(FontFamily),
             typeof(Run), new UIPropertyMetadata<string>(string.Empty, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender,
@@ -24,17 +26,23 @@ namespace MPF.Documents
             set { SetValue(FontFamilyProperty, value); }
         }
 
+        public float FontSize
+        {
+            get { return GetValue(FontSizeProperty); }
+            set { SetValue(FontSizeProperty, value); }
+        }
+
         public string Text
         {
             get { return GetValue(TextProperty); }
             set { SetValue(TextProperty, value); }
         }
 
-        protected override void ArrangeOverride(Rect finalRect)
+        protected override Size MeasureOverride(Size availableSize)
         {
-            if(_glyphRun == null)
-                _glyphRun = new GlyphRun(FontFamily, Text.ToCharArray(), 12);
-            base.ArrangeOverride(finalRect);
+            if (_glyphRun == null)
+                _glyphRun = new GlyphRun(FontFamily, Text.ToCharArray(), FontSize);
+            return base.MeasureOverride(availableSize);
         }
 
         protected override void OnRender(IDrawingContext drawingContext)
@@ -56,6 +64,11 @@ namespace MPF.Documents
         private void InvalidateGlyphRun()
         {
             _glyphRun = null;
+        }
+
+        private static void OnFontSizePropertyChanged(object sender, PropertyChangedEventArgs<float> e)
+        {
+            ((Run)sender)?.InvalidateGlyphRun();
         }
 
         private static void OnFontFamilyPropertyChanged(object sender, PropertyChangedEventArgs<FontFamily> e)

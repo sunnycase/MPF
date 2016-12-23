@@ -5,10 +5,11 @@
 // 创建时间：2016-07-22
 //
 #pragma once
-#include "RenderableObject.h"
+#include "../../RenderableObject.h"
+#include "../D3D9PlatformProvider.h"
 
-DEFINE_NS_PLATFORM
-#include "../MPF.Platform_i.h"
+DEFINE_NS_PLATFORM_D3D9
+#include "MPF.Platform_i.h"
 
 class D3D9RenderableObject : public RenderableObject
 {
@@ -19,4 +20,4 @@ public:
 protected:
 };
 
-END_NS_PLATFORM
+END_NS_PLATFORM_D3D9

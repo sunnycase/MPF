@@ -9,7 +9,7 @@
 #include <algorithm>
 using namespace WRL;
 using namespace NS_PLATFORM;
-using namespace D3D;
+using namespace NS_PLATFORM_D3D9;
 
 D3D9VertexBufferManager::D3D9VertexBufferManager(IDirect3DDevice9* device, UINT stride)
 	:_device(device), _stride(stride)

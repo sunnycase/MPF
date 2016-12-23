@@ -1,4 +1,5 @@
-﻿using MPF.Media;
+﻿using MPF.Internal.FontCache;
+using MPF.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,15 +9,15 @@ namespace MPF.Internal.Text
 {
     internal class GlyphFace
     {
-        internal object Owner { get; set; }
+        internal FontFace FontFace { get; }
         public Geometry Geometry { get; }
-        public FontMetrics FontMetrics { get; }
+        public FontMetrics FontMetrics => FontFace.FontMetrics;
         public GlyphMetrics GlyphMetrics { get; }
 
-        public GlyphFace(Geometry geometry, FontMetrics fontMetrics, GlyphMetrics glyphMetrics)
+        public GlyphFace(Geometry geometry, FontFace fontFace, GlyphMetrics glyphMetrics)
         {
             Geometry = geometry;
-            FontMetrics = fontMetrics;
+            FontFace = fontFace;
             GlyphMetrics = glyphMetrics;
         }
     }

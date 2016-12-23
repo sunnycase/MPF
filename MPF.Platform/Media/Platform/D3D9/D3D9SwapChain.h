@@ -9,12 +9,12 @@
 #include "../../inc/WeakReferenceBase.h"
 #include <d3d9.h>
 #include <atomic>
-#include "D3D9Vertex.h"
 #include <DirectXMath.h>
-#include "../Controls/NativeWindow.h"
+#include "../D3D9PlatformProvider.h"
+#include "../../../Controls/NativeWindow.h"
 
-DEFINE_NS_PLATFORM
-#include "../MPF.Platform_i.h"
+DEFINE_NS_PLATFORM_D3D9
+#include "MPF.Platform_i.h"
 
 class D3D9SwapChainBase : public WeakReferenceBase<D3D9SwapChainBase, WRL::RuntimeClassFlags<WRL::ClassicCom>, ISwapChain>
 {
@@ -38,7 +38,7 @@ private:
 protected:
 	D3DFORMAT _backBufferFormat = D3DFMT_UNKNOWN;
 	HWND _hWnd;
-	D3D::WorldViewProjectionData _wvp;
+	WorldViewProjectionData _wvp;
 	D3DVIEWPORT9 _viewport;
 	WRL::ComPtr<IDirect3DDevice9> _device;
 	WRL::ComPtr<ISwapChainCallback> _callback;
@@ -81,4 +81,4 @@ private:
 private:
 	D3DCAPS9 _deviceCaps = {};
 };
-END_NS_PLATFORM
+END_NS_PLATFORM_D3D9

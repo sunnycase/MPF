@@ -16,6 +16,7 @@ namespace MPF.Internal.FontCache
         private readonly WeakConcurrentDictionary<uint, GlyphFace> _glyphCache = new WeakConcurrentDictionary<uint, GlyphFace>();
 
         public FontMetrics FontMetrics { get; }
+        public uint UnitsPerEM => _face.UnitsPerEM;
 
         public FontFace(IFontFamily family, IFontFace face)
         {
@@ -35,10 +36,7 @@ namespace MPF.Internal.FontCache
             {
                 GlyphMetrics metrics;
                 var res = _face.CreateGlyphGeometry(MediaResourceManager.Current.Handle, k, out metrics);
-                return new GlyphFace(Geometry.FromResource(res), FontMetrics, metrics)
-                {
-                    Owner = this
-                };
+                return new GlyphFace(Geometry.FromResource(res), this, metrics);
             });
         }
 

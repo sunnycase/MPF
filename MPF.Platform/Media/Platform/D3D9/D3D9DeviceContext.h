@@ -5,19 +5,18 @@
 // 创建时间：2016-07-16
 //
 #pragma once
-#include "../../inc/common.h"
-#include "../../inc/WeakReferenceBase.h"
-#include "D3D9SwapChain.h"
 #include <d3d9.h>
 #include <atomic>
-#include "DeviceContext.h"
-#include "D3D9RenderableObject.h"
-#include "RenderableObjectContainer.h"
-#include "ResourceManagerBase.h"
 #include <ppltasks.h>
+#include "../D3D9PlatformProvider.h"
+#include "../../inc/WeakReferenceBase.h"
+#include "D3D9SwapChain.h"
+#include "D3D9RenderableObject.h"
+#include "../../RenderableObjectContainer.h"
+#include "../../ResourceManagerBase.h"
 
-DEFINE_NS_PLATFORM
-#include "../MPF.Platform_i.h"
+DEFINE_NS_PLATFORM_D3D9
+#include "MPF.Platform_i.h"
 
 class D3D9DeviceContext : public WeakReferenceBase<D3D9DeviceContext, WRL::RuntimeClassFlags<WRL::ClassicCom>, IDeviceContext>
 {

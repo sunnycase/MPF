@@ -8,9 +8,9 @@
 #include "D3D9SwapChain.h"
 #include <algorithm>
 #include <array>
-#include "D3D9Vertex.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
+using namespace NS_PLATFORM_D3D9;
 using namespace DirectX;
 
 namespace
@@ -226,7 +226,7 @@ void D3D9SwapChainBase::CreateWindowSizeDependentResources()
 
 void D3D9SwapChainBase::UpdateShaderConstants()
 {
-	ThrowIfFailed(_device->SetVertexShaderConstantF(D3D::VSCSlot_WorldViewProjection, reinterpret_cast<const float*>(&_wvp), D3D::VSCSize_WorldViewProjection));
+	ThrowIfFailed(_device->SetVertexShaderConstantF(VSCSlot_WorldViewProjection, reinterpret_cast<const float*>(&_wvp), VSCSize_WorldViewProjection));
 	ThrowIfFailed(_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
 }
 

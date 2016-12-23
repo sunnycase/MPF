@@ -64,6 +64,16 @@ HRESULT FontFace::get_FontMetrics(FontMetrics *value)
 	CATCH_ALL();
 }
 
+HRESULT FontFace::get_UnitsPerEM(UINT *value)
+{
+	try
+	{
+		*value = _face->units_per_EM;
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
 namespace
 {
 	struct OutlineDecomposeContext
@@ -155,7 +165,7 @@ HRESULT FontFace::CreateGlyphGeometry(IResourceManager *resMgr, UINT unicode, Gl
 
 		const auto& srcMtcs = _face->glyph->metrics;
 		metrics->AdvanceWidth = UINT32(srcMtcs.horiAdvance);
-		metrics->AdvanceWidth = UINT32(srcMtcs.vertAdvance);
+		metrics->AdvanceHeight = UINT32(srcMtcs.vertAdvance);
 		metrics->LeftSideBearing = srcMtcs.vertBearingX;
 		metrics->BottomSideBearing = srcMtcs.vertBearingY;
 		metrics->RightSideBearing = srcMtcs.horiBearingX;

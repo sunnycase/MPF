@@ -14,6 +14,7 @@ namespace MPF.Interop
     {
         uint FaceCount { get; }
         void get_FontMetrics([In, Out, MarshalAs(UnmanagedType.LPStruct)]FontMetrics fontMetrics);
+        uint UnitsPerEM { get; }
         IResource CreateGlyphGeometry(IResourceManager resMgr, uint code, [Out]out GlyphMetrics metrics);
     }
 }

@@ -52,15 +52,16 @@ namespace MPF.Media
                         code = (uint)char.ConvertToUtf32(highSurrogate, character);
                     }
                     else
-                        code = (uint)character;
+                        code = (uint)character; 
 
                     var glyph = _fontFamily.FindGlyph(code);
                     if(glyph != null)
                     {
-                        float scale = 0.05f;
                         var fontMetrics = glyph.FontMetrics;
                         var glyphMetrics = glyph.GlyphMetrics;
                         var height = (int)fontMetrics.Ascent + (int)fontMetrics.Descent;
+                        var unitsPerEM = glyph.FontFace.UnitsPerEM;
+                        float scale = _renderingEmSize / unitsPerEM;
                         var transform = Matrix3x2.CreateTranslation(glyphMetrics.RightSideBearing + advance, fontMetrics.Descent) *
                             Matrix3x2.CreateScale(scale, -scale) * Matrix3x2.CreateTranslation(0, height * scale);
                         advance += glyphMetrics.AdvanceWidth;

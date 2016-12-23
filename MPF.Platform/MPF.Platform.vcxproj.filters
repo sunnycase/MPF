@@ -43,6 +43,12 @@
     <Filter Include="资源文件\Shaders\D3D11">
       <UniqueIdentifier>{f3302a60-10cc-4e8c-9132-7620daafcc79}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\Media\Platform\D3D9">
+      <UniqueIdentifier>{32a032c1-8aba-40da-995c-d9196e1cfd93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Media\Platform\D3D9">
+      <UniqueIdentifier>{12b342ee-61c7-40ec-9e12-b6c8d95d226f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -75,12 +81,6 @@
     <ClInclude Include="Media\DeviceContext.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
-    <ClInclude Include="Media\D3D9DeviceContext.h">
-      <Filter>头文件\Media\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="Media\D3D9SwapChain.h">
-      <Filter>头文件\Media\Platform</Filter>
-    </ClInclude>
     <ClInclude Include="Media\ResourceRef.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
@@ -96,23 +96,11 @@
     <ClInclude Include="Media\RenderableObject.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
-    <ClInclude Include="Media\D3D9RenderableObject.h">
-      <Filter>头文件\Media\Platform</Filter>
-    </ClInclude>
     <ClInclude Include="Media\RenderableObjectContainer.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
     <ClInclude Include="Media\ResourceManagerBase.h">
       <Filter>头文件\Media</Filter>
-    </ClInclude>
-    <ClInclude Include="Media\D3D9ResourceManager.h">
-      <Filter>头文件\Media\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="Media\D3D9Vertex.h">
-      <Filter>头文件\Media\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="Media\D3D9BufferManager.h">
-      <Filter>头文件\Media\Platform</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
@@ -159,6 +147,33 @@
     <ClInclude Include="..\inc\FreeList.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Media\TransformedResourceContainer.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\ResourceManager.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\Platform\D3D9PlatformProvider.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\Platform\D3D9\D3D9ResourceManager.h">
+      <Filter>头文件\Media\Platform\D3D9</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\Platform\D3D9\D3D9BufferManager.h">
+      <Filter>头文件\Media\Platform\D3D9</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\Platform\PlatformProvider.h">
+      <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\Platform\D3D9\D3D9DeviceContext.h">
+      <Filter>头文件\Media\Platform\D3D9</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\Platform\D3D9\D3D9RenderableObject.h">
+      <Filter>头文件\Media\Platform\D3D9</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\Platform\D3D9\D3D9SwapChain.h">
+      <Filter>头文件\Media\Platform\D3D9</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -179,12 +194,6 @@
     <ClCompile Include="Media\DeviceContext.cpp">
       <Filter>源文件\Media</Filter>
     </ClCompile>
-    <ClCompile Include="Media\D3D9SwapChain.cpp">
-      <Filter>源文件\Media\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="Media\D3D9DeviceContext.cpp">
-      <Filter>源文件\Media\Platform</Filter>
-    </ClCompile>
     <ClCompile Include="Media\RenderCommandBuffer.cpp">
       <Filter>源文件\Media</Filter>
     </ClCompile>
@@ -197,17 +206,8 @@
     <ClCompile Include="Media\ResourceRef.cpp">
       <Filter>源文件\Media</Filter>
     </ClCompile>
-    <ClCompile Include="Media\D3D9RenderableObject.cpp">
-      <Filter>源文件\Media\Platform</Filter>
-    </ClCompile>
     <ClCompile Include="Media\ResourceManagerBase.cpp">
       <Filter>源文件\Media</Filter>
-    </ClCompile>
-    <ClCompile Include="Media\D3D9ResourceManager.cpp">
-      <Filter>源文件\Media\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="Media\D3D9BufferManager.cpp">
-      <Filter>源文件\Media\Platform</Filter>
     </ClCompile>
     <ClCompile Include="Media\GLDeviceContext.cpp">
       <Filter>源文件\Media\Platform</Filter>
@@ -244,6 +244,24 @@
     </ClCompile>
     <ClCompile Include="Media\D3D11ResourceManager.cpp">
       <Filter>源文件\Media\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\Platform\D3D9\GeometryTransforms.cpp">
+      <Filter>源文件\Media\Platform\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\Platform\D3D9\D3D9ResourceManager.cpp">
+      <Filter>源文件\Media\Platform\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\Platform\D3D9\D3D9BufferManager.cpp">
+      <Filter>源文件\Media\Platform\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\Platform\D3D9\D3D9DeviceContext.cpp">
+      <Filter>源文件\Media\Platform\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\Platform\D3D9\D3D9RenderableObject.cpp">
+      <Filter>源文件\Media\Platform\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\Platform\D3D9\D3D9SwapChain.cpp">
+      <Filter>源文件\Media\Platform\D3D9</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

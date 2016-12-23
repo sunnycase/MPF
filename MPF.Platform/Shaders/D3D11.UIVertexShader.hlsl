@@ -23,16 +23,16 @@ PixelShaderInput main(VertexShaderInput input)
 	PixelShaderInput output = (PixelShaderInput)0;
 	float4 pos = float4(input.Position, 1.f);
 
-	pos = mul(pos, Model);
 	pos = mul(pos, GeometryTransform);
+	pos = mul(pos, Model);
 	pos = mul(pos, WorldView);
 	
 	int segmentType = input.SegmentType;
 	if (segmentType == ST_Linear)
 	{
 		float2 normal = input.Data1;
-		normal = mul(normal, (float2x2)Model);
 		normal = mul(normal, (float2x2)GeometryTransform);
+		normal = mul(normal, (float2x2)Model);
 		normal = mul(normal, (float2x2)WorldView);
 		normal = normalize(normal) * length(input.Data1);
 		output.NormalAndThickness = float3(normal, Thickness);

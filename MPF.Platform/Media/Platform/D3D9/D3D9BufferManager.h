@@ -7,34 +7,10 @@
 #pragma once
 #include "../../inc/common.h"
 #include <d3d9.h>
-#include "D3D9Vertex.h"
 #include <list>
+#include "../D3D9PlatformProvider.h"
 
-DEFINE_NS_PLATFORM
-
-struct RentInfo
-{
-	size_t entryIdx;
-	size_t offset;
-	size_t length;
-};
-
-class D3D9VertexBufferManager;
-
-struct RenderCall
-{
-	D3D9VertexBufferManager* VBMgr;
-	size_t BufferIdx;
-	UINT Stride;
-	UINT StartVertex;
-	UINT PrimitiveCount;
-};
-
-struct StorkeRenderCall : public RenderCall
-{
-	float Thickness;
-	float Color[4];
-};
+DEFINE_NS_PLATFORM_D3D9
 
 class D3D9VertexBufferManager
 {
@@ -84,4 +60,4 @@ private:
 	std::vector<BufferEntry> _buffers;
 };
 
-END_NS_PLATFORM
+END_NS_PLATFORM_D3D9

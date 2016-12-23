@@ -20,13 +20,13 @@ namespace MPF
 
     public class UIElement : Visual
     {
-        private UIElementFlags _uiFlags = (UIElementFlags)~0u;
+        private UIElementFlags _uiFlags = UIElementFlags.ArrangeDirty | UIElementFlags.Visible;
         internal UIElementFlags UIFlags => _uiFlags;
         private Size _renderSize;
 
         protected internal virtual IEnumerable<UIElement> LogicalChildren
         {
-            get { return null; }
+            get { yield break; }
         }
 
         public Size RenderSize
@@ -54,15 +54,20 @@ namespace MPF
 
         internal new void Render()
         {
-            _renderRegistered = false;
             ClearFlags(UIElementFlags.RenderDirty);
             base.Render();
+        }
+
+        public void InvalidateArrange()
+        {
+            SetUIFlags(UIElementFlags.ArrangeDirty);
         }
 
         public void Arrange(Rect finalRect)
         {
             ClearFlags(UIElementFlags.ArrangeDirty);
             ArrangeOverride(finalRect);
+            InvalidateRender();
         }
 
         protected virtual void ArrangeOverride(Rect finalRect)
@@ -71,22 +76,16 @@ namespace MPF
             VisualOffset = (Vector2)finalRect.Location;
         }
 
-        bool _measureRegistered = false;
         public void InvalidateMeasure()
         {
-            if (!_measureRegistered)
-            {
-                _measureRegistered = true;
-                SetUIFlags(UIElementFlags.MeasureDirty);
-                SetUIFlags(UIElementFlags.ArrangeDirty);
-            }
+            SetUIFlags(UIElementFlags.MeasureDirty);
         }
 
         public void Measure(Size availableSize)
         {
-            _measureRegistered = false;
             ClearFlags(UIElementFlags.MeasureDirty);
             _desiredSize = MeasureOverride(availableSize);
+            InvalidateArrange();
         }
 
         protected virtual Size MeasureOverride(Size availableSize)
@@ -104,15 +103,9 @@ namespace MPF
             _uiFlags &= ~flags;
         }
 
-
-        bool _renderRegistered = false;
-        internal void RegisterRender()
+        internal void InvalidateRender()
         {
-            if (!_renderRegistered)
-            {
-                _renderRegistered = true;
-                SetUIFlags(UIElementFlags.RenderDirty);
-            }
+            SetUIFlags(UIElementFlags.RenderDirty);
         }
 
         private void UpdateVisibilityFlag(Visibility value)

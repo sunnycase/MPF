@@ -58,13 +58,13 @@ namespace MPF.Media
         private void OnUpdate(UIElement element, UIElement parent, bool forceArrange)
         {
             var flags = element.UIFlags;
+            if (forceArrange || flags.HasFlag(UIElementFlags.MeasureDirty))
+                element.Measure(parent?.RenderSize ?? new Size(float.NaN, float.NaN));
             if (forceArrange || flags.HasFlag(UIElementFlags.ArrangeDirty))
             {
                 forceArrange = true;
                 element.Arrange(GetArrangeRect(parent));
             }
-            if (forceArrange || flags.HasFlag(UIElementFlags.MeasureDirty))
-                element.Measure(parent?.RenderSize ?? new Size(float.NaN, float.NaN));
             if (forceArrange || flags.HasFlag(UIElementFlags.RenderDirty))
                 element.Render();
             var children = element.LogicalChildren;

@@ -30,6 +30,12 @@ namespace MPF
             offset.X += finalRect.X + margin.Left;
             offset.Y += finalRect.Y + margin.Top;
             VisualOffset = offset;
+            OnAfterArrange();
+        }
+
+        protected virtual void OnAfterArrange()
+        {
+
         }
 
         protected virtual Size ArrangeOverride(Size finalSize)

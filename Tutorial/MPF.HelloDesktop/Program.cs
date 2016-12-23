@@ -36,7 +36,9 @@ namespace MPF.HelloDesktop
                 Margin = new Thickness(5),
                 Child = new Run
                 {
+                    Margin = new Thickness(5),
                     FontFamily = new FontFamily("Microsoft YaHei"),
+                    FontSize = 20,
                     Text = "帝球baka"
                 }
             };

@@ -189,6 +189,9 @@ interface IFontFace : IUnknown
 	[propget]
 	HRESULT FontMetrics([out, retval]FontMetrics* value);
 
+	[propget]
+	HRESULT UnitsPerEM([out, retval]UINT* value);
+
 	HRESULT CreateGlyphGeometry([in]IResourceManager* resMgr, [in]UINT unicode, [out]GlyphMetrics* metrics, [out, retval]IResource** geometry);
 };
 

@@ -17,7 +17,7 @@ namespace MPF.Controls
         public static readonly DependencyProperty<string> TitleProperty = DependencyProperty.Register(nameof(Title), typeof(Window), 
             new PropertyMetadata<string>(string.Empty, propertyChangedHandler: OnTitlePropertyChanged));
         public static readonly DependencyProperty<Size> SizeProperty = DependencyProperty.Register(nameof(Size), typeof(Window),
-            new UIPropertyMetadata<Size>(DependencyProperty.UnsetValue, UIPropertyMetadataOptions.AffectMeasure, OnSizePropertyChanged));
+            new UIPropertyMetadata<Size>(DependencyProperty.UnsetValue, UIPropertyMetadataOptions.AffectArrange, OnSizePropertyChanged));
 
         public bool HasMaximize
         {

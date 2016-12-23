@@ -10,7 +10,8 @@ namespace MPF
     {
         None = 0x0,
         AffectMeasure = 0x1,
-        AffectRender = 0x2
+        AffectArrange = 0x2,
+        AffectRender = 0x4
     }
 
     public class UIPropertyMetadata<T> : PropertyMetadata<T>
@@ -32,15 +33,16 @@ namespace MPF
         protected override void MergeOverride(PropertyMetadata<T> old)
         {
             base.MergeOverride(old);
-            //var uiMetadata = (UIPropertyMetadata<T>)old;
         }
 
         protected override void OnPropertyChanged(object sender, PropertyChangedEventArgs<T> e)
         {
             if (_uiOptions.HasFlag(UIPropertyMetadataOptions.AffectMeasure))
                 (sender as UIElement)?.InvalidateMeasure();
+            if (_uiOptions.HasFlag(UIPropertyMetadataOptions.AffectArrange))
+                (sender as UIElement)?.InvalidateArrange();
             if (_uiOptions.HasFlag(UIPropertyMetadataOptions.AffectRender))
-                (sender as UIElement)?.RegisterRender();
+                (sender as UIElement)?.InvalidateRender();
             base.OnPropertyChanged(sender, e);
         }
     }
