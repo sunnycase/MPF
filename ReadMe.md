@@ -13,11 +13,12 @@ A WPF-alike GUI Framework for .Net Core.
 
 ## Rendering Backend
 - Direct3D 9 With Shader Model 2.0 (ps\_2\_a)
+- Direct3D 11
 - OpenGL 2.0 (Planning)
 
 ## Build
 - Git clone
-- Build in VS2015 Update3
+- Build in VS2017 RC
 
 ---
 类 WPF 的 GUI 框架，运行于 .Net Core
@@ -31,8 +32,9 @@ A WPF-alike GUI Framework for .Net Core.
 
 ## 渲染后端
 - Direct3D 9 With Shader Model 2.0 (ps\_2\_a)
+- Direct3D 11
 - OpenGL 2.0 (计划中)
 
 ## 编译
 - Git clone
-- 使用 VS2015 Update3 生成
+- 使用 VS2017 RC 生成
