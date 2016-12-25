@@ -9,6 +9,7 @@
 #include <DirectXMath.h>
 using namespace WRL;
 using namespace NS_PLATFORM;
+using namespace NS_PLATFORM_D3D11;
 using namespace DirectX;
 
 namespace

@@ -9,7 +9,6 @@
 #include "../D3D9PlatformProvider.h"
 
 DEFINE_NS_PLATFORM_D3D9
-#include "MPF.Platform_i.h"
 
 class D3D9RenderableObject : public RenderableObject
 {

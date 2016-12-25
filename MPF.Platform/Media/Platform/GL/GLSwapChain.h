@@ -9,7 +9,7 @@
 #include "../../inc/WeakReferenceBase.h"
 
 DEFINE_NS_PLATFORM
-#include "../MPF.Platform_i.h"
+#include "MPF.Platform_i.h"
 
 class GLSwapChainBase : public WeakReferenceBase<GLSwapChainBase, WRL::RuntimeClassFlags<WRL::ClassicCom>, ISwapChain>
 {

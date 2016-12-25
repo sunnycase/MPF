@@ -1,21 +1,16 @@
 //
 // MPF Platform
-// D3D9 Resource Manager
+// D3D11 Resource Manager
 // 作者：SunnyCase
-// 创建时间：2016-07-23
+// 创建时间：2016-08-28
 //
 #include "stdafx.h"
-#include "D3D9ResourceManager.h"
-#include "D3D9DeviceContext.h"
+#include "D3D11ResourceManager.h"
+#include "D3D11DeviceContext.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
-using namespace NS_PLATFORM_D3D9;
+using namespace NS_PLATFORM_D3D11;
 using namespace DirectX;
-
-D3D9ResourceManager::D3D9ResourceManager(WRL::ComPtr<D3D9DeviceContext>& deviceContext)
-	:ResourceManager(deviceContext)
-{
-}
 
 namespace
 {
@@ -26,8 +21,8 @@ namespace
 			DirectX::XMFLOAT4X4 Transform;
 		};
 	public:
-		DrawCallList(IDirect3DDevice9* device, D3D9ResourceManager* resMgr, RenderCommandBuffer* rcb)
-			:_device(device), _resMgr(resMgr), _rcb(rcb)
+		DrawCallList(ID3D11DeviceContext* deviceContext, SwapChainUpdateContext& updateContext, D3D11ResourceManager* resMgr, RenderCommandBuffer* rcb)
+			:_deviceContext(deviceContext), _resMgr(resMgr), _rcb(rcb), _updateContext(updateContext)
 		{
 
 		}
@@ -35,19 +30,26 @@ namespace
 		// 通过 IDrawCallList 继承
 		virtual void Draw(const DirectX::XMFLOAT4X4& modelTransform) override
 		{
-			using namespace D3D9;
+			using namespace D3D11;
 
-			ThrowIfFailed(_device->SetVertexShaderConstantF(VSCSlot_ModelTransform, modelTransform.m[0], VSCSize_ModelTransform));
+			{
+				auto model = _updateContext.Model.Map(_deviceContext.Get());
+				model->Model = modelTransform;
+			}
 			float constants[4] = { 0 };
+			UINT offset = 0;
 			for (auto&& rc : _strokeRenderCalls)
 			{
 				auto vb = _resMgr->GetVertexBuffer(rc);
-				ThrowIfFailed(_device->SetStreamSource(0, vb.Get(), 0, rc.Stride));
-				constants[0] = rc.Thickness;
-				ThrowIfFailed(_device->SetVertexShaderConstantF(VSCSlot_Thickness, constants, VSCSize_Thickness));
-				ThrowIfFailed(_device->SetVertexShaderConstantF(VSCSlot_Color, rc.Color, VSCSize_Color));
-				ThrowIfFailed(_device->SetVertexShaderConstantF(VSCSlot_GeometryTransform, rc.Transform.m[0], VSCSize_GeometryTransform));
-				ThrowIfFailed(_device->DrawPrimitive(D3DPT_TRIANGLELIST, rc.StartVertex, rc.PrimitiveCount));
+				_deviceContext->IASetVertexBuffers(0, 1, vb.GetAddressOf(), &rc.Stride, &offset);
+
+				{
+					auto geo = _updateContext.Geometry.Map(_deviceContext.Get());
+					ThrowIfNot(memcpy_s(geo->Color, sizeof(geo->Color), rc.Color, sizeof(rc.Color)) == 0, L"Cannot copy color.");
+					geo->Thickness = rc.Thickness;
+					geo->Transform = rc.Transform;
+				}
+				_deviceContext->Draw(rc.VertexCount, rc.StartVertex);
 			}
 		}
 
@@ -108,26 +110,22 @@ namespace
 			}
 		}
 	private:
-		ComPtr<IDirect3DDevice9> _device;
-		ComPtr<D3D9ResourceManager> _resMgr;
+		ComPtr<ID3D11DeviceContext> _deviceContext;
+		SwapChainUpdateContext& _updateContext;
+		ComPtr<D3D11ResourceManager> _resMgr;
 		ComPtr<RenderCommandBuffer> _rcb;
 		std::vector<MyStrokeDrawCall> _strokeRenderCalls;
 	};
 }
 
-std::shared_ptr<IDrawCallList> D3D9ResourceManager::CreateDrawCallList(RenderCommandBuffer* rcb)
+D3D11ResourceManager::D3D11ResourceManager(WRL::ComPtr<D3D11DeviceContext>& deviceContext, SwapChainUpdateContext& updateContext)
+	:ResourceManager(deviceContext), _updateContext(updateContext)
 {
-	auto ret = std::make_shared<DrawCallList>(_deviceContext->Device, this, rcb);
+}
+
+std::shared_ptr<IDrawCallList> D3D11ResourceManager::CreateDrawCallList(RenderCommandBuffer* rcb)
+{
+	auto ret = std::make_shared<DrawCallList>(_deviceContext->DeviceContext, _updateContext, this, rcb);
 	ret->Initialize();
 	return ret;
-}
-
-void D3D9ResourceManager::BeginResetDevice()
-{
-	//_strokeVBMgr.BeginResetDevice();
-}
-
-void D3D9ResourceManager::EndResetDevice()
-{
-	//_strokeVBMgr.EndResetDevice();
 }

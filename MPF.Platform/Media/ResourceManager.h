@@ -7,6 +7,7 @@
 #pragma once
 #include "TransformedResourceContainer.h"
 #include "ResourceManagerBase.h"
+#include "Platform/PlatformProviderTraits.h"
 
 DEFINE_NS_PLATFORM
 
@@ -16,31 +17,29 @@ virtual ITransformedResourceContainer<T>& Get##T##TRC() noexcept override { retu
 #define RM_DECL_TRC_MEMBER(T) \
 TransformedResourceContainer<PId, T> _trc##T
 
-#define RM_CTOR_IMPL1(T) _trc##T##(_strokeVBMgr)
+#define RM_CTOR_IMPL1(T) _trc##T##(_strokeVBMgr, _fillVBMgr)
 
 template<PlatformId PId>
 class ResourceManager : public ResourceManagerBase
 {
+public:
 	using PlatformProvider_t = PlatformProvider<PId>;
-	using VertexBufferManager = typename PlatformProvider_t::VertexBufferManager;
 	using RenderCall = typename PlatformProvider_t::RenderCall;
 	using StrokeVertex = typename PlatformProvider_t::StrokeVertex;
 	using FillVertex = typename PlatformProvider_t::FillVertex;
+	using DeviceContext = typename PlatformProvider_t::DeviceContext;
+
+	using VertexBufferManager = typename PlatformProviderTraits<PId>::VertexBufferManager;
 
 	using StorkeRenderCall_t = StorkeRenderCall<RenderCall>;
 	using FillRenderCall_t = FillRenderCall<RenderCall>;
-public:
-	template<class TVBUploadCaller, class StrokeTuple, class FillTuple>
-	ResourceManager(TVBUploadCaller&& vbUploadCaller, StrokeTuple&& strokeVBTuple, FillTuple&& fillVBTuple)
-		:ResourceManager(std::forward<TVBUploadCaller>(vbUploadCaller), std::forward<StrokeTuple>(strokeVBTuple), std::make_index_sequence<std::tuple_size_v<std::decay_t<StrokeTuple>>>{},
-			std::forward<FillTuple>(fillVBTuple), std::make_index_sequence<std::tuple_size_v<std::decay_t<FillTuple>>>{})
+
+	ResourceManager(DeviceContext& deviceContext)
+		:_deviceContext(deviceContext), _strokeVBMgr(deviceContext, sizeof(StrokeVertex)),
+		_fillVBMgr(deviceContext, sizeof(FillVertex)),
+		RM_CTOR_IMPL1(LineGeometry), RM_CTOR_IMPL1(RectangleGeometry), RM_CTOR_IMPL1(PathGeometry)
 	{
 
-	}
-
-	virtual std::shared_ptr<IDrawCallList> CreateDrawCallList(RenderCommandBuffer* rcb) override
-	{
-		return nullptr;
 	}
 
 #define RM_TRYGET_IMPL1(T)										 \
@@ -77,20 +76,12 @@ public:
 
 	decltype(auto) GetVertexBuffer(const StorkeRenderCall_t& renderCall) const noexcept
 	{
-		return _strokeVBMgr.GetVertexBuffer(renderCall);
+		return _strokeVBMgr.GetBuffer(renderCall);
 	}
 
 	decltype(auto) GetVertexBuffer(const FillRenderCall_t& renderCall) const noexcept
 	{
-		return _fillVBMgr.GetVertexBuffer(renderCall);
-	}
-private:
-	template<class TVBUploadCaller, class StrokeTuple, std::size_t... IStrokeTuple, class FillTuple, std::size_t... IFillTuple>
-	ResourceManager(TVBUploadCaller&& vbUploadCaller, StrokeTuple&& strokeVBTuple, FillTuple&& fillVBTuple, std::index_sequence<IStrokeTuple...>, std::index_sequence<IFillTuple...>)
-		:_vbUploadCaller(std::forward<TVBUploadCaller>(vbUploadCaller)), _strokeVBMgr(std::get<IStrokeTuple>(std::forward<StrokeTuple>(t))...), 
-		_fillVBMgr(std::get<IFillTuple>(std::forward<FillTuple>(t))...)
-	{
-
+		return _fillVBMgr.GetBuffer(renderCall);
 	}
 protected:
 	RM_DECL_GET_TRC(LineGeometry);
@@ -99,14 +90,15 @@ protected:
 
 	virtual void UpdateOverride() override
 	{
-		_vbUploadCaller(_strokeVBMgr);
-		_vbUploadCaller(_fillVBMgr);
+		_strokeVBMgr.Upload();
+		_fillVBMgr.Upload();
 	}
 
+	DeviceContext _deviceContext;
+private:
 	VertexBufferManager _strokeVBMgr;
 	VertexBufferManager _fillVBMgr;
-private:
-	std::function<void(VertexBufferManager&)> _vbUploadCaller;
+
 	RM_DECL_TRC_MEMBER(LineGeometry);
 	RM_DECL_TRC_MEMBER(RectangleGeometry);
 	RM_DECL_TRC_MEMBER(PathGeometry);

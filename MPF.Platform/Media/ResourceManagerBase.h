@@ -12,26 +12,13 @@
 #include "Pen.h"
 #include "../../inc/WeakReferenceBase.h"
 #include "RenderCommandBuffer.h"
-#include "DirectXMath.h"
+#include "Platform/PlatformProvider.h"
+#include <DirectXMath.h>
 
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
 class FontManager;
-
-template<typename T>
-struct ITransformedResourceContainer
-{
-	virtual void Add(const std::vector<UINT_PTR>& handles, const ResourceContainer<T>& container) = 0;
-	virtual void Update(const std::vector<UINT_PTR>& handles, const ResourceContainer<T>& container) = 0;
-	virtual void Remove(const std::vector<UINT_PTR>& handles) = 0;
-};
-
-struct IDrawCallList : std::enable_shared_from_this<IDrawCallList>
-{
-	virtual void Draw(const DirectX::XMFLOAT4X4& modelTransform) = 0;
-	virtual void Update() = 0;
-};
 
 #define DECL_RESCONTAINERAWARE(T) \
 std::shared_ptr<ResourceContainer<T>> _container##T; \

@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <tuple>
 #include "Platform/PlatformProvider.h"
+#include "Platform/PlatformProviderTraits.h"
 #include "Geometry.h"
 
 DEFINE_NS_PLATFORM
@@ -17,15 +18,16 @@ DEFINE_NS_PLATFORM
 template<PlatformId PId, typename T>
 class TransformedResourceContainer : public ITransformedResourceContainer<T>
 {
+public:
 	using PlatformProvider_t = PlatformProvider<PId>;
-	using VertexBufferManager = typename PlatformProvider_t::VertexBufferManager;
+	using VertexBufferManager = typename PlatformProviderTraits<PId>::VertexBufferManager;
 	using RenderCall = typename PlatformProvider_t::RenderCall;
 	using StrokeVertex = typename PlatformProvider_t::StrokeVertex;
 	using FillVertex = typename PlatformProvider_t::FillVertex;
 
 	using StorkeRenderCall_t = StorkeRenderCall<RenderCall>;
 	using FillRenderCall_t = FillRenderCall<RenderCall>;
-public:
+
 	TransformedResourceContainer(VertexBufferManager& strokeVBMgr, VertexBufferManager& fillVBMgr)
 		:_strokeVBMgr(strokeVBMgr), _fillVBMgr(fillVBMgr)
 	{
@@ -51,7 +53,7 @@ public:
 			fillVertices.clear();
 			_platformProvider.Transform(fillVertices, source);
 			auto fillRent = _fillVBMgr.Allocate(fillVertices.size());
-			_strokeRentInfos.emplace(handle, fillRent);
+			_fillRentInfos.emplace(handle, fillRent);
 			_fillVBMgr.Update(fillRent, 0, fillVertices.data(), fillVertices.size());
 		}
 	}
@@ -67,7 +69,7 @@ public:
 			const auto& source = *refer;
 
 			strokeVertices.clear();
-			Transform(strokeVertices, source);
+			_platformProvider.Transform(strokeVertices, source);
 			auto& strokeRent = _strokeRentInfos.find(handle)->second;
 			if (strokeRent.length != strokeVertices.size())
 			{
@@ -77,7 +79,7 @@ public:
 			_strokeVBMgr.Update(strokeRent, 0, strokeVertices.data(), strokeVertices.size());
 
 			fillVertices.clear();
-			Transform(fillVertices, source);
+			_platformProvider.Transform(fillVertices, source);
 			auto& fillRent = _fillRentInfos.find(handle)->second;
 			if (fillRent.length != fillVertices.size())
 			{

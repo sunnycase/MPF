@@ -244,7 +244,8 @@ HRESULT D3D9DeviceContext::CreateResourceManager(IResourceManager **resMgr)
 	try
 	{
 		EnsureDevice();
-		auto myResMgr = Make<D3D9ResourceManager>(_device.Get());
+		ComPtr<D3D9DeviceContext> me(this);
+		auto myResMgr = Make<D3D9ResourceManager>(me);
 		_resourceManagers.emplace_back(myResMgr->GetWeakContext());
 		*resMgr = myResMgr.Detach();
 		return S_OK;

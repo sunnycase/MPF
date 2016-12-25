@@ -9,11 +9,10 @@
 #include "../../inc/WeakReferenceBase.h"
 #include <dxgi.h>
 #include <d3d11.h>
-#include "D3D11Vertex.h"
-#include "../Controls/NativeWindow.h"
+#include "../D3D11PlatformProvider.h"
+#include "Controls/NativeWindow.h"
 
-DEFINE_NS_PLATFORM
-#include "../MPF.Platform_i.h"
+DEFINE_NS_PLATFORM_D3D11
 
 class D3D11SwapChain : public WeakReferenceBase<D3D11SwapChain, WRL::RuntimeClassFlags<WRL::ClassicCom>, ISwapChain>
 {
@@ -43,4 +42,4 @@ private:
 	D3D11::WorldViewProjectionData _wvp;
 };
 
-END_NS_PLATFORM
+END_NS_PLATFORM_D3D11

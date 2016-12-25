@@ -5,18 +5,14 @@
 // 创建时间：2016-07-16
 //
 #pragma once
-#include <d3d9.h>
-#include <atomic>
-#include <ppltasks.h>
+#include "../inc/WeakReferenceBase.h"
 #include "../D3D9PlatformProvider.h"
-#include "../../inc/WeakReferenceBase.h"
+#include "../../RenderableObjectContainer.h"
 #include "D3D9SwapChain.h"
 #include "D3D9RenderableObject.h"
-#include "../../RenderableObjectContainer.h"
-#include "../../ResourceManagerBase.h"
+#include <ppltasks.h>
 
 DEFINE_NS_PLATFORM_D3D9
-#include "MPF.Platform_i.h"
 
 class D3D9DeviceContext : public WeakReferenceBase<D3D9DeviceContext, WRL::RuntimeClassFlags<WRL::ClassicCom>, IDeviceContext>
 {
@@ -27,6 +23,11 @@ public:
 	STDMETHODIMP CreateSwapChain(INativeWindow* window, ISwapChain** swapChain) override;
 	STDMETHODIMP CreateRenderableObject(IRenderableObject ** obj) override;
 	STDMETHODIMP CreateResourceManager(IResourceManager **resMgr);
+
+	DEFINE_PROPERTY_GET(D3D, IDirect3D9*);
+	IDirect3D9* get_D3D() const noexcept { return _d3d.Get(); }
+	DEFINE_PROPERTY_GET(Device, IDirect3DDevice9*);
+	IDirect3DDevice9* get_Device() const noexcept { return _device.Get(); }
 private:
 	concurrency::task<void> CreateDeviceResourcesAsync();
 	void StartRenderLoop();
@@ -53,4 +54,4 @@ private:
 	std::shared_ptr<RenderableObjectContainer<D3D9RenderableObject>> _renderObjectContainer;
 };
 
-END_NS_PLATFORM
+END_NS_PLATFORM_D3D9

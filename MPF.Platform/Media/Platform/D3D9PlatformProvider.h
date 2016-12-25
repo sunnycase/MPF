@@ -7,6 +7,7 @@
 #pragma once
 #include "PlatformProvider.h"
 #include <DirectXMath.h>
+#include <d3d9.h>
 
 #define DEFINE_NS_PLATFORM_D3D9 namespace MPF { namespace Platform { namespace D3D9 {
 #define END_NS_PLATFORM_D3D9 }}}
@@ -58,16 +59,16 @@ enum VertexShaderConstantSlots
 
 #pragma pack(pop)
 
-class D3D9VertexBufferManager;
-
 struct RenderCall
 {
-	D3D9VertexBufferManager* VBMgr;
+	VertexBufferManager<PlatformId::D3D9>* VBMgr;
 	size_t BufferIdx;
 	UINT Stride;
 	UINT StartVertex;
 	UINT PrimitiveCount;
 };
+
+class D3D9DeviceContext;
 
 END_NS_PLATFORM_D3D9
 
@@ -77,9 +78,24 @@ template<>
 struct PlatformProvider<PlatformId::D3D9>
 {
 	using RenderCall = D3D9::RenderCall;
-	using VertexBufferManager = D3D9::D3D9VertexBufferManager;
 	using StrokeVertex = D3D9::StrokeVertex;
 	using FillVertex = D3D9::StrokeVertex;
+	using DeviceContext = WRL::ComPtr<D3D9::D3D9DeviceContext>;
+
+	template<BufferTypes>
+	struct BufferProvider
+	{
+	};
+
+	template<>
+	struct BufferProvider<BufferTypes::VertexBuffer>
+	{
+		using NativeType = WRL::ComPtr<IDirect3DVertexBuffer9>;
+
+		NativeType CreateBuffer(DeviceContext& deviceContext, size_t stride, size_t count);
+		void Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer);
+	};
+	RenderCall GetRenderCall(VertexBufferManager<PlatformId::D3D9>& vbMgr, size_t stride, const RentInfo& rent);
 
 	void Transform(std::vector<StrokeVertex>& vertices, const LineGeometry& geometry);
 	void Transform(std::vector<StrokeVertex>& vertices, const RectangleGeometry& geometry);

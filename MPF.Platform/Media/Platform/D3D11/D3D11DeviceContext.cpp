@@ -8,12 +8,12 @@
 #include "D3D11DeviceContext.h"
 #include <map>
 #include <process.h>
-#include "../NativeApplication.h"
+#include "NativeApplication.h"
 #include "resource.h"
-#include "D3D11Vertex.h"
 #include "D3D11ResourceManager.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
+using namespace NS_PLATFORM_D3D11;
 using namespace concurrency;
 using namespace D3D11;
 
@@ -152,7 +152,8 @@ STDMETHODIMP D3D11DeviceContext::CreateResourceManager(IResourceManager ** resMg
 {
 	try
 	{
-		auto myResMgr = Make<D3D11ResourceManager>(_device.Get(), _deviceContext.Get(), _swapChainUpdateContext);
+		ComPtr<D3D11DeviceContext> me(this);
+		auto myResMgr = Make<D3D11ResourceManager>(me, _swapChainUpdateContext);
 		_resourceManagers.emplace_back(myResMgr->GetWeakContext());
 		*resMgr = myResMgr.Detach();
 		return S_OK;

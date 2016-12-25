@@ -11,13 +11,13 @@
 #include <dxgi.h>
 #include <d3d11_1.h>
 #include <atomic>
-#include "DeviceContext.h"
-#include "RenderableObjectContainer.h"
-#include "ResourceManagerBase.h"
+#include "../../DeviceContext.h"
+#include "../../RenderableObjectContainer.h"
+#include "../../ResourceManagerBase.h"
+#include "../D3D11PlatformProvider.h"
 #include <ppltasks.h>
 
-DEFINE_NS_PLATFORM
-#include "../MPF.Platform_i.h"
+DEFINE_NS_PLATFORM_D3D11
 
 class D3D11DeviceContext : public WeakReferenceBase<D3D11DeviceContext, WRL::RuntimeClassFlags<WRL::ClassicCom>, IDeviceContext>
 {
@@ -28,6 +28,11 @@ public:
 	STDMETHODIMP CreateSwapChain(INativeWindow* window, ISwapChain** swapChain) override;
 	STDMETHODIMP CreateRenderableObject(IRenderableObject ** obj) override;
 	STDMETHODIMP CreateResourceManager(IResourceManager **resMgr);
+
+	DEFINE_PROPERTY_GET(Device, ID3D11Device*);
+	ID3D11Device* get_Device() const noexcept { return _device.Get(); }
+	DEFINE_PROPERTY_GET(DeviceContext, ID3D11DeviceContext*);
+	ID3D11DeviceContext* get_DeviceContext() const noexcept { return _deviceContext.Get(); }
 private:
 	concurrency::task<void> CreateDeviceResourcesAsync();
 	void StartRenderLoop();
@@ -52,4 +57,4 @@ private:
 	std::shared_ptr<RenderableObjectContainer<RenderableObject>> _renderObjectContainer;
 };
 
-END_NS_PLATFORM
+END_NS_PLATFORM_D3D11

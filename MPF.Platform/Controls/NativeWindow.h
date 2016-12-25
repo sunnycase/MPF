@@ -8,6 +8,8 @@
 #include "../../inc/common.h"
 #include "../../inc/NonCopyable.h"
 #include "../../inc/WeakReferenceBase.h"
+#include <functional>
+#include <vector>
 
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"

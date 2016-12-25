@@ -7,10 +7,9 @@
 #pragma once
 #include "../../inc/common.h"
 #include "../../inc/WeakReferenceBase.h"
-#include "DeviceContext.h"
-#include "RenderableObjectContainer.h"
+#include "../../DeviceContext.h"
+#include "../../RenderableObjectContainer.h"
 DEFINE_NS_PLATFORM
-#include "../MPF.Platform_i.h"
 
 class GLDeviceContext : public WeakReferenceBase<GLDeviceContext, WRL::RuntimeClassFlags<WRL::ClassicCom>, IDeviceContext>
 {

@@ -7,14 +7,11 @@
 #pragma once
 #include "../../inc/common.h"
 #include "../../inc/WeakReferenceBase.h"
-#include <d3d9.h>
-#include <atomic>
-#include <DirectXMath.h>
 #include "../D3D9PlatformProvider.h"
 #include "../../../Controls/NativeWindow.h"
+#include <d3d9.h>
 
 DEFINE_NS_PLATFORM_D3D9
-#include "MPF.Platform_i.h"
 
 class D3D9SwapChainBase : public WeakReferenceBase<D3D9SwapChainBase, WRL::RuntimeClassFlags<WRL::ClassicCom>, ISwapChain>
 {

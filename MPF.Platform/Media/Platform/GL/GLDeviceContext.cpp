@@ -7,7 +7,6 @@
 #include "stdafx.h"
 #include "GLDeviceContext.h"
 #include "GLSwapChain.h"
-#include "RenderableObject.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 

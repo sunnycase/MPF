@@ -1,14 +1,15 @@
 //
 // MPF Platform
-// D3D11 Resource Manager
+// Direct3D 11 Geometry Transforms
 // 作者：SunnyCase
-// 创建时间：2016-08-28
+// 创建时间：2016-12-25
 //
 #include "stdafx.h"
-#include "D3D11ResourceManager.h"
+#include "../D3D11PlatformProvider.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 using namespace DirectX;
+using namespace NS_PLATFORM_D3D11;
 
 namespace
 {
@@ -139,7 +140,7 @@ namespace
 	}
 }
 
-void ::NS_PLATFORM::Transform(std::vector<D3D11::StrokeVertex>& vertices, const LineGeometry& geometry)
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, const LineGeometry& geometry)
 {
 	const auto dirVec = XMLoadFloat2(&XMFLOAT2{ geometry.Data.EndPoint.X - geometry.Data.StartPoint.X, geometry.Data.EndPoint.Y - geometry.Data.StartPoint.Y });
 	const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
@@ -148,7 +149,7 @@ void ::NS_PLATFORM::Transform(std::vector<D3D11::StrokeVertex>& vertices, const 
 		normalVec, normalVec);
 }
 
-void ::NS_PLATFORM::Transform(std::vector<D3D11::StrokeVertex>& vertices, const RectangleGeometry& geometry)
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, const RectangleGeometry& geometry)
 {
 	auto leftTopPoint = geometry.Data.LeftTop;
 	auto rightBottomPoint = geometry.Data.RightBottom;
@@ -171,7 +172,7 @@ void ::NS_PLATFORM::Transform(std::vector<D3D11::StrokeVertex>& vertices, const 
 	EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
 }
 
-void ::NS_PLATFORM::Transform(std::vector<D3D11::StrokeVertex>& vertices, const PathGeometry& geometry)
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, const PathGeometry& geometry)
 {
 	using namespace PathGeometrySegments;
 
@@ -226,147 +227,4 @@ void ::NS_PLATFORM::Transform(std::vector<D3D11::StrokeVertex>& vertices, const 
 			break;
 		}
 	}
-}
-
-namespace
-{
-	class DrawCallList : public IDrawCallList
-	{
-		struct MyStrokeDrawCall : public StorkeRenderCall
-		{
-			DirectX::XMFLOAT4X4 Transform;
-		};
-	public:
-		DrawCallList(ID3D11DeviceContext* deviceContext, SwapChainUpdateContext& updateContext, D3D11ResourceManager* resMgr, RenderCommandBuffer* rcb)
-			:_deviceContext(deviceContext), _resMgr(resMgr), _rcb(rcb), _updateContext(updateContext)
-		{
-
-		}
-
-		// 通过 IDrawCallList 继承
-		virtual void Draw(const DirectX::XMFLOAT4X4& modelTransform) override
-		{
-			using namespace D3D11;
-
-			{
-				auto model = _updateContext.Model.Map(_deviceContext.Get());
-				model->Model = modelTransform;
-			}
-			float constants[4] = { 0 };
-			UINT offset = 0;
-			for (auto&& rc : _strokeRenderCalls)
-			{
-				auto vb = _resMgr->GetVertexBuffer(rc);
-				_deviceContext->IASetVertexBuffers(0, 1, &vb, &rc.Stride, &offset);
-
-				{
-					auto geo = _updateContext.Geometry.Map(_deviceContext.Get());
-					ThrowIfNot(memcpy_s(geo->Color, sizeof(geo->Color), rc.Color, sizeof(rc.Color)) == 0, L"Cannot copy color.");
-					geo->Thickness = rc.Thickness;
-					geo->Transform = rc.Transform;
-				}
-				_deviceContext->Draw(rc.VertexCount, rc.StartVertex);
-			}
-		}
-
-		virtual void Update() override
-		{
-			Update(false);
-		}
-
-		void Initialize()
-		{
-			Update(true);
-		}
-	private:
-		// 通过 IDrawCallList 继承
-		void PushGeometryDrawCall(IResource* resource, IResource* pen, const DirectX::XMFLOAT4X4 transform)
-		{
-			if (pen)
-			{
-				MyStrokeDrawCall rc;
-				auto& penObj = _resMgr->GetPen(static_cast<ResourceRef*>(pen)->GetHandle());
-				rc.Thickness = penObj.Thickness;
-				if (penObj.Brush)
-				{
-					auto& brushObj = _resMgr->GetBrush(penObj.Brush->GetHandle());
-					if (typeid(brushObj) == typeid(Brush&))
-					{
-						auto& color = static_cast<SolidColorBrush&>(brushObj).Color;
-						rc.Color[0] = color.R;
-						rc.Color[1] = color.G;
-						rc.Color[2] = color.B;
-						rc.Color[3] = color.A;
-					}
-					if (_resMgr->TryGet(resource, rc))
-					{
-						rc.Transform = transform;
-						_strokeRenderCalls.emplace_back(rc);
-					}
-					else
-					{
-						assert(false && "Geometry not found.");
-					}
-				}
-			}
-		}
-
-		void Update(bool addResDependent)
-		{
-			_strokeRenderCalls.clear();
-			for (auto&& geoRef : _rcb->GetGeometries())
-			{
-				PushGeometryDrawCall(geoRef.Geometry.Get(), geoRef.Pen.Get(), geoRef.Transform);
-				if (addResDependent)
-				{
-					auto me = shared_from_this();
-					_resMgr->AddDependentDrawCallList(me, geoRef.Geometry.Get());
-					_resMgr->AddDependentDrawCallList(me, geoRef.Pen.Get());
-				}
-			}
-		}
-	private:
-		ComPtr<ID3D11DeviceContext> _deviceContext;
-		SwapChainUpdateContext& _updateContext;
-		ComPtr<D3D11ResourceManager> _resMgr;
-		ComPtr<RenderCommandBuffer> _rcb;
-		std::vector<MyStrokeDrawCall> _strokeRenderCalls;
-	};
-}
-
-#define CTOR_IMPL1(T) _trc##T##(_strokeVBMgr)
-
-D3D11ResourceManager::D3D11ResourceManager(ID3D11Device* device, ID3D11DeviceContext* deviceContext, SwapChainUpdateContext& updateContext)
-	:_device(device), _deviceContext(deviceContext), _updateContext(updateContext), _strokeVBMgr(device, sizeof(D3D11::StrokeVertex)), CTOR_IMPL1(LineGeometry), CTOR_IMPL1(RectangleGeometry), CTOR_IMPL1(PathGeometry)
-{
-}
-
-void D3D11ResourceManager::UpdateOverride()
-{
-	_strokeVBMgr.Upload(_deviceContext.Get());
-}
-
-std::shared_ptr<IDrawCallList> D3D11ResourceManager::CreateDrawCallList(RenderCommandBuffer* rcb)
-{
-	auto ret = std::make_shared<DrawCallList>(_deviceContext.Get(), _updateContext, this, rcb);
-	ret->Initialize();
-	return ret;
-}
-
-#define TRYGET_IMPL1(T)										 \
-	case RT_##T:											 \
-		return _trc##T.TryGet(resRef->GetHandle(), rc);
-
-bool D3D11ResourceManager::TryGet(IResource* res, StorkeRenderCall& rc) const
-{
-	auto resRef = static_cast<ResourceRef*>(res);
-	switch (resRef->GetType())
-	{
-		TRYGET_IMPL1(LineGeometry);
-		TRYGET_IMPL1(RectangleGeometry);
-		TRYGET_IMPL1(PathGeometry);
-	default:
-		break;
-	}
-	return false;
 }

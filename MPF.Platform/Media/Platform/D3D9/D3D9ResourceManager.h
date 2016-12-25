@@ -5,25 +5,24 @@
 // 创建时间：2016-07-23
 //
 #pragma once
-#include <d3d9.h>
-#include "D3D9BufferManager.h"
 #include <unordered_map>
+#include <memory>
 #include "../../ResourceManager.h"
+#include "../D3D9PlatformProvider.h"
+#include <d3d9.h>
 
-DEFINE_NS_PLATFORM
-#include "MPF.Platform_i.h"
+DEFINE_NS_PLATFORM_D3D9
 
 class D3D9ResourceManager : public ResourceManager<PlatformId::D3D9>
 {
 public:
-	D3D9ResourceManager(IDirect3DDevice9* device);
+	D3D9ResourceManager(WRL::ComPtr<D3D9DeviceContext>& deviceContext);
 
 	virtual std::shared_ptr<IDrawCallList> CreateDrawCallList(RenderCommandBuffer* rcb) override;
 
 	virtual void BeginResetDevice() override;
 	virtual void EndResetDevice() override;
 private:
-	WRL::ComPtr<IDirect3DDevice9> _device;
 };
 
-END_NS_PLATFORM
+END_NS_PLATFORM_D3D9

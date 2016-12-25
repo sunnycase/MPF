@@ -7,8 +7,8 @@
 #include "stdafx.h"
 #include "DeviceContext.h"
 #include "Platform/D3D9/D3D9DeviceContext.h"
-#include "GLDeviceContext.h"
-#include "D3D11DeviceContext.h"
+#include "Platform/GL/GLDeviceContext.h"
+#include "Platform/D3D11/D3D11DeviceContext.h"
 using namespace WRL;
 
 namespace
@@ -32,7 +32,7 @@ namespace
 		nullptr,
 		CreateDeviceContext<NS_PLATFORM::GLDeviceContext>,
 		CreateDeviceContext<NS_PLATFORM_D3D9::D3D9DeviceContext>,
-		CreateDeviceContext<NS_PLATFORM::D3D11DeviceContext>,
+		CreateDeviceContext<NS_PLATFORM_D3D11::D3D11DeviceContext>,
 	};
 }
 
