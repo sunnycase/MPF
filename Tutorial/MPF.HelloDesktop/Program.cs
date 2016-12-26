@@ -33,6 +33,7 @@ namespace MPF.HelloDesktop
             {
                 BorderThickness = new Thickness(1.0f),
                 BorderBrush = new SolidColorBrush { Color = Color.FromArgb(0xFF888888) },
+                Background = new SolidColorBrush { Color = Color.FromArgb(0x2200FF00) },
                 Margin = new Thickness(5),
                 Child = new Run
                 {

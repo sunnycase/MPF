@@ -1,4 +1,4 @@
-#include "D3D11.UIShaders.hlsli"
+#include "D3D11.UI.Stroke.Shaders.hlsli"
 
 float GetQuadraticBezierSignedDistance(float2 px, float2 py, float2 value)
 {

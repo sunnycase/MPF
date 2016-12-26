@@ -133,6 +133,22 @@ namespace
 		});
 	}
 
+	void EmplaceTriangle(std::vector<D3D11::FillVertex>& vertices, XMFLOAT2 a, XMFLOAT2 b, XMFLOAT2 c)
+	{
+		vertices.emplace_back(D3D11::FillVertex
+		{
+			{ a.x, a.y, 0.f }
+		});
+		vertices.emplace_back(D3D11::FillVertex
+		{
+			{ b.x, b.y, 0.f }
+		});
+		vertices.emplace_back(D3D11::FillVertex
+		{
+			{ c.x, c.y, 0.f }
+		});
+	}
+
 	void SwapIfGeater(float& a, float& b)
 	{
 		if (a > b)
@@ -227,4 +243,30 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVer
 			break;
 		}
 	}
+}
+
+
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, const LineGeometry& geometry)
+{
+
+}
+
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, const RectangleGeometry& geometry)
+{
+	auto leftTopPoint = geometry.Data.LeftTop;
+	auto rightBottomPoint = geometry.Data.RightBottom;
+	SwapIfGeater(leftTopPoint.X, rightBottomPoint.X);
+	SwapIfGeater(leftTopPoint.Y, rightBottomPoint.Y);
+
+	XMFLOAT2 leftTop{ leftTopPoint.X, leftTopPoint.Y };
+	XMFLOAT2 rightTop{ rightBottomPoint.X, leftTopPoint.Y };
+	XMFLOAT2 rightBottom{ rightBottomPoint.X, rightBottomPoint.Y };
+	XMFLOAT2 leftBottom{ leftTopPoint.X, rightBottomPoint.Y };
+
+	EmplaceTriangle(vertices, leftTop, rightTop, rightBottom);
+	EmplaceTriangle(vertices, leftBottom, leftTop, rightBottom);
+}
+
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, const PathGeometry& geometry)
+{
 }

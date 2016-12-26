@@ -9,7 +9,6 @@
 #include "../D3D9PlatformProvider.h"
 #include "../../RenderableObjectContainer.h"
 #include "D3D9SwapChain.h"
-#include "D3D9RenderableObject.h"
 #include <ppltasks.h>
 
 DEFINE_NS_PLATFORM_D3D9
@@ -51,7 +50,7 @@ private:
 	WRL::ComPtr<D3D9SwapChain> _rootSwapChain;
 	std::vector<WeakRef<D3D9SwapChainBase>> _childSwapChains;
 	std::vector<WeakRef<ResourceManagerBase>> _resourceManagers;
-	std::shared_ptr<RenderableObjectContainer<D3D9RenderableObject>> _renderObjectContainer;
+	std::shared_ptr<RenderableObjectContainer<RenderableObject>> _renderObjectContainer;
 };
 
 END_NS_PLATFORM_D3D9

@@ -15,11 +15,11 @@ RenderCommandBuffer::RenderCommandBuffer(ResourceManagerBase* resourceManager)
 {
 }
 
-HRESULT RenderCommandBuffer::DrawGeometry(IResource * geometry, IResource* pen, float* values)
+HRESULT RenderCommandBuffer::DrawGeometry(IResource * geometry, IResource* pen, IResource* brush, float* values)
 {
 	try
 	{
-		GeometryRenderCommand command{ static_cast<ResourceRef*>(geometry), static_cast<ResourceRef*>(pen) };
+		GeometryRenderCommand command{ static_cast<ResourceRef*>(geometry), static_cast<ResourceRef*>(pen), static_cast<ResourceRef*>(brush) };
 		DirectX::XMStoreFloat4x4(&command.Transform, DirectX::XMMatrixTranspose(DirectX::XMMATRIX(values)));
 		_geometries.emplace_back(std::move(command));
 		return S_OK;

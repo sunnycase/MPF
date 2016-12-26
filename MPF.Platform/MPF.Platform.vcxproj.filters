@@ -144,16 +144,10 @@
     <ClInclude Include="Media\Platform\D3D9PlatformProvider.h">
       <Filter>头文件\Media\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="Media\Platform\D3D9\D3D9ResourceManager.h">
-      <Filter>头文件\Media\Platform\D3D9</Filter>
-    </ClInclude>
     <ClInclude Include="Media\Platform\PlatformProvider.h">
       <Filter>头文件\Media\Platform</Filter>
     </ClInclude>
     <ClInclude Include="Media\Platform\D3D9\D3D9DeviceContext.h">
-      <Filter>头文件\Media\Platform\D3D9</Filter>
-    </ClInclude>
-    <ClInclude Include="Media\Platform\D3D9\D3D9RenderableObject.h">
       <Filter>头文件\Media\Platform\D3D9</Filter>
     </ClInclude>
     <ClInclude Include="Media\Platform\D3D9\D3D9SwapChain.h">
@@ -171,23 +165,20 @@
     <ClInclude Include="Media\Platform\D3D11\D3D11DeviceContext.h">
       <Filter>头文件\Media\Platform\D3D11</Filter>
     </ClInclude>
-    <ClInclude Include="Media\Platform\D3D11\D3D11ResourceManager.h">
-      <Filter>头文件\Media\Platform\D3D11</Filter>
-    </ClInclude>
     <ClInclude Include="Media\Platform\D3D11\D3D11SwapChain.h">
       <Filter>头文件\Media\Platform\D3D11</Filter>
     </ClInclude>
     <ClInclude Include="Media\Platform\D3D11PlatformProvider.h">
       <Filter>头文件\Media\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="Media\Platform\DrawCallList.h">
-      <Filter>头文件\Media</Filter>
-    </ClInclude>
     <ClInclude Include="Media\BufferManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Media\Platform\PlatformProviderTraits.h">
       <Filter>头文件\Media\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\DrawCallList.h">
+      <Filter>头文件\Media</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -242,13 +233,7 @@
     <ClCompile Include="FreeList.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Media\Platform\D3D9\D3D9ResourceManager.cpp">
-      <Filter>源文件\Media\Platform\D3D9</Filter>
-    </ClCompile>
     <ClCompile Include="Media\Platform\D3D9\D3D9DeviceContext.cpp">
-      <Filter>源文件\Media\Platform\D3D9</Filter>
-    </ClCompile>
-    <ClCompile Include="Media\Platform\D3D9\D3D9RenderableObject.cpp">
       <Filter>源文件\Media\Platform\D3D9</Filter>
     </ClCompile>
     <ClCompile Include="Media\Platform\D3D9\D3D9SwapChain.cpp">
@@ -261,9 +246,6 @@
       <Filter>源文件\Media\Platform\GL</Filter>
     </ClCompile>
     <ClCompile Include="Media\Platform\D3D11\D3D11DeviceContext.cpp">
-      <Filter>源文件\Media\Platform\D3D11</Filter>
-    </ClCompile>
-    <ClCompile Include="Media\Platform\D3D11\D3D11ResourceManager.cpp">
       <Filter>源文件\Media\Platform\D3D11</Filter>
     </ClCompile>
     <ClCompile Include="Media\Platform\D3D11\D3D11SwapChain.cpp">
@@ -281,6 +263,12 @@
     <ClCompile Include="Media\Platform\D3D9\D3D9BufferProvider.cpp">
       <Filter>源文件\Media\Platform\D3D9</Filter>
     </ClCompile>
+    <ClCompile Include="Media\Platform\D3D11\D3D11DrawCallList.cpp">
+      <Filter>源文件\Media\Platform\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\Platform\D3D9\D3D9DrawCallList.cpp">
+      <Filter>源文件\Media\Platform\D3D9</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="MPF.Platform.idl">
@@ -294,13 +282,19 @@
     <FxCompile Include="Shaders\D3D9.UIVertexShader.hlsl">
       <Filter>资源文件\Shaders\D3D9</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\D3D11.UIPixelShader.hlsl">
+    <FxCompile Include="Shaders\D3D11.UI.Stroke.GeometryShader.hlsl">
       <Filter>资源文件\Shaders\D3D11</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\D3D11.UIVertexShader.hlsl">
+    <FxCompile Include="Shaders\D3D11.UI.Stroke.PixelShader.hlsl">
       <Filter>资源文件\Shaders\D3D11</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\D3D11.UIGeometryShader.hlsl">
+    <FxCompile Include="Shaders\D3D11.UI.Stroke.VertexShader.hlsl">
+      <Filter>资源文件\Shaders\D3D11</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\D3D11.UI.Fill.PixelShader.hlsl">
+      <Filter>资源文件\Shaders\D3D11</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\D3D11.UI.Fill.VertexShader.hlsl">
       <Filter>资源文件\Shaders\D3D11</Filter>
     </FxCompile>
   </ItemGroup>
@@ -313,7 +307,10 @@
     <None Include="Shaders\D3D9.UIShaders.hlsli">
       <Filter>资源文件\Shaders\D3D9</Filter>
     </None>
-    <None Include="Shaders\D3D11.UIShaders.hlsli">
+    <None Include="Shaders\D3D11.UI.Stroke.Shaders.hlsli">
+      <Filter>资源文件\Shaders\D3D11</Filter>
+    </None>
+    <None Include="Shaders\D3D11.UI.Fill.Shaders.hlsli">
       <Filter>资源文件\Shaders\D3D11</Filter>
     </None>
   </ItemGroup>

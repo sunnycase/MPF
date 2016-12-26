@@ -25,7 +25,7 @@ public:
 	using StrokeVertex = typename PlatformProvider_t::StrokeVertex;
 	using FillVertex = typename PlatformProvider_t::FillVertex;
 
-	using StorkeRenderCall_t = StorkeRenderCall<RenderCall>;
+	using StrokeRenderCall_t = StrokeRenderCall<RenderCall>;
 	using FillRenderCall_t = FillRenderCall<RenderCall>;
 
 	TransformedResourceContainer(VertexBufferManager& strokeVBMgr, VertexBufferManager& fillVBMgr)
@@ -110,7 +110,7 @@ public:
 		}
 	}
 
-	bool TryGet(UINT_PTR handle, StorkeRenderCall_t& rc) const
+	bool TryGet(UINT_PTR handle, StrokeRenderCall_t& rc) const
 	{
 		auto it = _strokeRentInfos.find(handle);
 		if (it != _strokeRentInfos.end())

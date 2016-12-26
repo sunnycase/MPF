@@ -11,9 +11,31 @@
 DEFINE_NS_PLATFORM
 
 template<PlatformId PId>
+class ResourceManager;
+
+template<PlatformId PId>
+class DrawCallList;
+
+template<PlatformId PId>
 struct PlatformProviderTraits
 {
 	using VertexBufferManager = NS_PLATFORM::VertexBufferManager<PId>;
+	using ResourceManager = WRL::ComPtr<NS_PLATFORM::ResourceManager<PId>>;
+	using DrawCallList = NS_PLATFORM::DrawCallList<PId>;
+};
+
+template<PlatformId PId>
+struct PlayRenderCallArgs
+{
+	using RenderCall = typename PlatformProvider<PId>::RenderCall;
+	using DeviceContext_t = typename PlatformProvider<PId>::DeviceContext;
+	using ResourceManager = typename PlatformProviderTraits<PId>::ResourceManager;
+
+	DeviceContext_t& DeviceContext;
+	ResourceManager& ResMgr;
+	const DirectX::XMFLOAT4X4& ModelTransform;
+	const std::vector<StrokeRenderCall<RenderCall>>& StrokeRenderCalls;
+	const std::vector<FillRenderCall<RenderCall>>& FillRenderCalls;
 };
 
 END_NS_PLATFORM

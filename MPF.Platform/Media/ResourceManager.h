@@ -8,6 +8,7 @@
 #include "TransformedResourceContainer.h"
 #include "ResourceManagerBase.h"
 #include "Platform/PlatformProviderTraits.h"
+#include "DrawCallList.h"
 
 DEFINE_NS_PLATFORM
 
@@ -28,10 +29,11 @@ public:
 	using StrokeVertex = typename PlatformProvider_t::StrokeVertex;
 	using FillVertex = typename PlatformProvider_t::FillVertex;
 	using DeviceContext = typename PlatformProvider_t::DeviceContext;
+	using DrawCallList = typename PlatformProviderTraits<PId>::DrawCallList;
 
 	using VertexBufferManager = typename PlatformProviderTraits<PId>::VertexBufferManager;
 
-	using StorkeRenderCall_t = StorkeRenderCall<RenderCall>;
+	using StrokeRenderCall_t = StrokeRenderCall<RenderCall>;
 	using FillRenderCall_t = FillRenderCall<RenderCall>;
 
 	ResourceManager(DeviceContext& deviceContext)
@@ -46,7 +48,7 @@ public:
 	case RT_##T:												 \
 		return _trc##T.TryGet(resRef->GetHandle(), rc);
 
-	bool TryGet(IResource* res, StorkeRenderCall_t& rc) const
+	bool TryGet(IResource* res, StrokeRenderCall_t& rc) const
 	{
 		auto resRef = static_cast<ResourceRef*>(res);
 		switch (resRef->GetType())
@@ -74,7 +76,7 @@ public:
 		return false;
 	}
 
-	decltype(auto) GetVertexBuffer(const StorkeRenderCall_t& renderCall) const noexcept
+	decltype(auto) GetVertexBuffer(const StrokeRenderCall_t& renderCall) const noexcept
 	{
 		return _strokeVBMgr.GetBuffer(renderCall);
 	}
@@ -82,6 +84,14 @@ public:
 	decltype(auto) GetVertexBuffer(const FillRenderCall_t& renderCall) const noexcept
 	{
 		return _fillVBMgr.GetBuffer(renderCall);
+	}
+
+	virtual std::shared_ptr<IDrawCallList> CreateDrawCallList(RenderCommandBuffer* rcb) override
+	{
+		WRL::ComPtr<ResourceManager> me(this);
+		auto dcl = std::make_shared<DrawCallList>(_deviceContext, me, rcb);
+		dcl->Initialize();
+		return dcl;
 	}
 protected:
 	RM_DECL_GET_TRC(LineGeometry);

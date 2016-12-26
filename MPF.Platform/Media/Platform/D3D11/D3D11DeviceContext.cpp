@@ -9,8 +9,8 @@
 #include <map>
 #include <process.h>
 #include "NativeApplication.h"
+#include "../../ResourceManager.h"
 #include "resource.h"
-#include "D3D11ResourceManager.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 using namespace NS_PLATFORM_D3D11;
@@ -153,7 +153,7 @@ STDMETHODIMP D3D11DeviceContext::CreateResourceManager(IResourceManager ** resMg
 	try
 	{
 		ComPtr<D3D11DeviceContext> me(this);
-		auto myResMgr = Make<D3D11ResourceManager>(me, _swapChainUpdateContext);
+		auto myResMgr = Make<ResourceManager<PlatformId::D3D11>>(me);
 		_resourceManagers.emplace_back(myResMgr->GetWeakContext());
 		*resMgr = myResMgr.Detach();
 		return S_OK;
@@ -209,34 +209,43 @@ concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 	CreateConstantBuffer(_device.Get(), _swapChainUpdateContext.Model);
 	CreateConstantBuffer(_device.Get(), _swapChainUpdateContext.Geometry);
 
-	auto uiVSData = LoadShaderResource(IDR_D3D11_UIVERTEXSHADER);
-	static const D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
+	// Stroke
 	{
-		{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(StrokeVertex, Position), D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data1), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data2), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, offsetof(StrokeVertex, SegmentType), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data3), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 3, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data4), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 4, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data5), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-	ComPtr<ID3D11InputLayout> inputLayout;
-	ThrowIfFailed(_device->CreateInputLayout(inputElementDesc, _countof(inputElementDesc), uiVSData.first,
-		uiVSData.second, &inputLayout));
+		auto uiVSData = LoadShaderResource(IDR_D3D11_UI_STROKE_VERTEXSHADER);
+		static const D3D11_INPUT_ELEMENT_DESC strokeInputElementDesc[] =
+		{
+			{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(StrokeVertex, Position), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data1), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data2), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, offsetof(StrokeVertex, SegmentType), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data3), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 3, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data4), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 4, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data5), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+		ThrowIfFailed(_device->CreateInputLayout(strokeInputElementDesc, _countof(strokeInputElementDesc), uiVSData.first,
+			uiVSData.second, &_strokeInputLayout));
 
-	ComPtr<ID3D11VertexShader> vertexShader;
-	ThrowIfFailed(_device->CreateVertexShader(uiVSData.first, uiVSData.second, nullptr, &vertexShader));
-	auto uiPSData = LoadShaderResource(IDR_D3D11_UIPIXELSHADER);
-	ComPtr<ID3D11PixelShader> pixelShader;
-	ThrowIfFailed(_device->CreatePixelShader(uiPSData.first, uiPSData.second, nullptr, &pixelShader));
-	auto uiGSData = LoadShaderResource(IDR_D3D11_UIGEOMETRYSHADER);
-	ComPtr<ID3D11GeometryShader> geometryShader;
-	ThrowIfFailed(_device->CreateGeometryShader(uiGSData.first, uiGSData.second, nullptr, &geometryShader));
+		ThrowIfFailed(_device->CreateVertexShader(uiVSData.first, uiVSData.second, nullptr, &_strokeVS));
+		auto uiPSData = LoadShaderResource(IDR_D3D11_UI_STROKE_PIXELSHADER);
+		ThrowIfFailed(_device->CreatePixelShader(uiPSData.first, uiPSData.second, nullptr, &_strokePS));
+		auto uiGSData = LoadShaderResource(IDR_D3D11_UI_STROKE_GEOMETRYSHADER);
+		ThrowIfFailed(_device->CreateGeometryShader(uiGSData.first, uiGSData.second, nullptr, &_strokeGS));
+	}
 
-	_deviceContext->IASetInputLayout(inputLayout.Get());
-	_deviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
-	_deviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
-	_deviceContext->GSSetShader(geometryShader.Get(), nullptr, 0);
+	// Fill
+	{
+		auto uiVSData = LoadShaderResource(IDR_D3D11_UI_FILL_VERTEXSHADER);
+		static const D3D11_INPUT_ELEMENT_DESC fillInputElementDesc[] =
+		{
+			{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(FillVertex, Position), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+		ThrowIfFailed(_device->CreateInputLayout(fillInputElementDesc, _countof(fillInputElementDesc), uiVSData.first,
+			uiVSData.second, &_fillInputLayout));
+
+		ThrowIfFailed(_device->CreateVertexShader(uiVSData.first, uiVSData.second, nullptr, &_fillVS));
+		auto uiPSData = LoadShaderResource(IDR_D3D11_UI_FILL_PIXELSHADER);
+		ThrowIfFailed(_device->CreatePixelShader(uiPSData.first, uiPSData.second, nullptr, &_fillPS));
+	}
 
 	{
 		ComPtr<ID3D11RasterizerState> rasterizerState;
@@ -264,6 +273,37 @@ concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 	}
 
 	return task_from_result();
+}
+
+void D3D11DeviceContext::SetPipelineState(PiplineStateTypes type)
+{
+	if (type != _pipelineStateType)
+	{
+		switch (type)
+		{
+		case PiplineStateTypes::None:
+			_deviceContext->IASetInputLayout(nullptr);
+			_deviceContext->VSSetShader(nullptr, nullptr, 0);
+			_deviceContext->PSSetShader(nullptr, nullptr, 0);
+			_deviceContext->GSSetShader(nullptr, nullptr, 0);
+			break;
+		case PiplineStateTypes::Stroke:
+			_deviceContext->IASetInputLayout(_strokeInputLayout.Get());
+			_deviceContext->VSSetShader(_strokeVS.Get(), nullptr, 0);
+			_deviceContext->PSSetShader(_strokePS.Get(), nullptr, 0);
+			_deviceContext->GSSetShader(_strokeGS.Get(), nullptr, 0);
+			break;
+		case PiplineStateTypes::Fill:
+			_deviceContext->IASetInputLayout(_fillInputLayout.Get());
+			_deviceContext->VSSetShader(_fillVS.Get(), nullptr, 0);
+			_deviceContext->PSSetShader(_fillPS.Get(), nullptr, 0);
+			_deviceContext->GSSetShader(nullptr, nullptr, 0);
+			break;
+		default:
+			break;
+		}
+		_pipelineStateType = type;
+	}
 }
 
 void D3D11DeviceContext::StartRenderLoop()

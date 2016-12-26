@@ -29,10 +29,14 @@ public:
 	STDMETHODIMP CreateRenderableObject(IRenderableObject ** obj) override;
 	STDMETHODIMP CreateResourceManager(IResourceManager **resMgr);
 
+	void SetPipelineState(PiplineStateTypes type);
+
 	DEFINE_PROPERTY_GET(Device, ID3D11Device*);
 	ID3D11Device* get_Device() const noexcept { return _device.Get(); }
 	DEFINE_PROPERTY_GET(DeviceContext, ID3D11DeviceContext*);
 	ID3D11DeviceContext* get_DeviceContext() const noexcept { return _deviceContext.Get(); }
+	DEFINE_PROPERTY_GET(UpdateContext, SwapChainUpdateContext&);
+	SwapChainUpdateContext& get_UpdateContext() noexcept { return _swapChainUpdateContext; }
 private:
 	concurrency::task<void> CreateDeviceResourcesAsync();
 	void StartRenderLoop();
@@ -55,6 +59,16 @@ private:
 	std::vector<WeakRef<D3D11SwapChain>> _swapChains;
 	std::vector<WeakRef<ResourceManagerBase>> _resourceManagers;
 	std::shared_ptr<RenderableObjectContainer<RenderableObject>> _renderObjectContainer;
+	PiplineStateTypes _pipelineStateType = PiplineStateTypes::None;
+
+	WRL::ComPtr<ID3D11InputLayout> _strokeInputLayout;
+	WRL::ComPtr<ID3D11VertexShader> _strokeVS;
+	WRL::ComPtr<ID3D11PixelShader> _strokePS;
+	WRL::ComPtr<ID3D11GeometryShader> _strokeGS;
+
+	WRL::ComPtr<ID3D11InputLayout> _fillInputLayout;
+	WRL::ComPtr<ID3D11VertexShader> _fillVS;
+	WRL::ComPtr<ID3D11PixelShader> _fillPS;
 };
 
 END_NS_PLATFORM_D3D11

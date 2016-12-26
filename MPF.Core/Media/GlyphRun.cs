@@ -23,10 +23,10 @@ namespace MPF.Media
             _drawingEntries = BuildDrawingEntries();
         }
 
-        public void Draw(IDrawingContext context, Pen pen)
+        public void Draw(IDrawingContext context, Pen pen, Brush brush)
         {
             foreach (var entry in _drawingEntries)
-                context.DrawGeometry(entry.Geometry, pen, ref entry.Transform);
+                context.DrawGeometry(entry.Geometry, pen, brush, ref entry.Transform);
         }
 
         private IReadOnlyList<GlyphDrawingEntry> BuildDrawingEntries()

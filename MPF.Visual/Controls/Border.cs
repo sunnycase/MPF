@@ -15,6 +15,9 @@ namespace MPF.Controls
         public static readonly DependencyProperty<Thickness> BorderThicknessProperty = DependencyProperty.Register(nameof(BorderThickness),
             typeof(Border), new UIPropertyMetadata<Thickness>(default(Thickness), UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender, OnBorderThicknessPropertyChanged));
 
+        public static readonly DependencyProperty<Brush> BackgroundProperty = DependencyProperty.Register(nameof(Background),
+            typeof(Border), new UIPropertyMetadata<Brush>(null, UIPropertyMetadataOptions.AffectRender));
+
         public Brush BorderBrush
         {
             get { return GetValue(BorderBrushProperty); }
@@ -25,6 +28,12 @@ namespace MPF.Controls
         {
             get { return GetValue(BorderThicknessProperty); }
             set { SetValue(BorderThicknessProperty, value); }
+        }
+
+        public Brush Background
+        {
+            get { return GetValue(BackgroundProperty); }
+            set { SetValue(BackgroundProperty, value); }
         }
 
         private readonly Pen _cachedPen = new Pen();
@@ -39,7 +48,7 @@ namespace MPF.Controls
             {
                 LeftTop = new Point(_cachedPen.Thickness * 0.5f, _cachedPen.Thickness * 0.5f),
                 RigthBottom = new Point(RenderSize.Width - _cachedPen.Thickness * 0.5f, RenderSize.Height - _cachedPen.Thickness * 0.5f)
-            }, _cachedPen);
+            }, _cachedPen, Background);
         }
 
         private static void OnBorderBrushPropertyChanged(object sender, PropertyChangedEventArgs<Brush> e)

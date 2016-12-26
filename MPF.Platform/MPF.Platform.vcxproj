@@ -202,6 +202,7 @@
     <ClInclude Include="Media\Brush.h" />
     <ClInclude Include="Media\BufferManager.h" />
     <ClInclude Include="Media\DeviceContext.h" />
+    <ClInclude Include="Media\DrawCallList.h" />
     <ClInclude Include="Media\FontFamily.h" />
     <ClInclude Include="Media\FontManager.h" />
     <ClInclude Include="Media\Geometry.h" />
@@ -209,14 +210,10 @@
     <ClInclude Include="Media\Pen.h" />
     <ClInclude Include="Media\Platform\D3D11PlatformProvider.h" />
     <ClInclude Include="Media\Platform\D3D11\D3D11DeviceContext.h" />
-    <ClInclude Include="Media\Platform\D3D11\D3D11ResourceManager.h" />
     <ClInclude Include="Media\Platform\D3D11\D3D11SwapChain.h" />
     <ClInclude Include="Media\Platform\D3D9PlatformProvider.h" />
     <ClInclude Include="Media\Platform\D3D9\D3D9DeviceContext.h" />
-    <ClInclude Include="Media\Platform\D3D9\D3D9RenderableObject.h" />
-    <ClInclude Include="Media\Platform\D3D9\D3D9ResourceManager.h" />
     <ClInclude Include="Media\Platform\D3D9\D3D9SwapChain.h" />
-    <ClInclude Include="Media\Platform\DrawCallList.h" />
     <ClInclude Include="Media\Platform\GL\GLDeviceContext.h" />
     <ClInclude Include="Media\Platform\GL\glewUtil.h" />
     <ClInclude Include="Media\Platform\GL\GLSwapChain.h" />
@@ -261,13 +258,12 @@
     <ClCompile Include="Media\GlyphRun.cpp" />
     <ClCompile Include="Media\Platform\D3D11\D3D11BufferProvider.cpp" />
     <ClCompile Include="Media\Platform\D3D11\D3D11DeviceContext.cpp" />
-    <ClCompile Include="Media\Platform\D3D11\D3D11ResourceManager.cpp" />
+    <ClCompile Include="Media\Platform\D3D11\D3D11DrawCallList.cpp" />
     <ClCompile Include="Media\Platform\D3D11\D3D11SwapChain.cpp" />
     <ClCompile Include="Media\Platform\D3D11\D3D11GeometryTransforms.cpp" />
     <ClCompile Include="Media\Platform\D3D9\D3D9BufferProvider.cpp" />
     <ClCompile Include="Media\Platform\D3D9\D3D9DeviceContext.cpp" />
-    <ClCompile Include="Media\Platform\D3D9\D3D9RenderableObject.cpp" />
-    <ClCompile Include="Media\Platform\D3D9\D3D9ResourceManager.cpp" />
+    <ClCompile Include="Media\Platform\D3D9\D3D9DrawCallList.cpp" />
     <ClCompile Include="Media\Platform\D3D9\D3D9SwapChain.cpp" />
     <ClCompile Include="Media\Platform\D3D9\D3D9GeometryTransforms.cpp" />
     <ClCompile Include="Media\Platform\GL\GLDeviceContext.cpp" />
@@ -290,7 +286,27 @@
     <Midl Include="MPF.Platform.idl" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\D3D11.UIGeometryShader.hlsl">
+    <FxCompile Include="Shaders\D3D11.UI.Fill.PixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\D3D11.UI.Fill.VertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\D3D11.UI.Stroke.GeometryShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
@@ -300,7 +316,7 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
-    <FxCompile Include="Shaders\D3D11.UIPixelShader.hlsl">
+    <FxCompile Include="Shaders\D3D11.UI.Stroke.PixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
@@ -310,7 +326,7 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
-    <FxCompile Include="Shaders\D3D11.UIVertexShader.hlsl">
+    <FxCompile Include="Shaders\D3D11.UI.Stroke.VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
@@ -351,7 +367,8 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\D3D11.UIShaders.hlsli" />
+    <None Include="Shaders\D3D11.UI.Fill.Shaders.hlsli" />
+    <None Include="Shaders\D3D11.UI.Stroke.Shaders.hlsli" />
     <None Include="Shaders\D3D9.UIShaders.hlsli" />
   </ItemGroup>
   <ItemGroup>

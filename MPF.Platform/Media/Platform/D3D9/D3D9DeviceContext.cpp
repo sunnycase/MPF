@@ -7,7 +7,7 @@
 #include "stdafx.h"
 #include "D3D9DeviceContext.h"
 #include <process.h>
-#include "D3D9ResourceManager.h"
+#include "../../ResourceManager.h"
 #include "resource.h"
 #include "NativeApplication.h"
 #include "Controls/NativeWindow.h"
@@ -37,7 +37,7 @@ namespace
 }
 
 D3D9DeviceContext::D3D9DeviceContext(IDeviceContextCallback* callback)
-	:_rootSwapChainLock(5000), _callback(callback), _renderObjectContainer(std::make_shared<RenderableObjectContainer<D3D9RenderableObject>>())
+	:_rootSwapChainLock(5000), _callback(callback), _renderObjectContainer(std::make_shared<RenderableObjectContainer<RenderableObject>>())
 {
 	_d3d.Attach(Direct3DCreate9(D3D_SDK_VERSION));
 	ThrowIfNot(_d3d, L"Cannot Initialize Direct3D 9 Interface.");
@@ -245,7 +245,7 @@ HRESULT D3D9DeviceContext::CreateResourceManager(IResourceManager **resMgr)
 	{
 		EnsureDevice();
 		ComPtr<D3D9DeviceContext> me(this);
-		auto myResMgr = Make<D3D9ResourceManager>(me);
+		auto myResMgr = Make<ResourceManager<PlatformId::D3D9>>(me);
 		_resourceManagers.emplace_back(myResMgr->GetWeakContext());
 		*resMgr = myResMgr.Detach();
 		return S_OK;

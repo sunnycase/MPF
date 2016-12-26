@@ -120,7 +120,7 @@ interface ISwapChain : IUnknown
 ]
 interface IRenderCommandBuffer : IUnknown
 {
-	HRESULT DrawGeometry([in]IResource* geometry, [in]IResource* pen, [in]float* values);
+	HRESULT DrawGeometry([in]IResource* geometry, [in]IResource* pen, [in]IResource* brush, [in]float* values);
 };
 
 typedef enum

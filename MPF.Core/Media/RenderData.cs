@@ -18,9 +18,9 @@ namespace MPF.Media
             GC.AddMemoryPressure(512);
         }
 
-        public void DrawGeometry(Geometry geometry, Pen pen, ref Matrix4x4 transform)
+        public void DrawGeometry(Geometry geometry, Pen pen, Brush brush, ref Matrix4x4 transform)
         {
-            _buffer.DrawGeometry(((IResourceProvider)geometry).Resource, ((IResourceProvider)pen)?.Resource, ref transform);
+            _buffer.DrawGeometry(((IResourceProvider)geometry).Resource, ((IResourceProvider)pen)?.Resource, ((IResourceProvider)brush)?.Resource, ref transform);
         }
 
         public IRenderCommandBuffer Close()

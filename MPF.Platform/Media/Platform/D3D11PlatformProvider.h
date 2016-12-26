@@ -6,6 +6,7 @@
 //
 #pragma once
 #include "PlatformProvider.h"
+#include "PlatformProviderTraits.h"
 #include <DirectXMath.h>
 #include <d3d11.h>
 
@@ -31,6 +32,11 @@ struct StrokeVertex
 	static constexpr float ST_QuadraticBezier = 1;
 	static constexpr float ST_CubicBezier = 2;
 	static constexpr float ST_Arc = 3;
+};
+
+struct FillVertex
+{
+	DirectX::XMFLOAT3 Position;
 };
 
 #pragma pack(pop)
@@ -147,9 +153,8 @@ struct PlatformProvider<PlatformId::D3D11>
 {
 	using RenderCall = D3D11::RenderCall;
 	using StrokeVertex = D3D11::StrokeVertex;
-	using FillVertex = D3D11::StrokeVertex;
+	using FillVertex = D3D11::FillVertex;
 	using DeviceContext = WRL::ComPtr<D3D11::D3D11DeviceContext>;
-
 
 	template<BufferTypes>
 	struct BufferProvider
@@ -165,10 +170,16 @@ struct PlatformProvider<PlatformId::D3D11>
 		void Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer);
 	};
 	RenderCall GetRenderCall(VertexBufferManager<PlatformId::D3D11>& vbMgr, size_t stride, const RentInfo& rent);
+	void PlayRenderCall(const PlayRenderCallArgs<PlatformId::D3D11>& args);
+	bool IsNopRenderCall(const RenderCall& rc) noexcept { return rc.VertexCount == 0; }
 
 	void Transform(std::vector<StrokeVertex>& vertices, const LineGeometry& geometry);
 	void Transform(std::vector<StrokeVertex>& vertices, const RectangleGeometry& geometry);
 	void Transform(std::vector<StrokeVertex>& vertices, const PathGeometry& geometry);
+
+	void Transform(std::vector<FillVertex>& vertices, const LineGeometry& geometry);
+	void Transform(std::vector<FillVertex>& vertices, const RectangleGeometry& geometry);
+	void Transform(std::vector<FillVertex>& vertices, const PathGeometry& geometry);
 };
 
 END_NS_PLATFORM

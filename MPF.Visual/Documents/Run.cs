@@ -53,7 +53,7 @@ namespace MPF.Documents
                 {
                     Brush = new SolidColorBrush { Color = Color.FromArgb(0xFF777777) },
                     Thickness = 1
-                });
+                }, new SolidColorBrush { Color = Color.FromArgb(0xFF007777) });
         }
 
         private static void OnTextPropertyChanged(object sender, PropertyChangedEventArgs<string> e)

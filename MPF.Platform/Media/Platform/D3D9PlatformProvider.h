@@ -6,6 +6,7 @@
 //
 #pragma once
 #include "PlatformProvider.h"
+#include "PlatformProviderTraits.h"
 #include <DirectXMath.h>
 #include <d3d9.h>
 
@@ -96,6 +97,8 @@ struct PlatformProvider<PlatformId::D3D9>
 		void Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer);
 	};
 	RenderCall GetRenderCall(VertexBufferManager<PlatformId::D3D9>& vbMgr, size_t stride, const RentInfo& rent);
+	void PlayRenderCall(const PlayRenderCallArgs<PlatformId::D3D9>& args);
+	bool IsNopRenderCall(const RenderCall& rc) noexcept { return rc.PrimitiveCount == 0; }
 
 	void Transform(std::vector<StrokeVertex>& vertices, const LineGeometry& geometry);
 	void Transform(std::vector<StrokeVertex>& vertices, const RectangleGeometry& geometry);

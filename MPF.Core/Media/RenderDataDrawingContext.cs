@@ -16,15 +16,15 @@ namespace MPF.Media
 
         }
 
-        public void DrawGeometry(Geometry geometry, Pen pen, ref Matrix3x2 transform)
+        public void DrawGeometry(Geometry geometry, Pen pen, Brush brush, ref Matrix3x2 transform)
         {
             var mat = new Matrix4x4(transform);
-            _renderData.DrawGeometry(geometry, pen, ref mat);
+            _renderData.DrawGeometry(geometry, pen, brush, ref mat);
         }
 
-        public void DrawGeometry(Geometry geometry, Pen pen)
+        public void DrawGeometry(Geometry geometry, Pen pen, Brush brush)
         {
-            _renderData.DrawGeometry(geometry, pen, ref _identityMat4x4);
+            _renderData.DrawGeometry(geometry, pen, brush, ref _identityMat4x4);
         }
 
         #region IDisposable Support

@@ -1,4 +1,4 @@
-#include "D3D11.UIShaders.hlsli"
+#include "D3D11.UI.Stroke.Shaders.hlsli"
 
 cbuffer WorldViewProjectionBuffer : register(b0)
 {

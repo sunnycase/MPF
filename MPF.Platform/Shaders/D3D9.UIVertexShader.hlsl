@@ -7,12 +7,12 @@ struct WorldViewProjection
 };
 extern WorldViewProjection _wvp: register(c0);
 
-struct tagStorkeInfo
+struct tagStrokeInfo
 {
 	float thickness;
 	float padding[3];
 };
-extern tagStorkeInfo _stroke : register(c8);
+extern tagStrokeInfo _stroke : register(c8);
 extern float4 _color : register(c9);
 extern matrix Model : register(c10);
 extern matrix GeometryTransform : register(c14);
