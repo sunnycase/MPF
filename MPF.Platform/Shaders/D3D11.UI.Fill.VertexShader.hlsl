@@ -30,5 +30,8 @@ PixelShaderInput main(VertexShaderInput input)
 	pos = mul(pos, Projection);
 	output.Position = pos;
 	output.Color = Color;
+	output.ParamFormValue = input.ParamFormValue.xy;
+	output.Switch = (int)input.ParamFormValue.z;
+	output.SegmentType = (int)input.SegmentType;
 	return output;
 }

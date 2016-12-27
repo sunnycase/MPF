@@ -13,8 +13,12 @@ namespace MPF.Documents
 
         public static readonly DependencyProperty<FontFamily> FontFamilyProperty = TextBlock.FontFamilyProperty.AddOwner(typeof(Run),
             new UIPropertyMetadata<FontFamily>(new FontFamily("Arial"), UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender, OnFontFamilyPropertyChanged));
+
         public static readonly DependencyProperty<float> FontSizeProperty = TextBlock.FontSizeProperty.AddOwner(typeof(Run),
             new UIPropertyMetadata<float>(12, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender, OnFontSizePropertyChanged));
+
+        public static readonly DependencyProperty<Brush> ForegroundProperty = TextBlock.ForegroundProperty.AddOwner(typeof(Run),
+            new UIPropertyMetadata<Brush>(new SolidColorBrush { Color = Colors.Black }, UIPropertyMetadataOptions.AffectRender));
 
         public static readonly DependencyProperty<string> TextProperty = DependencyProperty.Register(nameof(FontFamily),
             typeof(Run), new UIPropertyMetadata<string>(string.Empty, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender,
@@ -38,6 +42,12 @@ namespace MPF.Documents
             set { SetValue(TextProperty, value); }
         }
 
+        public Brush Foreground
+        {
+            get { return GetValue(ForegroundProperty); }
+            set { SetValue(ForegroundProperty, value); }
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             if (_glyphRun == null)
@@ -51,9 +61,9 @@ namespace MPF.Documents
             if (glyph != null)
                 glyph.Draw(drawingContext, new Pen
                 {
-                    Brush = new SolidColorBrush { Color = Color.FromArgb(0xFF777777) },
+                    Brush = Foreground,
                     Thickness = 1
-                }, new SolidColorBrush { Color = Color.FromArgb(0xFF007777) });
+                }, Foreground);
         }
 
         private static void OnTextPropertyChanged(object sender, PropertyChangedEventArgs<string> e)

@@ -37,6 +37,13 @@ struct StrokeVertex
 struct FillVertex
 {
 	DirectX::XMFLOAT3 Position;
+	DirectX::XMFLOAT3 ParamFormValue;
+	float SegmentType;
+
+	static constexpr float ST_Linear = 0;
+	static constexpr float ST_QuadraticBezier = 1;
+	static constexpr float ST_CubicBezier = 2;
+	static constexpr float ST_Arc = 3;
 };
 
 #pragma pack(pop)

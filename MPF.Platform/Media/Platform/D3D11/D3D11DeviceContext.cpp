@@ -238,6 +238,8 @@ concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 		static const D3D11_INPUT_ELEMENT_DESC fillInputElementDesc[] =
 		{
 			{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(FillVertex, Position), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(FillVertex, ParamFormValue), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, offsetof(FillVertex, SegmentType), D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 		ThrowIfFailed(_device->CreateInputLayout(fillInputElementDesc, _countof(fillInputElementDesc), uiVSData.first,
 			uiVSData.second, &_fillInputLayout));

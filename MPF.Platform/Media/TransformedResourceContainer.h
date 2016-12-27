@@ -36,8 +36,8 @@ public:
 
 	virtual void Add(const std::vector<UINT_PTR>& handles, const ResourceContainer<T>& container) override
 	{
-		static std::vector<StrokeVertex> strokeVertices;
-		static std::vector<FillVertex> fillVertices;
+		std::vector<StrokeVertex> strokeVertices;
+		std::vector<FillVertex> fillVertices;
 		for (auto&& handle : handles)
 		{
 			T const* refer;
@@ -60,8 +60,8 @@ public:
 
 	virtual void Update(const std::vector<UINT_PTR>& handles, const ResourceContainer<T>& container) override
 	{
-		static std::vector<StrokeVertex> strokeVertices;
-		static std::vector<FillVertex> fillVertices;
+		std::vector<StrokeVertex> strokeVertices;
+		std::vector<FillVertex> fillVertices;
 		for (auto&& handle : handles)
 		{
 			T const* refer;

@@ -14,6 +14,9 @@ namespace MPF.Controls
         public static readonly DependencyProperty<float> FontSizeProperty = DependencyProperty.Register(nameof(FontSize),
             typeof(TextBlock), new UIPropertyMetadata<float>(12, UIPropertyMetadataOptions.AffectMeasure));
 
+        public static readonly DependencyProperty<Brush> ForegroundProperty = DependencyProperty.Register(nameof(Foreground),
+            typeof(TextBlock), new UIPropertyMetadata<Brush>(new SolidColorBrush { Color = Colors.Black }, UIPropertyMetadataOptions.AffectMeasure));
+
         public static readonly DependencyProperty<string> TextProperty = DependencyProperty.Register(nameof(Text), typeof(TextBlock),
             new UIPropertyMetadata<string>(DependencyProperty.UnsetValue, UIPropertyMetadataOptions.AffectMeasure, OnTextPropertyChanged));
 
@@ -27,6 +30,12 @@ namespace MPF.Controls
         {
             get { return GetValue(FontSizeProperty); }
             set { SetValue(FontSizeProperty, value); }
+        }
+
+        public Brush Foreground
+        {
+            get { return GetValue(ForegroundProperty); }
+            set { SetValue(ForegroundProperty, value); }
         }
 
         public TextBlock()

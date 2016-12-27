@@ -105,7 +105,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;freetype265MTd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;freetype265MTd.lib;triangled.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
     <Midl>
@@ -128,7 +128,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;freetype265MTd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;freetype265MTd.lib;triangled.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
     <Midl>
@@ -154,7 +154,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;freetype265MT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;freetype265MT.lib;triangle.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
     <Midl>
@@ -180,7 +180,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;freetype265MT.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;freetype265MT.lib;triangle.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
     <Midl>
@@ -227,6 +227,7 @@
     <ClInclude Include="Media\ResourceManagerBase.h" />
     <ClInclude Include="Media\ResourceRef.h" />
     <ClInclude Include="Media\TransformedResourceContainer.h" />
+    <ClInclude Include="Media\Triangulator.h" />
     <ClInclude Include="MPF.Platform_i.h" />
     <ClInclude Include="NativeApplication.h" />
     <ClInclude Include="resource.h" />
@@ -273,6 +274,7 @@
     <ClCompile Include="Media\RenderCommandBuffer.cpp" />
     <ClCompile Include="Media\ResourceManagerBase.cpp" />
     <ClCompile Include="Media\ResourceRef.cpp" />
+    <ClCompile Include="Media\Triangulator.cpp" />
     <ClCompile Include="MPF.Platform.cpp" />
     <ClCompile Include="NativeApplication.cpp" />
     <ClCompile Include="stdafx.cpp">

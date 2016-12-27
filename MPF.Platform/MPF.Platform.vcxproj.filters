@@ -180,6 +180,9 @@
     <ClInclude Include="Media\DrawCallList.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
+    <ClInclude Include="Media\Triangulator.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -268,6 +271,9 @@
     </ClCompile>
     <ClCompile Include="Media\Platform\D3D9\D3D9DrawCallList.cpp">
       <Filter>源文件\Media\Platform\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\Triangulator.cpp">
+      <Filter>源文件\Media</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
