@@ -37,8 +37,8 @@ namespace MPF.Media
             char highSurrogate = '\0';
             foreach (var character in _characters)
             {
-                var isBlank = char.IsControl(character) || char.IsWhiteSpace(character);
-                if(!isBlank)
+                var isControl = char.IsControl(character);
+                if(!isControl)
                 {
                     uint code;
                     if (char.IsHighSurrogate(character))
@@ -55,7 +55,7 @@ namespace MPF.Media
                         code = (uint)character; 
 
                     var glyph = _fontFamily.FindGlyph(code);
-                    if(glyph != null)
+                    if (glyph != null)
                     {
                         var fontMetrics = glyph.FontMetrics;
                         var glyphMetrics = glyph.GlyphMetrics;

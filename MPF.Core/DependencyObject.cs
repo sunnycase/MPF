@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MPF.Data;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace MPF
     public class DependencyObject
     {
         private readonly ConcurrentDictionary<DependencyProperty, object> _localValueStore = new ConcurrentDictionary<DependencyProperty, object>();
+        private readonly ConcurrentDictionary<DependencyProperty, BindingBase> _bindings = new ConcurrentDictionary<DependencyProperty, BindingBase>();
         private readonly Type _realType;
 
         public DependencyObject()
@@ -29,7 +31,8 @@ namespace MPF
         public T GetValue<T>(DependencyProperty<T> property)
         {
             object oldValue;
-            if (!_localValueStore.TryGetValue(property, out oldValue))
+            if (!_localValueStore.TryGetValue(property, out oldValue) &&
+                !TryGetBindingValue(property, out oldValue))
             {
                 T value;
                 if (property.TryGetDefaultValue(_realType, out value))
@@ -37,6 +40,36 @@ namespace MPF
                 return default(T);
             }
             return (T)oldValue;
+        }
+
+        private bool TryGetBindingValue<T>(DependencyProperty<T> property, out object value)
+        {
+            BindingBase bindingBase;
+            if (_bindings.TryGetValue(property, out bindingBase))
+            {
+                value = bindingBase.EffectiveValue.GetValue(null);
+                return true;
+            }
+            value = null;
+            return false;
+        }
+
+        internal void SetBinding(DependencyProperty property, BindingBase binding)
+        {
+            _bindings.AddOrUpdate(property, binding, (k, o) => binding);
+        }
+
+        internal void ClearBinding(DependencyProperty property)
+        {
+            BindingBase bindingBase;
+            _bindings.TryRemove(property, out bindingBase);
+        }
+
+        internal BindingBase GetBinding(DependencyProperty property)
+        {
+            BindingBase bindingBase;
+            _bindings.TryGetValue(property, out bindingBase);
+            return bindingBase;
         }
     }
 

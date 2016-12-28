@@ -29,11 +29,18 @@ namespace MPF
 
         public bool TryGetDefaultValue(out T value)
         {
+            if (TryGetDefaultValueOverride(out value))
+                return true;
             if (_defaultValueSet)
             {
                 value = _defaultValue;
                 return true;
             }
+            return false;
+        }
+
+        protected virtual bool TryGetDefaultValueOverride(out T value)
+        {
             value = default(T);
             return false;
         }
@@ -51,16 +58,16 @@ namespace MPF
 
         protected virtual void MergeOverride(PropertyMetadata<T> old)
         {
+        }
+
+        internal void Merge(PropertyMetadata<T> old)
+        {
             if (!_defaultValueSet && old._defaultValueSet)
             {
                 _defaultValue = old._defaultValue;
                 _defaultValueSet = true;
             }
             PropertyChanged = (EventHandler<PropertyChangedEventArgs<T>>)Delegate.Combine(old.PropertyChanged, PropertyChanged);
-        }
-
-        internal void Merge(PropertyMetadata<T> old)
-        {
             MergeOverride(old);
         }
     }

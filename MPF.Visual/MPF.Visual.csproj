@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFrameworks>netstandard1.4;net46</TargetFrameworks>
     <AssemblyName>MPF.Visual</AssemblyName>
@@ -22,6 +22,9 @@
       <Version>4.3.0</Version>
     </PackageReference>
   </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <RootNamespace>MPF</RootNamespace>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
   </PropertyGroup>

@@ -32,7 +32,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 			sd = GetQuadraticBezierSignedDistance(px, py, input.ParamFormValue);
 		else if (segmentType == ST_Arc)
 			sd = GetArcSignedDistance(px, py, input.ParamFormValue);
-		float alpha = thickness - abs(sd);
+		float alpha = thickness / 2.f - abs(sd);
 		clip(alpha);
 		return float4(input.Color.rgb, saturate(alpha));
 	}

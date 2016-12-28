@@ -35,12 +35,12 @@ namespace MPF.HelloDesktop
                 BorderBrush = new SolidColorBrush { Color = Color.FromArgb(0xFF888888) },
                 Background = new SolidColorBrush { Color = Color.FromArgb(0x2200FF00) },
                 Margin = new Thickness(5),
-                Child = new Run
+                Child = new TextBlock
                 {
                     Margin = new Thickness(5),
+                    FontSize = 15,
                     FontFamily = new FontFamily("Microsoft YaHei"),
-                    FontSize = 40,
-                    Text = "帝球baka"
+                    Text = "baka 帝球"
                 }
             };
             _window.Show();

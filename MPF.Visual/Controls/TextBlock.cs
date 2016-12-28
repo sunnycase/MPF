@@ -1,4 +1,6 @@
-﻿using MPF.Media;
+﻿using MPF.Data;
+using MPF.Documents;
+using MPF.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,7 @@ namespace MPF.Controls
     public class TextBlock : FrameworkElement
     {
         public static readonly DependencyProperty<FontFamily> FontFamilyProperty = DependencyProperty.Register(nameof(FontFamily),
-            typeof(TextBlock), new UIPropertyMetadata<FontFamily>(new FontFamily("Arial"), UIPropertyMetadataOptions.AffectMeasure, OnFontFamilyPropertyChanged));
+            typeof(TextBlock), new UIPropertyMetadata<FontFamily>(new FontFamily("Arial"), UIPropertyMetadataOptions.AffectMeasure));
 
         public static readonly DependencyProperty<float> FontSizeProperty = DependencyProperty.Register(nameof(FontSize),
             typeof(TextBlock), new UIPropertyMetadata<float>(12, UIPropertyMetadataOptions.AffectMeasure));
@@ -18,12 +20,18 @@ namespace MPF.Controls
             typeof(TextBlock), new UIPropertyMetadata<Brush>(new SolidColorBrush { Color = Colors.Black }, UIPropertyMetadataOptions.AffectMeasure));
 
         public static readonly DependencyProperty<string> TextProperty = DependencyProperty.Register(nameof(Text), typeof(TextBlock),
-            new UIPropertyMetadata<string>(DependencyProperty.UnsetValue, UIPropertyMetadataOptions.AffectMeasure, OnTextPropertyChanged));
+            new UIPropertyMetadata<string>(DependencyProperty.UnsetValue, UIPropertyMetadataOptions.AffectMeasure));
 
         public string Text
         {
             get { return GetValue(TextProperty); }
             set { SetValue(TextProperty, value); }
+        }
+
+        public FontFamily FontFamily
+        {
+            get { return GetValue(FontFamilyProperty); }
+            set { SetValue(FontFamilyProperty, value); }
         }
 
         public float FontSize
@@ -38,24 +46,19 @@ namespace MPF.Controls
             set { SetValue(ForegroundProperty, value); }
         }
 
+        protected override IEnumerable<UIElement> LogicalChildren
+        {
+            get { yield return _run; }
+        }
+
+        private readonly Run _run = new Run();
+
         public TextBlock()
         {
-
-        }
-
-        private void OnTextChanged(string text)
-        {
-
-        }
-
-        private static void OnFontFamilyPropertyChanged(object sender, PropertyChangedEventArgs<FontFamily> e)
-        {
-
-        }
-
-        private static void OnTextPropertyChanged(object sender, PropertyChangedEventArgs<string> e)
-        {
-            ((TextBlock)sender).OnTextChanged(e.NewValue);
+            BindingOperations.SetBinding(_run, Run.FontFamilyProperty, new Binding { Source = this, Path = "FontFamily" });
+            BindingOperations.SetBinding(_run, Run.FontSizeProperty, new Binding { Source = this, Path = "FontSize" });
+            BindingOperations.SetBinding(_run, Run.ForegroundProperty, new Binding { Source = this, Path = "Foreground" });
+            BindingOperations.SetBinding(_run, Run.TextProperty, new Binding { Source = this, Path = "Text" });
         }
     }
 }
