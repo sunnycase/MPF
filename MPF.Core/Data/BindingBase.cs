@@ -8,16 +8,7 @@ namespace MPF.Data
     public abstract class BindingBase
     {
         private bool _isSealed = false;
-        private EffectiveValue _effectiveValue;
-
-        internal EffectiveValue EffectiveValue
-        {
-            get
-            {
-                Seal();
-                return _effectiveValue;
-            }
-        }
+        private Expression<Func<IServiceProvider, object>> _expression;
 
         private BindingMode _mode = BindingMode.OneTime;
         public BindingMode Mode
@@ -36,7 +27,7 @@ namespace MPF.Data
         {
             if (!_isSealed)
             {
-                _effectiveValue = new BindingEffectiveValue(CreateExpression());
+                _expression = CreateExpression();
                 _isSealed = true;
             }
         }
@@ -47,19 +38,27 @@ namespace MPF.Data
                 throw new InvalidOperationException("Binding is already sealed.");
         }
 
-        private class BindingEffectiveValue : EffectiveValue
+        internal BindingEffectiveValue<T> CreateEffectiveValue<T>(IServiceProvider serviceProvider)
         {
-            private readonly Expression<Func<IServiceProvider, object>> _expression;
-
-            public BindingEffectiveValue(Expression<Func<IServiceProvider, object>> expression)
-            {
-                _expression = expression;
-            }
-
-            public override object GetValue(IServiceProvider serviceProvider)
-            {
-                return _expression.Compile()(serviceProvider);
-            }
+            Seal();
+            return new BindingEffectiveValue<T>(CreateExpression(), serviceProvider);
         }
+    }
+
+    internal class BindingEffectiveValue<T> : IEffectiveValue<T>
+    {
+        private readonly Expression<Func<IServiceProvider, object>> _expression;
+        private readonly IServiceProvider _serviceProvider;
+
+        public BindingEffectiveValue(Expression<Func<IServiceProvider, object>> expression, IServiceProvider serviceProvider)
+        {
+            _expression = expression;
+            _serviceProvider = serviceProvider;
+        }
+
+        public T Value => (T)_expression.Compile()(_serviceProvider);
+
+        public EventHandler ValueChanged { get; set; }
+
     }
 }

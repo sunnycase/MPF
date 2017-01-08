@@ -9,67 +9,59 @@ namespace MPF
 {
     public class DependencyObject
     {
-        private readonly ConcurrentDictionary<DependencyProperty, object> _localValueStore = new ConcurrentDictionary<DependencyProperty, object>();
-        private readonly ConcurrentDictionary<DependencyProperty, BindingBase> _bindings = new ConcurrentDictionary<DependencyProperty, BindingBase>();
+        private static readonly SortedList<float, IDependencyValueProvider> _valueProviders = new SortedList<float, IDependencyValueProvider>();
+        private readonly ConcurrentDictionary<IDependencyValueProvider, object> _valueProviderStroages = new ConcurrentDictionary<IDependencyValueProvider, object>();
+        private readonly ConcurrentDictionary<DependencyProperty, SortedList<float, IEffectiveValue>> _effectiveValues = new ConcurrentDictionary<DependencyProperty, SortedList<float, IEffectiveValue>>();
         private readonly Type _realType;
+
+        static DependencyObject()
+        {
+            RegisterValueProvider(LocalDependencyValueProvider.Current);
+        }
 
         public DependencyObject()
         {
             _realType = this.GetType();
         }
 
-        public void SetValue<T>(DependencyProperty<T> property, T value)
+        public static void RegisterValueProvider(IDependencyValueProvider provider)
         {
-            var oldValue = GetValue(property);
-            if (!EqualityComparer<T>.Default.Equals(oldValue, value))
-            {
-                _localValueStore[property] = value;
-                property.RaisePropertyChanged(_realType, this, new PropertyChangedEventArgs<T>(property, oldValue, value));
-            }
+            _valueProviders.Add(provider.Priority, provider);
+        }
+
+        public object GetValueStroage(IDependencyValueProvider provider)
+        {
+            return _valueProviderStroages.GetOrAdd(provider, k => k.CreateStorage());
         }
 
         public T GetValue<T>(DependencyProperty<T> property)
         {
-            object oldValue;
-            if (!_localValueStore.TryGetValue(property, out oldValue) &&
-                !TryGetBindingValue(property, out oldValue))
+            T value;
+            if (!_valueProviders.Any(o => TryGetValue(property, o.Value, out value)))
             {
-                T value;
                 if (property.TryGetDefaultValue(_realType, out value))
                     return value;
-                return default(T);
             }
-            return (T)oldValue;
+            return default(T);
         }
 
-        private bool TryGetBindingValue<T>(DependencyProperty<T> property, out object value)
+        public void SetValue<T>(DependencyProperty<T> property, T value)
         {
-            BindingBase bindingBase;
-            if (_bindings.TryGetValue(property, out bindingBase))
+
+        }
+
+        public bool TryGetValue<T>(DependencyProperty<T> property, IDependencyValueProvider provider, out T value)
+        {
+            var storage = GetValueStroage(provider);
+
+            IEffectiveValue<T> oldValue;
+            if(provider.TryGetValue(this, property, storage, out oldValue))
             {
-                value = bindingBase.EffectiveValue.GetValue(null);
+                value = oldValue.Value;
                 return true;
             }
-            value = null;
+            value = default(T);
             return false;
-        }
-
-        internal void SetBinding(DependencyProperty property, BindingBase binding)
-        {
-            _bindings.AddOrUpdate(property, binding, (k, o) => binding);
-        }
-
-        internal void ClearBinding(DependencyProperty property)
-        {
-            BindingBase bindingBase;
-            _bindings.TryRemove(property, out bindingBase);
-        }
-
-        internal BindingBase GetBinding(DependencyProperty property)
-        {
-            BindingBase bindingBase;
-            _bindings.TryGetValue(property, out bindingBase);
-            return bindingBase;
         }
     }
 

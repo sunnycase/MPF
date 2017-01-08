@@ -8,17 +8,18 @@ namespace MPF.Data
     {
         public static void SetBinding(DependencyObject d, DependencyProperty property, BindingBase binding)
         {
-            d.SetBinding(property, binding);
+            //d.SetBinding(property, binding);
         }
 
         public static void ClearBinding(DependencyObject d, DependencyProperty property)
         {
-            d.ClearBinding(property);
+            //d.ClearBinding(property);
         }
 
         public static BindingBase GetBinding(DependencyObject d, DependencyProperty property)
         {
-            return d.GetBinding(property);
+            //return d.GetBinding(property);
+            return null;
         }
     }
 }
