@@ -4,64 +4,65 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace MPF
 {
     public class DependencyObject
     {
-        private static readonly SortedList<float, IDependencyValueProvider> _valueProviders = new SortedList<float, IDependencyValueProvider>();
-        private readonly ConcurrentDictionary<IDependencyValueProvider, object> _valueProviderStroages = new ConcurrentDictionary<IDependencyValueProvider, object>();
-        private readonly ConcurrentDictionary<DependencyProperty, SortedList<float, IEffectiveValue>> _effectiveValues = new ConcurrentDictionary<DependencyProperty, SortedList<float, IEffectiveValue>>();
         private readonly Type _realType;
 
-        static DependencyObject()
-        {
-            RegisterValueProvider(LocalDependencyValueProvider.Current);
-        }
+        private readonly DependencyValueStorage _valueStorage = new DependencyValueStorage();
+        public IDependencyValueStorage ValueStorage => _valueStorage;
 
         public DependencyObject()
         {
             _realType = this.GetType();
-        }
-
-        public static void RegisterValueProvider(IDependencyValueProvider provider)
-        {
-            _valueProviders.Add(provider.Priority, provider);
-        }
-
-        public object GetValueStroage(IDependencyValueProvider provider)
-        {
-            return _valueProviderStroages.GetOrAdd(provider, k => k.CreateStorage());
+            _valueStorage.CurrentValueChanged += valueStorage_CurrentValueChanged;
         }
 
         public T GetValue<T>(DependencyProperty<T> property)
         {
             T value;
-            if (!_valueProviders.Any(o => TryGetValue(property, o.Value, out value)))
+            if (!_valueStorage.TryGetCurrentValue(property, out value))
             {
                 if (property.TryGetDefaultValue(_realType, out value))
                     return value;
             }
-            return default(T);
+            return value;
         }
 
-        public void SetValue<T>(DependencyProperty<T> property, T value)
+        public void SetCurrentValue<T>(DependencyProperty<T> property, T value)
         {
-
+            IEffectiveValue<T> eValue;
+            if (_valueStorage.TryGetCurrentEffectiveValue(property, out eValue) && eValue.CanSetValue)
+                eValue.Value = value;
+            else
+                this.SetLocalValue(property, value);
         }
 
-        public bool TryGetValue<T>(DependencyProperty<T> property, IDependencyValueProvider provider, out T value)
+        private readonly static MethodInfo _raisePropertyChangedHelper = typeof(DependencyObject).GetRuntimeMethods().Single(o => o.Name == nameof(RaisePropertyChangedHelper));
+        private void valueStorage_CurrentValueChanged(object sender, CurrentValueChangedEventArgs e)
         {
-            var storage = GetValueStroage(provider);
+            _raisePropertyChangedHelper.MakeGenericMethod(e.Property.PropertyType).Invoke(this, new object[] { e.Property, e });
+        }
 
-            IEffectiveValue<T> oldValue;
-            if(provider.TryGetValue(this, property, storage, out oldValue))
+        internal void RaisePropertyChangedHelper<T>(DependencyProperty<T> property, CurrentValueChangedEventArgs e)
+        {
+            var oldValue = e.HasOldValue ? (T)e.OldValue : GetDefaultValue(property);
+            var newValue = e.HasNewValue ? (T)e.NewValue : GetDefaultValue(property);
+            if (!EqualityComparer<T>.Default.Equals(oldValue, newValue))
             {
-                value = oldValue.Value;
-                return true;
+                property.RaisePropertyChanged(_realType, this, new PropertyChangedEventArgs<T>(property, oldValue, newValue));
             }
-            value = default(T);
-            return false;
+        }
+
+        private T GetDefaultValue<T>(DependencyProperty<T> property)
+        {
+            T value;
+            if (property.TryGetDefaultValue(_realType, out value))
+                return value;
+            return default(T);
         }
     }
 

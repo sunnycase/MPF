@@ -8,7 +8,7 @@ namespace MPF.Data
     public abstract class BindingBase
     {
         private bool _isSealed = false;
-        private Expression<Func<IServiceProvider, object>> _expression;
+        private Expression<Func<object, object>> _expression;
 
         private BindingMode _mode = BindingMode.OneTime;
         public BindingMode Mode
@@ -21,7 +21,12 @@ namespace MPF.Data
             }
         }
 
-        protected abstract Expression<Func<IServiceProvider, object>> CreateExpression();
+        protected abstract Expression<Func<object, object>> CreateExpression();
+        public Expression<Func<object, object>> GetExpression()
+        {
+            Seal();
+            return _expression;
+        }
 
         private void Seal()
         {
@@ -37,28 +42,5 @@ namespace MPF.Data
             if (_isSealed)
                 throw new InvalidOperationException("Binding is already sealed.");
         }
-
-        internal BindingEffectiveValue<T> CreateEffectiveValue<T>(IServiceProvider serviceProvider)
-        {
-            Seal();
-            return new BindingEffectiveValue<T>(CreateExpression(), serviceProvider);
-        }
-    }
-
-    internal class BindingEffectiveValue<T> : IEffectiveValue<T>
-    {
-        private readonly Expression<Func<IServiceProvider, object>> _expression;
-        private readonly IServiceProvider _serviceProvider;
-
-        public BindingEffectiveValue(Expression<Func<IServiceProvider, object>> expression, IServiceProvider serviceProvider)
-        {
-            _expression = expression;
-            _serviceProvider = serviceProvider;
-        }
-
-        public T Value => (T)_expression.Compile()(_serviceProvider);
-
-        public EventHandler ValueChanged { get; set; }
-
     }
 }

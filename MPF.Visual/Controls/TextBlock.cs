@@ -25,25 +25,25 @@ namespace MPF.Controls
         public string Text
         {
             get { return GetValue(TextProperty); }
-            set { SetValue(TextProperty, value); }
+            set { this.SetLocalValue(TextProperty, value); }
         }
 
         public FontFamily FontFamily
         {
             get { return GetValue(FontFamilyProperty); }
-            set { SetValue(FontFamilyProperty, value); }
+            set { this.SetLocalValue(FontFamilyProperty, value); }
         }
 
         public float FontSize
         {
             get { return GetValue(FontSizeProperty); }
-            set { SetValue(FontSizeProperty, value); }
+            set { this.SetLocalValue(FontSizeProperty, value); }
         }
 
         public Brush Foreground
         {
             get { return GetValue(ForegroundProperty); }
-            set { SetValue(ForegroundProperty, value); }
+            set { this.SetLocalValue(ForegroundProperty, value); }
         }
 
         protected override IEnumerable<UIElement> LogicalChildren

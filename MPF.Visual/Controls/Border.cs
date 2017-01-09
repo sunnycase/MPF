@@ -1,4 +1,5 @@
-﻿using MPF.Media;
+﻿using MPF.Data;
+using MPF.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,19 +22,19 @@ namespace MPF.Controls
         public Brush BorderBrush
         {
             get { return GetValue(BorderBrushProperty); }
-            set { SetValue(BorderBrushProperty, value); }
+            set { this.SetLocalValue(BorderBrushProperty, value); }
         }
 
         public Thickness BorderThickness
         {
             get { return GetValue(BorderThicknessProperty); }
-            set { SetValue(BorderThicknessProperty, value); }
+            set { this.SetLocalValue(BorderThicknessProperty, value); }
         }
 
         public Brush Background
         {
             get { return GetValue(BackgroundProperty); }
-            set { SetValue(BackgroundProperty, value); }
+            set { this.SetLocalValue(BackgroundProperty, value); }
         }
 
         private readonly Pen _cachedPen = new Pen();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MPF.Interop;
+using MPF.Data;
 
 namespace MPF.Media
 {
@@ -16,7 +17,7 @@ namespace MPF.Media
         public Color Color
         {
             get { return GetValue(ColorProperty); }
-            set { SetValue(ColorProperty, value); }
+            set { this.SetLocalValue(ColorProperty, value); }
         }
 
         public SolidColorBrush()

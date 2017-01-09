@@ -1,4 +1,5 @@
-﻿using MPF.Interop;
+﻿using MPF.Data;
+using MPF.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,13 +18,13 @@ namespace MPF.Media
         public Point StartPoint
         {
             get { return GetValue(StartPointProperty); }
-            set { SetValue(StartPointProperty, value); }
+            set { this.SetLocalValue(StartPointProperty, value); }
         }
 
         public Point EndPoint
         {
             get { return GetValue(EndPointProperty); }
-            set { SetValue(EndPointProperty, value); }
+            set { this.SetLocalValue(EndPointProperty, value); }
         }
 
         private readonly Lazy<IResource> _geometryRes;

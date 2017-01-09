@@ -1,10 +1,11 @@
-﻿using System;
+﻿using MPF.Data;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace MPF.Controls
 {
-    public class Control : FrameworkElement
+    public class Control : FrameworkElement, IHasTemplatedChild
     {
         public static readonly DependencyProperty<ControlTemplate> TemplateProperty = DependencyProperty.Register(nameof(Template),
             typeof(Control), new UIPropertyMetadata<ControlTemplate>(null, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender));
@@ -12,12 +13,32 @@ namespace MPF.Controls
         public ControlTemplate Template
         {
             get { return GetValue(TemplateProperty); }
-            set { SetValue(TemplateProperty, value); }
+            set { this.SetLocalValue(TemplateProperty, value); }
+        }
+
+        protected override IEnumerable<UIElement> LogicalChildren
+        {
+            get { yield return TemplatedChild; }
+        }
+
+        private bool _templatedChildLoaded = false;
+        private UIElement _templatedChild;
+        private UIElement TemplatedChild
+        {
+            get
+            {
+                if(!_templatedChildLoaded)
+                {
+                    _templatedChildLoaded = true;
+                    _templatedChild = (UIElement)Template?.LoadContent(this);
+                    OnApplyTemplate();
+                }
+                return _templatedChild;
+            }
         }
 
         public Control()
         {
-
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -28,6 +49,11 @@ namespace MPF.Controls
         protected virtual void OnApplyTemplate()
         {
 
+        }
+
+        object IHasTemplatedChild.GetTemplatedChild(FrameworkTemplate template)
+        {
+            return template == Template ? TemplatedChild : null;
         }
     }
 }

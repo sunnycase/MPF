@@ -1,24 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using System.Linq;
 
 namespace MPF.Data
 {
     public class BindingOperations
     {
-        public static void SetBinding(DependencyObject d, DependencyProperty property, BindingBase binding)
+        public static void SetBinding<T>(DependencyObject d, DependencyProperty<T> property, BindingBase binding)
         {
-            //d.SetBinding(property, binding);
+            BindingDependencyValueProvider.Current.SetValue(d, property, d.ValueStorage, binding);
         }
 
-        public static void ClearBinding(DependencyObject d, DependencyProperty property)
+        public static void ClearBinding<T>(DependencyObject d, DependencyProperty<T> property)
         {
-            //d.ClearBinding(property);
+            BindingDependencyValueProvider.Current.ClearValue(property, d.ValueStorage);
         }
 
-        public static BindingBase GetBinding(DependencyObject d, DependencyProperty property)
+        public static BindingBase GetBinding<T>(DependencyObject d, DependencyProperty<T> property)
         {
-            //return d.GetBinding(property);
+            BindingBase binding;
+            if (BindingDependencyValueProvider.Current.TryGetValue(property, d.ValueStorage, out binding))
+                return binding;
             return null;
         }
     }

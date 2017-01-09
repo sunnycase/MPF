@@ -6,8 +6,8 @@ namespace MPF.Data
 {
     public interface IDependencyValueStorage
     {
-        IEffectiveValue AddOrUpdate(IDependencyValueProvider provider, DependencyProperty key, Func<DependencyProperty, IEffectiveValue> addValueFactory, Func<DependencyProperty, IEffectiveValue, IEffectiveValue> updateValueFactory);
-        bool TryGetValue(IDependencyValueProvider provider, DependencyProperty key, out IEffectiveValue value);
-        bool TryRemove(IDependencyValueProvider provider, DependencyProperty key, out IEffectiveValue value);
+        IEffectiveValue AddOrUpdate<T>(IDependencyValueProvider provider, DependencyProperty<T> key, Func<DependencyProperty, IEffectiveValue<T>> addValueFactory, Func<DependencyProperty, IEffectiveValue<T>, IEffectiveValue<T>> updateValueFactory);
+        bool TryGetValue<T>(IDependencyValueProvider provider, DependencyProperty<T> key, out IEffectiveValue<T> value);
+        bool TryRemove<T>(IDependencyValueProvider provider, DependencyProperty<T> key, out IEffectiveValue<T> value);
     }
 }

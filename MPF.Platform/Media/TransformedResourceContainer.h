@@ -36,8 +36,8 @@ public:
 
 	virtual void Add(const std::vector<UINT_PTR>& handles, const ResourceContainer<T>& container) override
 	{
-		std::vector<StrokeVertex> strokeVertices;
-		std::vector<FillVertex> fillVertices;
+		static std::vector<StrokeVertex> strokeVertices;
+		static std::vector<FillVertex> fillVertices;
 		for (auto&& handle : handles)
 		{
 			T const* refer;
@@ -46,9 +46,9 @@ public:
 
 			strokeVertices.clear();
 			_platformProvider.Transform(strokeVertices, source);
-			auto strokeRent = _strokeVBMgr.Allocate(fillVertices.size());
+			auto strokeRent = _strokeVBMgr.Allocate(strokeVertices.size());
 			_strokeRentInfos.emplace(handle, strokeRent);
-			_strokeVBMgr.Update(strokeRent, 0, fillVertices.data(), fillVertices.size());
+			_strokeVBMgr.Update(strokeRent, 0, strokeVertices.data(), strokeVertices.size());
 
 			fillVertices.clear();
 			_platformProvider.Transform(fillVertices, source);
@@ -60,8 +60,8 @@ public:
 
 	virtual void Update(const std::vector<UINT_PTR>& handles, const ResourceContainer<T>& container) override
 	{
-		std::vector<StrokeVertex> strokeVertices;
-		std::vector<FillVertex> fillVertices;
+		static std::vector<StrokeVertex> strokeVertices;
+		static std::vector<FillVertex> fillVertices;
 		for (auto&& handle : handles)
 		{
 			T const* refer;

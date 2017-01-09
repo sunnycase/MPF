@@ -5,6 +5,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using MPF.Interop;
 using MPF.Media;
+using MPF.Data;
 
 namespace MPF.Controls
 {
@@ -22,19 +23,19 @@ namespace MPF.Controls
         public bool HasMaximize
         {
             get { return GetValue(HasMaximizeProperty); }
-            set { SetValue(HasMaximizeProperty, value); }
+            set { this.SetLocalValue(HasMaximizeProperty, value); }
         }
 
         public string Title
         {
             get { return GetValue(TitleProperty); }
-            set { SetValue(TitleProperty, value); }
+            set { this.SetLocalValue(TitleProperty, value); }
         }
 
         public Size Size
         {
             get { return GetValue(SizeProperty); }
-            set { SetValue(SizeProperty, value); }
+            set { this.SetLocalValue(SizeProperty, value); }
         }
 
         public Window()

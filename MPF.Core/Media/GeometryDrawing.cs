@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MPF.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace MPF.Media
         public Geometry Geometry
         {
             get { return GetValue(GeometryProperty); }
-            set { SetValue(GeometryProperty, value); }
+            set { this.SetLocalValue(GeometryProperty, value); }
         }
 
         public GeometryDrawing()

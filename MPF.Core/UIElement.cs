@@ -1,4 +1,5 @@
-﻿using MPF.Interop;
+﻿using MPF.Data;
+using MPF.Interop;
 using MPF.Media;
 using System;
 using System.Collections.Generic;
@@ -41,7 +42,7 @@ namespace MPF
         public Visibility Visibility
         {
             get { return GetValue(VisibilityProperty); }
-            set { SetValue(VisibilityProperty, value); }
+            set { this.SetLocalValue(VisibilityProperty, value); }
         }
 
         private Size _desiredSize;

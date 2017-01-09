@@ -6,11 +6,24 @@ namespace MPF.Data
 {
     public interface IEffectiveValue
     {
-        EventHandler ValueChanged { set; }
+        EventHandler<EffectiveValueChangedEventArgs> ValueChanged { set; }
     }
 
     public interface IEffectiveValue<T> : IEffectiveValue
     {
-        T Value { get; }
+        bool CanSetValue { get; }
+        T Value { get; set; }
+    }
+
+    public class EffectiveValueChangedEventArgs : EventArgs
+    {
+        public object OldValue { get; }
+        public object NewValue { get; }
+
+        public EffectiveValueChangedEventArgs(object oldValue, object newValue)
+        {
+            OldValue = oldValue;
+            NewValue = newValue;
+        }
     }
 }

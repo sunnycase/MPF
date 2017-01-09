@@ -1,4 +1,5 @@
-﻿using MPF.Interop;
+﻿using MPF.Data;
+using MPF.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,13 +19,13 @@ namespace MPF.Media
         public bool IsHitTestVisible
         {
             get { return GetValue(IsHitTestVisibleProperty); }
-            set { SetValue(IsHitTestVisibleProperty, value); }
+            set { this.SetLocalValue(IsHitTestVisibleProperty, value); }
         }
 
         public Geometry VisualClip
         {
             get { return GetValue(VisualClipProperty); }
-            set { SetValue(VisualClipProperty, value); }
+            set { this.SetLocalValue(VisualClipProperty, value); }
         }
 
         public Vector2 VisualOffset

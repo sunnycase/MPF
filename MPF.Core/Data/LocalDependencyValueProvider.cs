@@ -10,33 +10,34 @@ namespace MPF.Data
         public static LocalDependencyValueProvider Current { get; } = new LocalDependencyValueProvider();
         public float Priority => 1.0f;
 
-        public object CreateStorage()
+        public void SetValue<T>(DependencyProperty<T> property, IDependencyValueStorage storage, T value)
         {
-            return new ConcurrentDictionary<DependencyProperty, IEffectiveValue>();
+            storage.AddOrUpdate(this, property, o => new LocalEffectiveValue<T>(value), (k, o) => { ((LocalEffectiveValue<T>)o).Value = value; return o; });
         }
 
-        public void SetValue<T>(DependencyObject d, DependencyProperty property, object storage, T value)
+        public bool TryGetValue<T>(DependencyProperty<T> property, IDependencyValueStorage storage, out T value)
         {
-            var myStorage = (ConcurrentDictionary<DependencyProperty, IEffectiveValue>)storage;
-            myStorage.AddOrUpdate(property, o => new LocalEffectiveValue<T>(value), (k, o) => { ((LocalEffectiveValue<T>)o).Value = value; return o; });
-        }
-
-        public bool TryGetValue<T>(DependencyObject d, DependencyProperty property, object storage, out IEffectiveValue<T> value)
-        {
-            var myStorage = (ConcurrentDictionary<DependencyProperty, IEffectiveValue>)storage;
-            IEffectiveValue oldValue;
-            if (myStorage.TryGetValue(property, out oldValue))
+            IEffectiveValue<T> eValue;
+            if (storage.TryGetValue(this, property, out eValue))
             {
-                value = (IEffectiveValue<T>)oldValue;
+                value = eValue.Value;
                 return true;
             }
-            value = null;
+            value = default(T);
             return false;
+        }
+
+        public void ClearValue<T>(DependencyProperty<T> property, IDependencyValueStorage storage)
+        {
+            IEffectiveValue<T> eValue;
+            storage.TryRemove(this, property, out eValue);
         }
 
         class LocalEffectiveValue<T> : IEffectiveValue<T>
         {
-            public EventHandler ValueChanged { get; set; }
+            public EventHandler<EffectiveValueChangedEventArgs> ValueChanged { get; set; }
+
+            public bool CanSetValue => true;
 
             private T _value;
             public T Value
@@ -46,8 +47,9 @@ namespace MPF.Data
                 {
                     if (!EqualityComparer<T>.Default.Equals(_value, value))
                     {
+                        var oldValue = _value;
                         _value = value;
-                        ValueChanged?.Invoke(this, EventArgs.Empty);
+                        ValueChanged?.Invoke(this, new EffectiveValueChangedEventArgs(oldValue, value));
                     }
                 }
             }
@@ -64,13 +66,17 @@ namespace MPF.Data
     {
         public static bool TryGetLocalValue<T>(this DependencyObject d, DependencyProperty<T> property, out T value)
         {
-            return d.TryGetValue(property, LocalDependencyValueProvider.Current, out value);
+            return LocalDependencyValueProvider.Current.TryGetValue(property, d.ValueStorage, out value);
         }
 
         public static void SetLocalValue<T>(this DependencyObject d, DependencyProperty<T> property, T value)
         {
-            var provider = LocalDependencyValueProvider.Current;
-            provider.SetValue(d, property, d.GetValueStroage(provider), value);
+            LocalDependencyValueProvider.Current.SetValue(property, d.ValueStorage, value);
+        }
+
+        public static void ClearLocalValue<T>(this DependencyObject d, DependencyProperty<T> property)
+        {
+            LocalDependencyValueProvider.Current.ClearValue(property, d.ValueStorage);
         }
     }
 }

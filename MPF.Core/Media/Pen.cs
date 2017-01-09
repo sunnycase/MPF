@@ -1,4 +1,5 @@
-﻿using MPF.Interop;
+﻿using MPF.Data;
+using MPF.Interop;
 using MPF.Media;
 using System;
 using System.Collections.Generic;
@@ -17,13 +18,13 @@ namespace MPF.Media
         public float Thickness
         {
             get { return GetValue(ThicknessProperty); }
-            set { SetValue(ThicknessProperty, value); }
+            set { this.SetLocalValue(ThicknessProperty, value); }
         }
 
         public Brush Brush
         {
             get { return GetValue(BrushProperty); }
-            set { SetValue(BrushProperty, value); }
+            set { this.SetLocalValue(BrushProperty, value); }
         }
 
         private readonly Lazy<IResource> _penResource;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MPF.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -14,7 +15,7 @@ namespace MPF
         public Thickness Margin
         {
             get { return GetValue(MarginProperty); }
-            set { SetValue(MarginProperty, value); }
+            set { this.SetLocalValue(MarginProperty, value); }
         }
         
         protected sealed override void ArrangeOverride(Rect finalRect)
