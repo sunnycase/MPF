@@ -8,6 +8,7 @@ A WPF-alike GUI Framework for .Net Core.
 ### Rendering
 - Vector Geometry Rendering (Line, Arc, Bezier)
 - Vector Font Rendering
+
 ### Input
 - Generic HID (Human Interface Device) Support
 
@@ -30,6 +31,7 @@ A WPF-alike GUI Framework for .Net Core.
 ### 渲染
 - 矢量图形渲染 (Line, Arc, Bezier)
 - 矢量字体渲染
+
 ### 输入
 - 通用 HID (人机接口设备) 支持
 
