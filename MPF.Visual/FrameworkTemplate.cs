@@ -4,7 +4,8 @@ using System.Text;
 
 namespace MPF
 {
-    public class FrameworkTemplate
+    public abstract class FrameworkTemplate
     {
+        public abstract object LoadContent(object templatedParent);
     }
 }

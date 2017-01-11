@@ -40,7 +40,7 @@ namespace MPF.Data
                 {
                     oldValue.ValueChanged = null;
                     newValue.ValueChanged = (s, e) => OnEffectiveValueChanged(priority, key, e.OldValue, e.NewValue);
-                    storage.Values[oldIdx] = newValue;
+                    storage[priority] = newValue;
                     var raiseChanged = oldIdx == 0;
                     if (raiseChanged)
                         OnCurrentValueChanged(key, true, oldValue.Value, true, newValue.Value);

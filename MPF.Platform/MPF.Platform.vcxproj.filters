@@ -61,6 +61,12 @@
     <Filter Include="源文件\Media\Platform\D3D11">
       <UniqueIdentifier>{78f4aee9-f21b-4ccb-9222-46aa2eacaa75}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Input">
+      <UniqueIdentifier>{923fdf8c-25ee-4ac9-b9ad-971264ecce31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Input">
+      <UniqueIdentifier>{484cf519-e78a-47fc-88f0-efea398fec59}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -183,6 +189,12 @@
     <ClInclude Include="Media\Triangulator.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
+    <ClInclude Include="Input\InputManager.h">
+      <Filter>头文件\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\InputDevice.h">
+      <Filter>头文件\Input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -274,6 +286,12 @@
     </ClCompile>
     <ClCompile Include="Media\Triangulator.cpp">
       <Filter>源文件\Media</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\InputDevice.cpp">
+      <Filter>源文件\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\InputManager.cpp">
+      <Filter>源文件\Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

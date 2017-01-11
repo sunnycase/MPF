@@ -33,7 +33,7 @@ namespace MPF.Media
             get { return _visualOffset; }
             protected set
             {
-                if(_visualOffset != value)
+                if (_visualOffset != value)
                 {
                     _visualOffset = value;
                     UpdateVisualOffset(value);
@@ -41,9 +41,14 @@ namespace MPF.Media
             }
         }
 
+        private readonly List<Visual> _visualChildren = new List<Visual>();
+        internal IEnumerable<Visual> VisualChildren => _visualChildren;
+
         private Vector2 _visualOffset;
         private RenderData _renderData;
         internal readonly IRenderableObject _renderableObject;
+        private Visual _parent;
+        internal Visual Parent => _parent;
 
         internal Visual()
         {
@@ -54,6 +59,22 @@ namespace MPF.Media
         {
             if (!IsHitTestVisible) return;
 
+        }
+
+        protected void AddVisualChild(Visual visual)
+        {
+            if (visual._parent != null)
+                throw new InvalidOperationException("Visual already has a parent.");
+            visual._parent = this;
+            _visualChildren.Add(visual);
+        }
+
+        protected void RemoveVisualChild(Visual visual)
+        {
+            if (visual._parent != this)
+                throw new InvalidOperationException("Visual's parent is not this.");
+            visual._parent = null;
+            _visualChildren.Remove(visual);
         }
 
         protected virtual PointHitTestResult HitTestOverride(PointHitTestParameters param)

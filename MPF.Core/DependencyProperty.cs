@@ -120,7 +120,6 @@ namespace MPF
 
     public sealed class DependencyProperty<T> : DependencyProperty
     {
-        private readonly Type _ownerType;
         private PropertyMetadata<T> _baseMetadata;
         private readonly ConcurrentDictionary<Type, PropertyMetadata<T>> _metadatas = new ConcurrentDictionary<Type, PropertyMetadata<T>>();
 
@@ -130,8 +129,7 @@ namespace MPF
             : base(name, ownerType)
         {
             Contract.Assert(metadata != null);
-
-            _ownerType = ownerType;
+            
             _baseMetadata = metadata;
         }
 
@@ -143,7 +141,7 @@ namespace MPF
                 throw new ArgumentNullException(nameof(metadata));
 
             metadata = MergeMetadata(_baseMetadata, metadata);
-            if (type == _ownerType)
+            if (type == OwnerType)
                 _baseMetadata = metadata;
             else
             {
@@ -167,9 +165,9 @@ namespace MPF
             return this;
         }
 
-        public bool TryGetDefaultValue(Type type, out T value)
+        public bool TryGetDefaultValue(DependencyObject d, Type type, out T value)
         {
-            return GetMetadata(type).TryGetDefaultValue(out value);
+            return GetMetadata(type).TryGetDefaultValue(d, this, out value);
         }
 
         internal void RaisePropertyChanged(Type type, object sender, PropertyChangedEventArgs<T> e)
@@ -182,7 +180,7 @@ namespace MPF
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            if (type != _ownerType)
+            if (type != OwnerType)
             {
                 PropertyMetadata<T> metadata;
                 if (_metadatas.TryGetValue(type, out metadata))

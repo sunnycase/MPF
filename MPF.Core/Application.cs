@@ -1,4 +1,5 @@
-﻿using MPF.Interop;
+﻿using MPF.Input;
+using MPF.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,8 @@ namespace MPF
 
         public void Run()
         {
+            InputManager.Current.Initialize();
+
             _nativeApp.Run();
         }
     }

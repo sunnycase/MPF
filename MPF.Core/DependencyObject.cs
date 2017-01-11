@@ -25,10 +25,7 @@ namespace MPF
         {
             T value;
             if (!_valueStorage.TryGetCurrentValue(property, out value))
-            {
-                if (property.TryGetDefaultValue(_realType, out value))
-                    return value;
-            }
+                return GetDefaultValue(property);
             return value;
         }
 
@@ -60,7 +57,7 @@ namespace MPF
         private T GetDefaultValue<T>(DependencyProperty<T> property)
         {
             T value;
-            if (property.TryGetDefaultValue(_realType, out value))
+            if (property.TryGetDefaultValue(this, _realType, out value))
                 return value;
             return default(T);
         }

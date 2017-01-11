@@ -105,7 +105,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;freetype265MTd.lib;triangled.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;Hid.lib;freetype265MTd.lib;triangled.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
     <Midl>
@@ -128,7 +128,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;freetype265MTd.lib;triangled.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;Hid.lib;freetype265MTd.lib;triangled.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
     <Midl>
@@ -154,7 +154,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;freetype265MT.lib;triangle.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;Hid.lib;freetype265MT.lib;triangle.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
     <Midl>
@@ -180,7 +180,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;freetype265MT.lib;triangle.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;glew32.lib;Opengl32.lib;dxgi.lib;d3d11.lib;Hid.lib;freetype265MT.lib;triangle.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>dxgi.dll;d3d11.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
     </Link>
     <Midl>
@@ -199,6 +199,8 @@
     <ClInclude Include="..\inc\NonCopyable.h" />
     <ClInclude Include="..\inc\WeakReferenceBase.h" />
     <ClInclude Include="Controls\NativeWindow.h" />
+    <ClInclude Include="Input\InputDevice.h" />
+    <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Media\Brush.h" />
     <ClInclude Include="Media\BufferManager.h" />
     <ClInclude Include="Media\DeviceContext.h" />
@@ -253,6 +255,8 @@
     <ClCompile Include="Encoding.cpp" />
     <ClCompile Include="EncodingDetector.cpp" />
     <ClCompile Include="FreeList.cpp" />
+    <ClCompile Include="Input\InputDevice.cpp" />
+    <ClCompile Include="Input\InputManager.cpp" />
     <ClCompile Include="Media\DeviceContext.cpp" />
     <ClCompile Include="Media\FontFamily.cpp" />
     <ClCompile Include="Media\FontManager.cpp" />

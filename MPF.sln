@@ -1,13 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26014.0
+VisualStudioVersion = 15.0.26020.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tutorial", "Tutorial", "{35332891-13CD-4752-935C-48DD59BF3641}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F10E9195-8C8F-4F49-B2FF-64C0CB70E618}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
+		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPF.Platform", "MPF.Platform\MPF.Platform.vcxproj", "{371A67E4-442A-4F9D-9AC9-BF08BC92FA28}"
@@ -27,6 +28,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MPF.HelloDesktop", "Tutoria
 		{44D846A5-DBEB-41E2-B7F2-BE9B028E69A6} = {44D846A5-DBEB-41E2-B7F2-BE9B028E69A6}
 		{371A67E4-442A-4F9D-9AC9-BF08BC92FA28} = {371A67E4-442A-4F9D-9AC9-BF08BC92FA28}
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hana", "Hana", "{5ED1E810-620D-47B7-96E1-E8CA83B3B6EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MPF.VisualStudio.HanaExtension", "Hana\MPF.VisualStudio.HanaExtension\MPF.VisualStudio.HanaExtension.csproj", "{4FEA7141-C43A-4671-A950-3169B1EEE26D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MPF.CodeAnalysis.Remote.Hana", "Hana\MPF.CodeAnalysis.Remote.Hana\MPF.CodeAnalysis.Remote.Hana.csproj", "{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,6 +104,30 @@ Global
 		{ADE38F82-1D57-4835-8CBC-DF99637A9A19}.Release|x64.Build.0 = Release|Any CPU
 		{ADE38F82-1D57-4835-8CBC-DF99637A9A19}.Release|x86.ActiveCfg = Release|Any CPU
 		{ADE38F82-1D57-4835-8CBC-DF99637A9A19}.Release|x86.Build.0 = Release|Any CPU
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D}.Debug|x64.Build.0 = Debug|Any CPU
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D}.Debug|x86.Build.0 = Debug|Any CPU
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D}.Release|x64.ActiveCfg = Release|Any CPU
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D}.Release|x64.Build.0 = Release|Any CPU
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D}.Release|x86.ActiveCfg = Release|Any CPU
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D}.Release|x86.Build.0 = Release|Any CPU
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Debug|x64.ActiveCfg = Debug|x64
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Debug|x64.Build.0 = Debug|x64
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Debug|x86.ActiveCfg = Debug|x86
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Debug|x86.Build.0 = Debug|x86
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Release|x64.ActiveCfg = Release|x64
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Release|x64.Build.0 = Release|x64
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Release|x86.ActiveCfg = Release|x86
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,5 +135,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{962FD27B-8E12-4211-BA32-4F4755204C9A} = {35332891-13CD-4752-935C-48DD59BF3641}
 		{ADE38F82-1D57-4835-8CBC-DF99637A9A19} = {35332891-13CD-4752-935C-48DD59BF3641}
+		{4FEA7141-C43A-4671-A950-3169B1EEE26D} = {5ED1E810-620D-47B7-96E1-E8CA83B3B6EA}
+		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6} = {5ED1E810-620D-47B7-96E1-E8CA83B3B6EA}
 	EndGlobalSection
 EndGlobal

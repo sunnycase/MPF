@@ -18,7 +18,11 @@ namespace MPF.Controls
 
         protected override IEnumerable<UIElement> LogicalChildren
         {
-            get { yield return TemplatedChild; }
+            get
+            {
+                if (TemplatedChild != null)
+                    yield return TemplatedChild;
+            }
         }
 
         private bool _templatedChildLoaded = false;
@@ -27,10 +31,15 @@ namespace MPF.Controls
         {
             get
             {
-                if(!_templatedChildLoaded)
+                if (!_templatedChildLoaded)
                 {
                     _templatedChildLoaded = true;
+                    if (_templatedChild != null)
+                        RemoveVisualChild(_templatedChild);
+
                     _templatedChild = (UIElement)Template?.LoadContent(this);
+                    if (_templatedChild != null)
+                        AddVisualChild(_templatedChild);
                     OnApplyTemplate();
                 }
                 return _templatedChild;

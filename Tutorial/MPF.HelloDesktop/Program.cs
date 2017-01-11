@@ -1,5 +1,6 @@
 ﻿using MPF.Controls;
 using MPF.Documents;
+using MPF.Input;
 using MPF.Media;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,8 @@ namespace MPF.HelloDesktop
 
         public Application()
         {
+            InputManager.Current.HIDAware = HIDUsages.Default;
+
             _window = new Window
             {
                 Size = new Size(1024, 768)
@@ -35,16 +38,26 @@ namespace MPF.HelloDesktop
                 BorderBrush = new SolidColorBrush { Color = Color.FromArgb(0xFF888888) },
                 Background = new SolidColorBrush { Color = Color.FromArgb(0x2200FF00) },
                 Margin = new Thickness(5),
-                Child = new TextBlock
+                Child = new ContentControl
                 {
-                    Margin = new Thickness(5),
-                    FontSize = 15,
-                    FontFamily = new FontFamily("Microsoft YaHei"),
-                    Text = "baka 帝球"
+                    ContentTemplate = new DataTemplate(t =>
+                        new TextBlock
+                        {
+                            Margin = new Thickness(5),
+                            FontSize = 25,
+                            FontFamily = new FontFamily("Microsoft YaHei"),
+                            Text = "baka帝球"
+                        })
                 }
             };
+            _window.PointerPressed += window_PointerPressed;
             _window.Show();
             ChangeMaximizeBox();
+        }
+
+        private void window_PointerPressed(object sender, Input.PointerRoutedEventArgs e)
+        {
+            Console.WriteLine($"{e.Source} : {e.RoutedEvent.Name}");
         }
 
         private void ShowWindow2()

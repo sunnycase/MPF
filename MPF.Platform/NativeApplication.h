@@ -26,6 +26,7 @@ public:
 	static void RemoveEventToWait(HANDLE handle);
 	static void AddAtExit(std::function<void()>&& callback);
 private:
+	void DispatchHIDInputMessage(const MSG& msg);
 private:
 	static WRL::Wrappers::CriticalSection _eventsToWaitCS;
 	static std::vector<HANDLE> _eventsToWait;

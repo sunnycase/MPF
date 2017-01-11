@@ -15,7 +15,11 @@ namespace MPF.Controls
             {
                 if (_child != value)
                 {
+                    if (_child != null)
+                        RemoveVisualChild(_child);
                     _child = value;
+                    if (_child != null)
+                        AddVisualChild(_child);
                     InvalidateMeasure();
                 }
             }

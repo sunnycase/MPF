@@ -12,12 +12,21 @@ namespace MPF
         public static readonly DependencyProperty<Thickness> MarginProperty = DependencyProperty.Register(nameof(Margin),
             typeof(FrameworkElement), new UIPropertyMetadata<Thickness>(default(Thickness), UIPropertyMetadataOptions.AffectMeasure));
 
+        public static readonly DependencyProperty<object> DataContextProperty = DependencyProperty.Register(nameof(DataContext),
+            typeof(FrameworkElement), new FrameworkPropertyMetadata<object>(null, FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.None));
+
         public Thickness Margin
         {
             get { return GetValue(MarginProperty); }
             set { this.SetLocalValue(MarginProperty, value); }
         }
-        
+
+        public object DataContext
+        {
+            get { return GetValue(DataContextProperty); }
+            set { this.SetLocalValue(DataContextProperty, value); }
+        }
+
         protected sealed override void ArrangeOverride(Rect finalRect)
         {
             var size = finalRect.Size;

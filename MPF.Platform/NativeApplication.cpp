@@ -6,6 +6,7 @@
 //
 #include "stdafx.h"
 #include "NativeApplication.h"
+#include "Input/InputManager.h"
 using namespace WRL;
 
 HRESULT __stdcall CreateNativeApplication(NS_PLATFORM::INativeApplication** obj) noexcept
@@ -27,7 +28,7 @@ std::vector<std::function<void()>> NativeApplication::_atExits;
 
 NativeApplication::NativeApplication()
 {
-
+	
 }
 
 NativeApplication::~NativeApplication()
@@ -36,29 +37,40 @@ NativeApplication::~NativeApplication()
 
 HRESULT NativeApplication::Run(void)
 {
-	MSG msg;
-	while (GetMessage(&msg, NULL, 0, 0))
+	try
 	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-	{
-		std::vector<std::function<void()>> atExits;
-		std::vector<HANDLE> eventsToWait;
+		MSG msg;
+		while (GetMessage(&msg, NULL, 0, 0))
 		{
-			_eventsToWaitCS.Lock();
-			std::swap(_atExits, atExits);
-			std::swap(_eventsToWait, eventsToWait);
+			try
+			{
+				TranslateMessage(&msg);
+				if (msg.message == WM_INPUT)
+					DispatchHIDInputMessage(msg);
+				else
+					DispatchMessage(&msg);
+			}
+			catch (...) {}
 		}
-		for (auto&& callback : atExits)
-			callback();
-		for (auto && handle : eventsToWait)
 		{
-			auto result = WaitForSingleObject(handle, 5000);
-			ThrowWin32IfNot(result != WAIT_OBJECT_0 && result != WAIT_ABANDONED);
+			std::vector<std::function<void()>> atExits;
+			std::vector<HANDLE> eventsToWait;
+			{
+				_eventsToWaitCS.Lock();
+				std::swap(_atExits, atExits);
+				std::swap(_eventsToWait, eventsToWait);
+			}
+			for (auto&& callback : atExits)
+				callback();
+			for (auto && handle : eventsToWait)
+			{
+				auto result = WaitForSingleObject(handle, 5000);
+				ThrowWin32IfNot(result != WAIT_OBJECT_0 && result != WAIT_ABANDONED);
+			}
 		}
+		return S_OK;
 	}
-	return S_OK;
+	CATCH_ALL();
 }
 
 void NativeApplication::AddEventToWait(HANDLE handle)
@@ -77,4 +89,9 @@ void NativeApplication::AddAtExit(std::function<void()>&& callback)
 {
 	_eventsToWaitCS.Lock();
 	_atExits.emplace_back(std::move(callback));
+}
+
+void NativeApplication::DispatchHIDInputMessage(const MSG& msg)
+{
+	InputManager::GetCurrent()->DispatchHIDInputMessage(msg.hwnd, msg.time, GetMessagePos(), (HRAWINPUT)msg.lParam);
 }

@@ -1,7 +1,9 @@
 ﻿using MPF.Data;
+using MPF.Input;
 using MPF.Interop;
 using MPF.Media;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -43,6 +45,15 @@ namespace MPF
         {
             get { return GetValue(VisibilityProperty); }
             set { this.SetLocalValue(VisibilityProperty, value); }
+        }
+
+        public static readonly RoutedEvent<PointerRoutedEventArgs> PointerPressedEvent = RoutedEvent.Register<PointerRoutedEventArgs>(nameof(PointerPressed),
+            typeof(UIElement), RoutingStrategy.Bubble);
+
+        public event EventHandler<PointerRoutedEventArgs> PointerPressed
+        {
+            add { AddHandler(PointerPressedEvent, value); }
+            remove { RemoveHandler(PointerPressedEvent, value); }
         }
 
         private Size _desiredSize;
@@ -120,6 +131,70 @@ namespace MPF
         private static void OnVisibilityPropertyChanged(object sender, PropertyChangedEventArgs<Visibility> e)
         {
             ((UIElement)sender).UpdateVisibilityFlag(e.NewValue);
+        }
+
+
+        private readonly ConcurrentDictionary<RoutedEvent, List<Tuple<Delegate, bool>>> _eventHandlers = new ConcurrentDictionary<RoutedEvent, List<Tuple<Delegate, bool>>>();
+
+        public void AddHandler<TArgs>(RoutedEvent<TArgs> routedEvent, EventHandler<TArgs> handler, bool handledEventsToo = false) where TArgs : RoutedEventArgs
+        {
+            var storage = _eventHandlers.GetOrAdd(routedEvent, k => new List<Tuple<Delegate, bool>>());
+            storage.Add(Tuple.Create((Delegate)handler, handledEventsToo));
+        }
+
+        public void RemoveHandler<TArgs>(RoutedEvent<TArgs> routedEvent, EventHandler<TArgs> handler) where TArgs : RoutedEventArgs
+        {
+            List<Tuple<Delegate, bool>> storage;
+            if(_eventHandlers.TryGetValue(routedEvent, out storage))
+            {
+                var index = storage.FindLastIndex(o => o.Item1 == (Delegate)handler);
+                if (index != -1)
+                    storage.RemoveAt(index);
+            }
+        }
+
+        public static void RaiseEvent<TArgs>(TArgs eventArgs) where TArgs : RoutedEventArgs
+        {
+            var routingStrategy = eventArgs.RoutedEvent.RoutingStrategy;
+            if (routingStrategy == RoutingStrategy.Direct)
+                (eventArgs.OriginalSource as UIElement)?.InvokeEventHandlers(eventArgs);
+            else if (routingStrategy == RoutingStrategy.Bubble)
+            {
+                var parent = eventArgs.OriginalSource as UIElement;
+                while (parent != null)
+                {
+                    parent.InvokeEventHandlers(eventArgs);
+                    parent = VisualTreeHelper.GetParent(parent) as UIElement;
+                }
+            }
+            else if (routingStrategy == RoutingStrategy.Tunnel)
+            {
+                var elements = new Stack<UIElement>();
+                var parent = eventArgs.OriginalSource as UIElement;
+                while (parent != null)
+                {
+                    elements.Push(parent);
+                    parent = VisualTreeHelper.GetParent(parent) as UIElement;
+                }
+                while (elements.Count != 0)
+                    elements.Pop().InvokeEventHandlers(eventArgs);
+            }
+            else
+                throw new InvalidOperationException("Invalid routing strategy.");
+        }
+
+        private void InvokeEventHandlers<TArgs>(TArgs eventArgs) where TArgs : RoutedEventArgs
+        {
+            List<Tuple<Delegate, bool>> storage;
+            if (_eventHandlers.TryGetValue(eventArgs.RoutedEvent, out storage))
+            {
+                eventArgs.Source = this;
+                foreach (var handler in storage)
+                {
+                    if (!eventArgs.Handled || handler.Item2)
+                        ((EventHandler<TArgs>)handler.Item1)(this, eventArgs);
+                }
+            }
         }
     }
 }

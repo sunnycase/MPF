@@ -33,15 +33,12 @@ namespace MPF.Data
             }
         }
 
-        private static readonly MethodInfo _getServiceMethod = typeof(IServiceProvider).GetTypeInfo().GetDeclaredMethod(nameof(IServiceProvider.GetService));
-
-        protected override Expression<Func<IServiceProvider, object>> CreateExpression()
+        protected override Expression<Func<object, object>> CreateExpression()
         {
-            var serviceProvider = Expression.Parameter(typeof(object), "s");
-            var source = _hasSource ? (Expression)Expression.Constant(Source) :
-                Expression.Call(serviceProvider, _getServiceMethod, Expression.Constant(null, typeof(Type)));
+            var dataContext = Expression.Parameter(typeof(object), "s");
+            var source = _hasSource ? (Expression)Expression.Constant(Source) : dataContext;
             var body = Path == null ? source : Path.GetAccessor(source);
-            return (Expression<Func<IServiceProvider, object>>)Expression.Lambda<Func<IServiceProvider, object>>(body, serviceProvider).Reduce();
+            return (Expression<Func<object, object>>)Expression.Lambda<Func<object, object>>(body, dataContext).Reduce();
         }
     }
 }

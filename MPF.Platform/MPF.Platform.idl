@@ -234,6 +234,61 @@ interface IDeviceContext : IUnknown
 	HRESULT CreateResourceManager([out, retval]IResourceManager** resMgr);
 };
 
+// Input
+
+typedef struct
+{
+	USHORT Page, Id;
+} HIDUsage;
+
+typedef enum
+{
+	Released = 0,
+	Pressed = 1
+} MouseButtonState;
+
+typedef struct
+{
+	DWORD Time;
+	INT CursorX, CursorY;
+	USHORT ChangedButton;
+	MouseButtonState ChangedButtonState;
+	SHORT WheelDelta;
+	LONG XDelta, YDelta;
+} HIDMouseInput;
+
+[
+	uuid(5B03D673-8837-4525-9E49-800E85CE314E),
+	helpstring("Input Device Interface"),
+	version(1.0)
+]
+interface IInputDevice : IUnknown
+{
+	[propget]
+	HRESULT HIDUsage([out, retval]HIDUsage* usage);
+};
+
+[
+	uuid(5867067E-36C7-4702-89B1-5D55AA2C2A88),
+	helpstring("Input Manager Callback Interface"),
+	version(1.0)
+]
+interface IInputManagerCallback : IUnknown
+{
+	HRESULT OnMouseInput([in]IInputDevice* inputDevice, [in]HIDMouseInput* input);
+};
+
+[
+	uuid(3A52BA5A-39BD-4D73-AC2A-3A8BB9B55A20),
+	helpstring("Input Manager Interface"),
+	version(1.0)
+]
+interface IInputManager : IUnknown
+{
+	HRESULT SetCallback([in]IInputManagerCallback* callback);
+	HRESULT SetHIDAware([in, size_is(length)]const HIDUsage usages[], [in]UINT length);
+};
+
 [
 	uuid(3E0658B5-F637-4BCD-9D0E-4A938970146D),
 	helpstring("MPF.Platform Type Library"),

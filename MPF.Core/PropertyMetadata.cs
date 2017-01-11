@@ -27,9 +27,9 @@ namespace MPF
                 PropertyChanged += propertyChangedHandler;
         }
 
-        public bool TryGetDefaultValue(out T value)
+        public bool TryGetDefaultValue(DependencyObject d, DependencyProperty<T> property, out T value)
         {
-            if (TryGetDefaultValueOverride(out value))
+            if (TryGetDefaultValueOverride(d, property, out value))
                 return true;
             if (_defaultValueSet)
             {
@@ -39,7 +39,7 @@ namespace MPF
             return false;
         }
 
-        protected virtual bool TryGetDefaultValueOverride(out T value)
+        protected virtual bool TryGetDefaultValueOverride(DependencyObject d, DependencyProperty<T> property, out T value)
         {
             value = default(T);
             return false;

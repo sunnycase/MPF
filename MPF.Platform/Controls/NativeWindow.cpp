@@ -218,27 +218,31 @@ HRESULT NativeWindow::Hide(void)
 
 LRESULT CALLBACK NativeWindow::NativeWindowProcWrapper(HWND hWnd, uint32_t uMsg, WPARAM wParam, LPARAM lParam)
 {
-	auto windowRef = reinterpret_cast<WeakRef<NativeWindow>*>(GetWindowLongPtr(hWnd, WndIdx_WeakRefPtr));
-
-	if (uMsg == WM_NCCREATE)
+	try
 	{
-		auto createParam = (LPCREATESTRUCT)lParam;
-		windowRef = reinterpret_cast<WeakRef<NativeWindow>*>(createParam->lpCreateParams);
-		SetWindowLongPtr(hWnd, WndIdx_WeakRefPtr, reinterpret_cast<LONG_PTR>(windowRef));
-	}
+		auto windowRef = reinterpret_cast<WeakRef<NativeWindow>*>(GetWindowLongPtr(hWnd, WndIdx_WeakRefPtr));
 
-	if (windowRef)
-	{
-		if (auto window = windowRef->Resolve())
-			return window->WindowProc(hWnd, uMsg, wParam, lParam);
-		else
+		if (uMsg == WM_NCCREATE)
 		{
-			SetWindowLongPtr(hWnd, WndIdx_WeakRefPtr, NULL);
-			delete windowRef;
+			auto createParam = (LPCREATESTRUCT)lParam;
+			windowRef = reinterpret_cast<WeakRef<NativeWindow>*>(createParam->lpCreateParams);
+			SetWindowLongPtr(hWnd, WndIdx_WeakRefPtr, reinterpret_cast<LONG_PTR>(windowRef));
 		}
-	}
 
-	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+		if (windowRef)
+		{
+			if (auto window = windowRef->Resolve())
+				return window->WindowProc(hWnd, uMsg, wParam, lParam);
+			else
+			{
+				SetWindowLongPtr(hWnd, WndIdx_WeakRefPtr, NULL);
+				delete windowRef;
+			}
+		}
+
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
+	}
+	CATCH_ALL();
 }
 
 NativeWindow::NativeWindow(INativeWindowCallback* callback)
