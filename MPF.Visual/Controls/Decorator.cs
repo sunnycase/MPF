@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MPF.Media;
+using System.Collections;
 
 namespace MPF.Controls
 {
@@ -25,7 +27,9 @@ namespace MPF.Controls
             }
         }
 
-        protected override IEnumerable<UIElement> LogicalChildren
+        public override int VisualChildrenCount => _child == null ? 0 : 1;
+
+        protected override IEnumerator LogicalChildren
         {
             get
             {
@@ -52,6 +56,13 @@ namespace MPF.Controls
                 return _child.DesiredSize;
             }
             return default(Size);
+        }
+
+        public override Visual GetVisualChildAt(int index)
+        {
+            if (_child == null || index != 0)
+                throw new ArgumentOutOfRangeException(nameof(index));
+            return _child;
         }
     }
 }

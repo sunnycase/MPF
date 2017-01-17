@@ -1,5 +1,6 @@
 ﻿using MPF.Data;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -12,8 +13,26 @@ namespace MPF
         public static readonly DependencyProperty<Thickness> MarginProperty = DependencyProperty.Register(nameof(Margin),
             typeof(FrameworkElement), new UIPropertyMetadata<Thickness>(default(Thickness), UIPropertyMetadataOptions.AffectMeasure));
 
+        public static readonly DependencyProperty<HorizontalAlignment> HorizontalAlignmentProperty = DependencyProperty.Register(nameof(HorizontalAlignment),
+            typeof(FrameworkElement), new UIPropertyMetadata<HorizontalAlignment>(HorizontalAlignment.Stretch, UIPropertyMetadataOptions.AffectArrange));
+
+        public static readonly DependencyProperty<VerticalAlignment> VerticalAlignmentProperty = DependencyProperty.Register(nameof(VerticalAlignment),
+            typeof(FrameworkElement), new UIPropertyMetadata<VerticalAlignment>(VerticalAlignment.Stretch, UIPropertyMetadataOptions.AffectArrange));
+
         public static readonly DependencyProperty<object> DataContextProperty = DependencyProperty.Register(nameof(DataContext),
             typeof(FrameworkElement), new FrameworkPropertyMetadata<object>(null, FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.None));
+
+        public HorizontalAlignment HorizontalAlignment
+        {
+            get { return GetValue(HorizontalAlignmentProperty); }
+            set { this.SetLocalValue(HorizontalAlignmentProperty, value); }
+        }
+
+        public VerticalAlignment VerticalAlignment
+        {
+            get { return GetValue(VerticalAlignmentProperty); }
+            set { this.SetLocalValue(VerticalAlignmentProperty, value); }
+        }
 
         public Thickness Margin
         {
@@ -27,16 +46,20 @@ namespace MPF
             set { this.SetLocalValue(DataContextProperty, value); }
         }
 
+        protected internal virtual IEnumerator LogicalChildren
+        {
+            get { yield break; }
+        }
+
         protected sealed override void ArrangeOverride(Rect finalRect)
         {
             var size = finalRect.Size;
             var margin = Margin;
-            size.Width = Math.Max(0.0f, size.Width - margin.Left - margin.Right);
-            size.Height = Math.Max(0.0f, size.Height - margin.Top - margin.Bottom);
 
-            var renderSize = ArrangeOverride(size);
+            size = new Size(size.Width - margin.Left - margin.Right, size.Height - margin.Top - margin.Bottom);
+            var renderSize = ArrangeOverride(ComputeAlignmentSize(size));
             RenderSize = renderSize;
-            var offset = ComputeAlignmentOffset(renderSize);
+            var offset = ComputeAlignmentOffset(size);
             offset.X += finalRect.X + margin.Left;
             offset.Y += finalRect.Y + margin.Top;
             VisualOffset = offset;
@@ -53,9 +76,69 @@ namespace MPF
             return finalSize;
         }
 
+        private Size ComputeAlignmentSize(Size clientSize)
+        {
+            float width = 0;
+            switch (HorizontalAlignment)
+            {
+                case HorizontalAlignment.Left:
+                case HorizontalAlignment.Center:
+                case HorizontalAlignment.Right:
+                    width = Math.Min(clientSize.Width, DesiredSize.Width);
+                    break;
+                case HorizontalAlignment.Stretch:
+                    width = clientSize.Width;
+                    break;
+            }
+
+            float height = 0;
+            switch (VerticalAlignment)
+            {
+                case VerticalAlignment.Top:
+                case VerticalAlignment.Center:
+                case VerticalAlignment.Bottom:
+                    height = Math.Min(clientSize.Height, DesiredSize.Height);
+                    break;
+                case VerticalAlignment.Stretch:
+                    height = clientSize.Height;
+                    break;
+            }
+            return new Size(width, height);
+        }
+
         private Vector2 ComputeAlignmentOffset(Size clientSize)
         {
-            return Vector2.Zero;
+            float left = 0;
+            switch (HorizontalAlignment)
+            {
+                case HorizontalAlignment.Left:
+                case HorizontalAlignment.Stretch:
+                    left = 0;
+                    break;
+                case HorizontalAlignment.Center:
+                    left = (clientSize.Width - RenderSize.Width) / 2;
+                    break;
+                case HorizontalAlignment.Right:
+                    left = clientSize.Width - RenderSize.Width;
+                    break;
+            }
+
+            float top = 0;
+            switch (VerticalAlignment)
+            {
+                case VerticalAlignment.Top:
+                case VerticalAlignment.Stretch:
+                    top = 0;
+                    break;
+                case VerticalAlignment.Center:
+                    top = (clientSize.Height - RenderSize.Height) / 2;
+                    break;
+                case VerticalAlignment.Bottom:
+                    top = clientSize.Height - RenderSize.Height;
+                    break;
+            }
+
+            return new Vector2(left, top);
         }
     }
 }

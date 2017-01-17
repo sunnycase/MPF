@@ -1,6 +1,7 @@
 ﻿using MPF.Data;
 using MPF.Media;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -24,6 +25,15 @@ namespace MPF.Controls
         {
             get { return GetValue(ContentProperty); }
             set { this.SetLocalValue(ContentProperty, value); }
+        }
+
+        protected override IEnumerator LogicalChildren
+        {
+            get
+            {
+                if (Content != null)
+                    yield return Content;
+            }
         }
 
         static ContentControl()

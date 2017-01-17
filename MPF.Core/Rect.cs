@@ -30,5 +30,7 @@ namespace MPF
             Width = width;
             Height = height;
         }
+
+        public static readonly Rect Zero = new Rect();
     }
 }

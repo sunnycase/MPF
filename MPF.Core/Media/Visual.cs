@@ -41,14 +41,31 @@ namespace MPF.Media
             }
         }
 
-        private readonly List<Visual> _visualChildren = new List<Visual>();
-        internal IEnumerable<Visual> VisualChildren => _visualChildren;
+        internal bool IsVisualVisible { get; set; } = true;
+
+        public virtual int VisualChildrenCount => 0;
 
         private Vector2 _visualOffset;
         private RenderData _renderData;
         internal readonly IRenderableObject _renderableObject;
+
         private Visual _parent;
         internal Visual Parent => _parent;
+
+        private int _visualLevel = 0;
+        internal int VisualLevel
+        {
+            get { return _visualLevel; }
+            private set
+            {
+                if(_visualLevel != value)
+                {
+                    _visualLevel = value;
+                    foreach (var child in VisualChildren)
+                        child.VisualLevel = value + 1;
+                }
+            }
+        }
 
         internal Visual()
         {
@@ -66,7 +83,7 @@ namespace MPF.Media
             if (visual._parent != null)
                 throw new InvalidOperationException("Visual already has a parent.");
             visual._parent = this;
-            _visualChildren.Add(visual);
+            visual.VisualLevel = VisualLevel + 1;
         }
 
         protected void RemoveVisualChild(Visual visual)
@@ -74,12 +91,32 @@ namespace MPF.Media
             if (visual._parent != this)
                 throw new InvalidOperationException("Visual's parent is not this.");
             visual._parent = null;
-            _visualChildren.Remove(visual);
+            visual.VisualLevel = 0;
         }
 
         protected virtual PointHitTestResult HitTestOverride(PointHitTestParameters param)
         {
             return null;
+        }
+
+        public virtual Visual GetVisualChildAt(int index)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        public virtual Rect GetContentBounds()
+        {
+            return Rect.Zero;
+        }
+
+        public IEnumerable<Visual> VisualChildren
+        {
+            get
+            {
+                var count = VisualChildrenCount;
+                for (int i = 0; i < count; i++)
+                    yield return GetVisualChildAt(i);
+            }
         }
 
         internal void Render()

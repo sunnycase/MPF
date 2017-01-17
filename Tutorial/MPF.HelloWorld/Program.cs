@@ -30,7 +30,7 @@ namespace MPF.HelloWorld
                 Size = new Size(300, 180)
             };
 
-            _window.Child = new Border
+            _window.Content = new Border
             {
                 BorderThickness = new Thickness(1.0f),
                 BorderBrush = new SolidColorBrush { Color = Color.FromArgb(0xFF888888) },
