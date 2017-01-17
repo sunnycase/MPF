@@ -8,6 +8,13 @@ using System.Threading.Tasks;
 
 namespace MPF.Media
 {
+    [Flags]
+    internal enum VisualFlags : uint
+    {
+        None = 0x0,
+        BBoxDirty = 0x1
+    }
+
     public abstract class Visual : DependencyObject
     {
         public static readonly DependencyProperty<bool> IsHitTestVisibleProperty = DependencyProperty.Register(nameof(IsHitTestVisible),
@@ -41,6 +48,8 @@ namespace MPF.Media
             }
         }
 
+        internal VisualFlags VisualFlags { get; private set; } = VisualFlags.BBoxDirty;
+
         internal bool IsVisualVisible { get; set; } = true;
 
         public virtual int VisualChildrenCount => 0;
@@ -58,7 +67,7 @@ namespace MPF.Media
             get { return _visualLevel; }
             private set
             {
-                if(_visualLevel != value)
+                if (_visualLevel != value)
                 {
                     _visualLevel = value;
                     foreach (var child in VisualChildren)
@@ -66,6 +75,8 @@ namespace MPF.Media
                 }
             }
         }
+
+        private Rect _bboxSubgraph;
 
         internal Visual()
         {
@@ -76,6 +87,67 @@ namespace MPF.Media
         {
             if (!IsHitTestVisible) return;
 
+            Precompute();
+            HitTestPoint(param, filter, resultCallback);
+        }
+
+        private HitTestResultBehavior HitTestPoint(PointHitTestParameters param, HitTestFilterCallback<Visual> filter, HitTestResultCallback<PointHitTestResult> resultCallback)
+        {
+            if (_bboxSubgraph.Contains(param.HitPoint))
+            {
+                var hitTestFilterBehavior = HitTestFilterBehavior.Continue;
+                if (filter != null)
+                {
+                    hitTestFilterBehavior = filter(this);
+                    if (hitTestFilterBehavior == HitTestFilterBehavior.ContinueSkipSelfAndChildren)
+                        return HitTestResultBehavior.Continue;
+                    if (hitTestFilterBehavior == HitTestFilterBehavior.Stop)
+                        return HitTestResultBehavior.Stop;
+                }
+                var hitPoint = param.HitPoint;
+                var point = hitPoint;
+
+                if (hitTestFilterBehavior != HitTestFilterBehavior.ContinueSkipChildren)
+                {
+                    foreach (var child in VisualChildren)
+                    {
+                        var hitTestResultBehavior = child.HitTestPoint(param, filter, resultCallback);
+                        param.SetHitPoint(hitPoint);
+                        if (hitTestResultBehavior == HitTestResultBehavior.Stop)
+                            return HitTestResultBehavior.Stop;
+                    }
+                }
+            }
+            return HitTestResultBehavior.Continue;
+        }
+
+        private void Precompute()
+        {
+            if (VisualFlags.HasFlag(VisualFlags.BBoxDirty))
+            {
+                Rect rect;
+                PrecomputeRecursive(out rect);
+            }
+        }
+
+        protected void InvalidateBoundingBox()
+        {
+            VisualFlags = VisualFlags | VisualFlags.BBoxDirty;
+        }
+
+        protected virtual void PrecomputeRecursive(out Rect bboxSubgraph)
+        {
+            if (VisualFlags.HasFlag(VisualFlags.BBoxDirty))
+            {
+                Rect rect;
+                foreach (var child in VisualChildren)
+                {
+                    child.PrecomputeRecursive(out rect);
+                    _bboxSubgraph = Rect.Union(_bboxSubgraph, rect);
+                }
+                VisualFlags = VisualFlags & ~VisualFlags.BBoxDirty;
+            }
+            bboxSubgraph = _bboxSubgraph;
         }
 
         protected void AddVisualChild(Visual visual)
@@ -104,9 +176,24 @@ namespace MPF.Media
             throw new ArgumentOutOfRangeException(nameof(index));
         }
 
-        public virtual Rect GetContentBounds()
+        protected virtual Rect GetContentBounds()
         {
             return Rect.Zero;
+        }
+
+        protected virtual Rect GetHitTestBounds()
+        {
+            return GetContentBounds();
+        }
+
+        protected virtual void PrecomputeContent()
+        {
+            _bboxSubgraph = GetHitTestBounds();
+            if (float.IsNaN(_bboxSubgraph.Left) || float.IsNaN(_bboxSubgraph.Top) ||
+                float.IsNaN(_bboxSubgraph.Width) || float.IsNaN(_bboxSubgraph.Height))
+            {
+                _bboxSubgraph = new Rect(float.NegativeInfinity, float.NegativeInfinity, float.PositiveInfinity, float.PositiveInfinity);
+            }
         }
 
         public IEnumerable<Visual> VisualChildren

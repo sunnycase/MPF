@@ -60,8 +60,8 @@ namespace MPF
             var renderSize = ArrangeOverride(ComputeAlignmentSize(size));
             RenderSize = renderSize;
             var offset = ComputeAlignmentOffset(size);
-            offset.X += finalRect.X + margin.Left;
-            offset.Y += finalRect.Y + margin.Top;
+            offset.X += finalRect.Left + margin.Left;
+            offset.Y += finalRect.Top + margin.Top;
             VisualOffset = offset;
             OnAfterArrange();
         }

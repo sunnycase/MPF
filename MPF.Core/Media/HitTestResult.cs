@@ -20,9 +20,14 @@ namespace MPF.Media
 
     public class PointHitTestParameters
     {
-        public Point HitPoint { get; }
+        public Point HitPoint { get; private set; }
 
         public PointHitTestParameters(Point hitPoint)
+        {
+            HitPoint = hitPoint;
+        }
+
+        internal void SetHitPoint(Point hitPoint)
         {
             HitPoint = hitPoint;
         }
