@@ -1,5 +1,7 @@
 ﻿using MPF.Data;
+using MPF.Media;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,10 +10,10 @@ namespace MPF.Controls
     public class ContentPresenter : FrameworkElement
     {
         public static readonly DependencyProperty<DataTemplate> ContentTemplateProperty = DependencyProperty.Register(nameof(ContentTemplate),
-            typeof(ContentPresenter), new FrameworkPropertyMetadata<DataTemplate>(null, FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender, OnContentTemplatePropertyChanged));
+            typeof(ContentPresenter), new FrameworkPropertyMetadata<DataTemplate>(null, FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.AffectMeasure, OnContentTemplatePropertyChanged));
 
         public static readonly DependencyProperty<object> ContentProperty = DependencyProperty.Register(nameof(Content),
-            typeof(ContentPresenter), new FrameworkPropertyMetadata<object>(null, FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.None, OnContentPropertyChanged));
+            typeof(ContentPresenter), new FrameworkPropertyMetadata<object>(null, FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.AffectMeasure, OnContentPropertyChanged));
 
         public DataTemplate ContentTemplate
         {
@@ -25,31 +27,43 @@ namespace MPF.Controls
             set { this.SetLocalValue(ContentProperty, value); }
         }
 
-        protected override IEnumerable<UIElement> LogicalChildren
+        protected override IEnumerator LogicalChildren
         {
             get
             {
-                if (TemplatedChild != null)
-                    yield return TemplatedChild;
+                if (Content != null)
+                    yield return Content;
             }
         }
 
-        private bool _templatedChildLoaded = false;
-        private FrameworkElement _templatedChild;
-        public FrameworkElement TemplatedChild
+        public override int VisualChildrenCount => TemplateChild == null ? 0 : 1;
+
+        private bool _templateChildLoaded = false;
+        private Visual _templateChild;
+        public Visual TemplateChild
         {
             get
             {
-                if(!_templatedChildLoaded)
+                if (!_templateChildLoaded)
                 {
-                    _templatedChildLoaded = true;
-                    if (_templatedChild != null)
-                        RemoveVisualChild(_templatedChild);
-                    _templatedChild = (FrameworkElement)ContentTemplate?.LoadContent(this);
-                    if (_templatedChild != null)
-                        AddVisualChild(_templatedChild);
+                    _templateChildLoaded = true;
+                    if (_templateChild != null)
+                        RemoveVisualChild(_templateChild);
+                    if (Content is Visual)
+                    {
+                        _templateChild = (Visual)Content;
+                    }
+                    else
+                    {
+                        var templateChild = (FrameworkElement)ContentTemplate?.LoadContent(this);
+                        if (templateChild != null)
+                            templateChild.DataContext = Content;
+                        _templateChild = templateChild;
+                    }
+                    if (_templateChild != null)
+                        AddVisualChild(_templateChild);
                 }
-                return _templatedChild;
+                return _templateChild;
             }
         }
 
@@ -60,8 +74,7 @@ namespace MPF.Controls
 
         private void OnContentChanged()
         {
-            if (_templatedChild != null)
-                _templatedChild.DataContext = Content;
+            _templateChildLoaded = false;
         }
 
         private static void OnContentTemplatePropertyChanged(object sender, PropertyChangedEventArgs<DataTemplate> e)
@@ -69,9 +82,16 @@ namespace MPF.Controls
             (sender as ContentPresenter)?.OnContentTemplateChanged();
         }
 
+        public override Visual GetVisualChildAt(int index)
+        {
+            if (TemplateChild == null || index != 0)
+                throw new ArgumentOutOfRangeException(nameof(index));
+            return TemplateChild;
+        }
+
         private void OnContentTemplateChanged()
         {
-            _templatedChildLoaded = false;
+            _templateChildLoaded = false;
         }
     }
 }

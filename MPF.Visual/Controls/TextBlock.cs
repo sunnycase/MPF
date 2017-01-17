@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections;
 
 namespace MPF.Controls
 {
@@ -46,10 +47,16 @@ namespace MPF.Controls
             set { this.SetLocalValue(ForegroundProperty, value); }
         }
 
-        protected override IEnumerable<UIElement> LogicalChildren
+        protected override IEnumerator LogicalChildren
         {
-            get { yield return _run; }
+            get
+            {
+                if (Text != null)
+                    yield return Text;
+            }
         }
+
+        public override int VisualChildrenCount => 1;
 
         private readonly Run _run = new Run();
 
@@ -59,6 +66,19 @@ namespace MPF.Controls
             BindingOperations.SetBinding(_run, Run.FontSizeProperty, new Binding { Source = this, Path = "FontSize" });
             BindingOperations.SetBinding(_run, Run.ForegroundProperty, new Binding { Source = this, Path = "Foreground" });
             BindingOperations.SetBinding(_run, Run.TextProperty, new Binding { Source = this, Path = "Text" });
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            _run.Measure(availableSize);
+            return _run.DesiredSize;
+        }
+
+        public override Visual GetVisualChildAt(int index)
+        {
+            if (index != 0)
+                throw new ArgumentOutOfRangeException(nameof(index));
+            return _run;
         }
     }
 }

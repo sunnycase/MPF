@@ -8,6 +8,13 @@ using System.Threading.Tasks;
 
 namespace MPF.Media
 {
+    [Flags]
+    internal enum VisualFlags : uint
+    {
+        None = 0x0,
+        BBoxDirty = 0x1
+    }
+
     public abstract class Visual : DependencyObject
     {
         public static readonly DependencyProperty<bool> IsHitTestVisibleProperty = DependencyProperty.Register(nameof(IsHitTestVisible),
@@ -41,14 +48,35 @@ namespace MPF.Media
             }
         }
 
-        private readonly List<Visual> _visualChildren = new List<Visual>();
-        internal IEnumerable<Visual> VisualChildren => _visualChildren;
+        internal VisualFlags VisualFlags { get; private set; } = VisualFlags.BBoxDirty;
+
+        internal bool IsVisualVisible { get; set; } = true;
+
+        public virtual int VisualChildrenCount => 0;
 
         private Vector2 _visualOffset;
         private RenderData _renderData;
         internal readonly IRenderableObject _renderableObject;
+
         private Visual _parent;
         internal Visual Parent => _parent;
+
+        private int _visualLevel = 0;
+        internal int VisualLevel
+        {
+            get { return _visualLevel; }
+            private set
+            {
+                if (_visualLevel != value)
+                {
+                    _visualLevel = value;
+                    foreach (var child in VisualChildren)
+                        child.VisualLevel = value + 1;
+                }
+            }
+        }
+
+        private Rect _bboxSubgraph;
 
         internal Visual()
         {
@@ -59,6 +87,67 @@ namespace MPF.Media
         {
             if (!IsHitTestVisible) return;
 
+            Precompute();
+            HitTestPoint(param, filter, resultCallback);
+        }
+
+        private HitTestResultBehavior HitTestPoint(PointHitTestParameters param, HitTestFilterCallback<Visual> filter, HitTestResultCallback<PointHitTestResult> resultCallback)
+        {
+            if (_bboxSubgraph.Contains(param.HitPoint))
+            {
+                var hitTestFilterBehavior = HitTestFilterBehavior.Continue;
+                if (filter != null)
+                {
+                    hitTestFilterBehavior = filter(this);
+                    if (hitTestFilterBehavior == HitTestFilterBehavior.ContinueSkipSelfAndChildren)
+                        return HitTestResultBehavior.Continue;
+                    if (hitTestFilterBehavior == HitTestFilterBehavior.Stop)
+                        return HitTestResultBehavior.Stop;
+                }
+                var hitPoint = param.HitPoint;
+                var point = hitPoint;
+
+                if (hitTestFilterBehavior != HitTestFilterBehavior.ContinueSkipChildren)
+                {
+                    foreach (var child in VisualChildren)
+                    {
+                        var hitTestResultBehavior = child.HitTestPoint(param, filter, resultCallback);
+                        param.SetHitPoint(hitPoint);
+                        if (hitTestResultBehavior == HitTestResultBehavior.Stop)
+                            return HitTestResultBehavior.Stop;
+                    }
+                }
+            }
+            return HitTestResultBehavior.Continue;
+        }
+
+        private void Precompute()
+        {
+            if (VisualFlags.HasFlag(VisualFlags.BBoxDirty))
+            {
+                Rect rect;
+                PrecomputeRecursive(out rect);
+            }
+        }
+
+        protected void InvalidateBoundingBox()
+        {
+            VisualFlags = VisualFlags | VisualFlags.BBoxDirty;
+        }
+
+        protected virtual void PrecomputeRecursive(out Rect bboxSubgraph)
+        {
+            if (VisualFlags.HasFlag(VisualFlags.BBoxDirty))
+            {
+                Rect rect;
+                foreach (var child in VisualChildren)
+                {
+                    child.PrecomputeRecursive(out rect);
+                    _bboxSubgraph = Rect.Union(_bboxSubgraph, rect);
+                }
+                VisualFlags = VisualFlags & ~VisualFlags.BBoxDirty;
+            }
+            bboxSubgraph = _bboxSubgraph;
         }
 
         protected void AddVisualChild(Visual visual)
@@ -66,7 +155,7 @@ namespace MPF.Media
             if (visual._parent != null)
                 throw new InvalidOperationException("Visual already has a parent.");
             visual._parent = this;
-            _visualChildren.Add(visual);
+            visual.VisualLevel = VisualLevel + 1;
         }
 
         protected void RemoveVisualChild(Visual visual)
@@ -74,12 +163,47 @@ namespace MPF.Media
             if (visual._parent != this)
                 throw new InvalidOperationException("Visual's parent is not this.");
             visual._parent = null;
-            _visualChildren.Remove(visual);
+            visual.VisualLevel = 0;
         }
 
         protected virtual PointHitTestResult HitTestOverride(PointHitTestParameters param)
         {
             return null;
+        }
+
+        public virtual Visual GetVisualChildAt(int index)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        protected virtual Rect GetContentBounds()
+        {
+            return Rect.Zero;
+        }
+
+        protected virtual Rect GetHitTestBounds()
+        {
+            return GetContentBounds();
+        }
+
+        protected virtual void PrecomputeContent()
+        {
+            _bboxSubgraph = GetHitTestBounds();
+            if (float.IsNaN(_bboxSubgraph.Left) || float.IsNaN(_bboxSubgraph.Top) ||
+                float.IsNaN(_bboxSubgraph.Width) || float.IsNaN(_bboxSubgraph.Height))
+            {
+                _bboxSubgraph = new Rect(float.NegativeInfinity, float.NegativeInfinity, float.PositiveInfinity, float.PositiveInfinity);
+            }
+        }
+
+        public IEnumerable<Visual> VisualChildren
+        {
+            get
+            {
+                var count = VisualChildrenCount;
+                for (int i = 0; i < count; i++)
+                    yield return GetVisualChildAt(i);
+            }
         }
 
         internal void Render()

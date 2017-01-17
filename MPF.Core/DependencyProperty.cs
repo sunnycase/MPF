@@ -183,8 +183,12 @@ namespace MPF
             if (type != OwnerType)
             {
                 PropertyMetadata<T> metadata;
-                if (_metadatas.TryGetValue(type, out metadata))
-                    return metadata;
+                while (type != null)
+                {
+                    if (_metadatas.TryGetValue(type, out metadata))
+                        return metadata;
+                    type = type.GetTypeInfo().BaseType;
+                }
             }
             return _baseMetadata;
         }

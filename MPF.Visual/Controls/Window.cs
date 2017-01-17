@@ -9,7 +9,7 @@ using MPF.Data;
 
 namespace MPF.Controls
 {
-    public class Window : Decorator
+    public class Window : ContentControl
     {
         private readonly CoreWindow _coreWindow = new CoreWindow();
 

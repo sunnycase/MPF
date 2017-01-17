@@ -32,7 +32,7 @@ namespace MPF.HelloDesktop
             {
                 Size = new Size(1024, 768)
             };
-            _window.Child = new Border
+            _window.Content = new Border
             {
                 BorderThickness = new Thickness(1.0f),
                 BorderBrush = new SolidColorBrush { Color = Color.FromArgb(0xFF888888) },
@@ -46,7 +46,9 @@ namespace MPF.HelloDesktop
                             Margin = new Thickness(5),
                             FontSize = 25,
                             FontFamily = new FontFamily("Microsoft YaHei"),
-                            Text = "baka帝球"
+                            Text = "baka帝球",
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center
                         })
                 }
             };

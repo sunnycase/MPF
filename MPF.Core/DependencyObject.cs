@@ -15,6 +15,9 @@ namespace MPF
         private readonly DependencyValueStorage _valueStorage = new DependencyValueStorage();
         public IDependencyValueStorage ValueStorage => _valueStorage;
 
+        public readonly ConcurrentDictionary<DependencyProperty, Delegate> _propertyChangedHandlers = new ConcurrentDictionary<DependencyProperty, Delegate>();
+        public readonly ConcurrentDictionary<DependencyProperty, Delegate> _propertyChangedHandlersGen = new ConcurrentDictionary<DependencyProperty, Delegate>();
+
         public DependencyObject()
         {
             _realType = this.GetType();
@@ -44,14 +47,52 @@ namespace MPF
             _raisePropertyChangedHelper.MakeGenericMethod(e.Property.PropertyType).Invoke(this, new object[] { e.Property, e });
         }
 
+        public void RegisterPropertyChangedHandler<T>(DependencyProperty<T> property, EventHandler<PropertyChangedEventArgs<T>> handler)
+        {
+            _propertyChangedHandlers.AddOrUpdate(property, handler, (k, old) => Delegate.Combine(old, handler));
+        }
+
+        public void RemovePropertyChangedHandler<T>(DependencyProperty<T> property, EventHandler<PropertyChangedEventArgs<T>> handler)
+        {
+            Delegate d = null;
+            _propertyChangedHandlers.TryRemove(property, out d);
+            if(d != (Delegate)handler)
+                _propertyChangedHandlers.AddOrUpdate(property, k => Delegate.Remove(d, handler), (k, old) => Delegate.Combine(old, Delegate.Remove(d, handler)));
+        }
+
+        public void RegisterPropertyChangedHandler(DependencyProperty property, EventHandler<PropertyChangedEventArgs> handler)
+        {
+            _propertyChangedHandlersGen.AddOrUpdate(property, handler, (k, old) => Delegate.Combine(old, handler));
+        }
+
+        public void RemovePropertyChangedHandler(DependencyProperty property, EventHandler<PropertyChangedEventArgs> handler)
+        {
+            Delegate d = null;
+            _propertyChangedHandlersGen.TryRemove(property, out d);
+            if (d != (Delegate)handler)
+                _propertyChangedHandlersGen.AddOrUpdate(property, k => Delegate.Remove(d, handler), (k, old) => Delegate.Combine(old, Delegate.Remove(d, handler)));
+        }
+
         internal void RaisePropertyChangedHelper<T>(DependencyProperty<T> property, CurrentValueChangedEventArgs e)
         {
             var oldValue = e.HasOldValue ? (T)e.OldValue : GetDefaultValue(property);
             var newValue = e.HasNewValue ? (T)e.NewValue : GetDefaultValue(property);
             if (!EqualityComparer<T>.Default.Equals(oldValue, newValue))
             {
-                property.RaisePropertyChanged(_realType, this, new PropertyChangedEventArgs<T>(property, oldValue, newValue));
+                var args = new PropertyChangedEventArgs<T>(property, oldValue, newValue);
+                property.RaisePropertyChanged(_realType, this, args);
+                InvokeLocalPropertyChangedHandlers(args);
             }
+        }
+
+        private void InvokeLocalPropertyChangedHandlers<T>(PropertyChangedEventArgs<T> e)
+        {
+            Delegate d;
+            if (_propertyChangedHandlers.TryGetValue(e.Property, out d))
+                ((EventHandler<PropertyChangedEventArgs<T>>)d)?.Invoke(this, e);
+
+            if (_propertyChangedHandlersGen.TryGetValue(e.Property, out d))
+                ((EventHandler<PropertyChangedEventArgs>)d)?.Invoke(this, e);
         }
 
         private T GetDefaultValue<T>(DependencyProperty<T> property)
@@ -63,15 +104,25 @@ namespace MPF
         }
     }
 
-    public class PropertyChangedEventArgs<T> : EventArgs
+    public class PropertyChangedEventArgs : EventArgs
     {
-        public DependencyProperty<T> Property { get; }
+        public DependencyProperty Property { get; }
+
+        public PropertyChangedEventArgs(DependencyProperty property)
+        {
+            Property = property;
+        }
+    }
+
+    public class PropertyChangedEventArgs<T> : PropertyChangedEventArgs
+    {
+        public new DependencyProperty<T> Property => (DependencyProperty<T>)base.Property;
         public T OldValue { get; }
         public T NewValue { get; }
 
         public PropertyChangedEventArgs(DependencyProperty<T> property, T oldValue, T newValue)
+            :base(property)
         {
-            Property = property;
             OldValue = oldValue;
             NewValue = newValue;
         }

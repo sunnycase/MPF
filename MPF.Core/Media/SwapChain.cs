@@ -35,16 +35,14 @@ namespace MPF.Media
                 RenderContent(rootVisual);
         }
 
-        private void RenderContent(UIElement element)
+        private void RenderContent(Visual visual)
         {
-            if(element.UIFlags.HasFlag(UIElementFlags.Visible))
+            if(visual.IsVisualVisible)
             {
-                element.RenderContent();
+                visual.RenderContent();
 
-                var children = element.LogicalChildren;
-                if (children != null)
-                    foreach (var child in children)
-                        RenderContent(child);
+                foreach (var child in visual.VisualChildren)
+                    RenderContent(child);
             }
         }
 
@@ -53,6 +51,13 @@ namespace MPF.Media
             var rootVisual = RootVisual;
             if (rootVisual != null)
                 OnUpdate(rootVisual, null, false);
+        }
+
+        private Rect GetArrangeRect(UIElement element)
+        {
+            if (element != null)
+                return new Rect((Point)element.VisualOffset, element.RenderSize);
+            return new Rect(0, 0, float.NaN, float.NaN);
         }
 
         private void OnUpdate(UIElement element, UIElement parent, bool forceArrange)
@@ -67,17 +72,9 @@ namespace MPF.Media
             }
             if (forceArrange || flags.HasFlag(UIElementFlags.RenderDirty))
                 element.Render();
-            var children = element.LogicalChildren;
-            if (children != null)
-                foreach (var child in children)
-                    OnUpdate(child, element, forceArrange);
-        }
 
-        private Rect GetArrangeRect(UIElement element)
-        {
-            if (element != null)
-                return new Rect((Point)element.VisualOffset, element.RenderSize);
-            return new Rect(0, 0, float.NaN, float.NaN);
+            foreach (UIElement child in element.VisualChildren)
+                OnUpdate(child, element, forceArrange);
         }
 
         private class Callback : ISwapChainCallback

@@ -14,6 +14,9 @@ namespace MPF.Media
         private readonly IReadOnlyList<char> _characters;
         private readonly IReadOnlyList<GlyphDrawingEntry> _drawingEntries;
         private readonly float _renderingEmSize;
+        private float _width, _height;
+
+        public Size Size => new Size(_width, _height);
 
         public GlyphRun(FontFamily fontFamily, IReadOnlyList<char> characters, float renderingEmSize)
         {
@@ -33,6 +36,7 @@ namespace MPF.Media
         {
             var geometries = new List<GlyphDrawingEntry>(_characters.Count);
 
+            _width = 0;
             float advance = 0.0f;
             char highSurrogate = '\0';
             foreach (var character in _characters)
@@ -70,6 +74,9 @@ namespace MPF.Media
                             Geometry = glyph.Geometry,
                             Transform = transform
                         });
+
+                        _width += glyphMetrics.AdvanceWidth * scale;
+                        _height = Math.Max(_height, height * scale);
                         continue;
                     }
                 }

@@ -17,20 +17,14 @@ namespace MPF
         None = 0x0,
         MeasureDirty = 0x1,
         RenderDirty = 0x2,
-        ArrangeDirty = 0x4,
-        Visible = 0x8
+        ArrangeDirty = 0x4
     }
 
     public class UIElement : Visual
     {
-        private UIElementFlags _uiFlags = UIElementFlags.ArrangeDirty | UIElementFlags.Visible;
+        private UIElementFlags _uiFlags = UIElementFlags.ArrangeDirty;
         internal UIElementFlags UIFlags => _uiFlags;
         private Size _renderSize;
-
-        protected internal virtual IEnumerable<UIElement> LogicalChildren
-        {
-            get { yield break; }
-        }
 
         public Size RenderSize
         {
@@ -69,7 +63,9 @@ namespace MPF
 
         public UIElement()
         {
-            UpdateVisibilityFlag(Visibility);
+            UpdateVisualVisibility(Visibility);
+            InvalidateArrange();
+            InvalidateRender();
         }
 
         internal new void Render()
@@ -81,6 +77,7 @@ namespace MPF
         public void InvalidateArrange()
         {
             SetUIFlags(UIElementFlags.ArrangeDirty);
+            LayoutManager.Current.RegisterArrange(this);
         }
 
         public void Arrange(Rect finalRect)
@@ -99,6 +96,7 @@ namespace MPF
         public void InvalidateMeasure()
         {
             SetUIFlags(UIElementFlags.MeasureDirty);
+            LayoutManager.Current.RegisterMeasure(this);
         }
 
         public void Measure(Size availableSize)
@@ -126,19 +124,20 @@ namespace MPF
         internal void InvalidateRender()
         {
             SetUIFlags(UIElementFlags.RenderDirty);
+            LayoutManager.Current.RegisterRender(this);
         }
 
-        private void UpdateVisibilityFlag(Visibility value)
+        private void UpdateVisualVisibility(Visibility value)
         {
             if (value == Visibility.Visible)
-                SetUIFlags(UIElementFlags.Visible);
+                IsVisualVisible = true;
             else
-                ClearFlags(UIElementFlags.Visible);
+                IsVisualVisible = false;
         }
 
         private static void OnVisibilityPropertyChanged(object sender, PropertyChangedEventArgs<Visibility> e)
         {
-            ((UIElement)sender).UpdateVisibilityFlag(e.NewValue);
+            ((UIElement)sender).UpdateVisualVisibility(e.NewValue);
         }
 
 

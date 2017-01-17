@@ -51,9 +51,10 @@ namespace MPF.Documents
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (_glyphRun == null)
-                _glyphRun = new GlyphRun(FontFamily, Text.ToCharArray(), FontSize);
-            return base.MeasureOverride(availableSize);
+            var text = Text;
+            if (_glyphRun == null && !string.IsNullOrEmpty(text))
+                _glyphRun = new GlyphRun(FontFamily, text.ToCharArray(), FontSize);
+            return _glyphRun?.Size ?? Size.Zero;
         }
 
         protected override void OnRender(IDrawingContext drawingContext)

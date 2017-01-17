@@ -1,11 +1,13 @@
 ﻿using MPF.Data;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using MPF.Media;
 
 namespace MPF.Controls
 {
-    public class Control : FrameworkElement, IHasTemplatedChild
+    public class Control : FrameworkElement, IHasTemplateChild
     {
         public static readonly DependencyProperty<ControlTemplate> TemplateProperty = DependencyProperty.Register(nameof(Template),
             typeof(Control), new UIPropertyMetadata<ControlTemplate>(null, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender));
@@ -16,33 +18,26 @@ namespace MPF.Controls
             set { this.SetLocalValue(TemplateProperty, value); }
         }
 
-        protected override IEnumerable<UIElement> LogicalChildren
-        {
-            get
-            {
-                if (TemplatedChild != null)
-                    yield return TemplatedChild;
-            }
-        }
+        public override int VisualChildrenCount => TemplateChild == null ? 0 : 1;
 
-        private bool _templatedChildLoaded = false;
-        private UIElement _templatedChild;
-        private UIElement TemplatedChild
+        private bool _templateChildLoaded = false;
+        private UIElement _templateChild;
+        private UIElement TemplateChild
         {
             get
             {
-                if (!_templatedChildLoaded)
+                if (!_templateChildLoaded)
                 {
-                    _templatedChildLoaded = true;
-                    if (_templatedChild != null)
-                        RemoveVisualChild(_templatedChild);
+                    _templateChildLoaded = true;
+                    if (_templateChild != null)
+                        RemoveVisualChild(_templateChild);
 
-                    _templatedChild = (UIElement)Template?.LoadContent(this);
-                    if (_templatedChild != null)
-                        AddVisualChild(_templatedChild);
+                    _templateChild = (UIElement)Template?.LoadContent(this);
+                    if (_templateChild != null)
+                        AddVisualChild(_templateChild);
                     OnApplyTemplate();
                 }
-                return _templatedChild;
+                return _templateChild;
             }
         }
 
@@ -60,9 +55,16 @@ namespace MPF.Controls
 
         }
 
-        object IHasTemplatedChild.GetTemplatedChild(FrameworkTemplate template)
+        public override Visual GetVisualChildAt(int index)
         {
-            return template == Template ? TemplatedChild : null;
+            if (TemplateChild == null || index != 0)
+                throw new ArgumentOutOfRangeException(nameof(index));
+            return TemplateChild;
+        }
+
+        object IHasTemplateChild.GetTemplateChild(FrameworkTemplate template)
+        {
+            return template == Template ? TemplateChild : null;
         }
     }
 }
