@@ -89,7 +89,7 @@ input.ChangedButton = ##buttonId##;		 \
 input.ChangedButtonState = Released;	 \
 break
 
-void InputManager::DispatchHIDInputMessage(HWND hWnd, DWORD time, DWORD mousePosition, HRAWINPUT hRawInput)
+void InputManager::DispatchHIDInputMessage(INativeWindow* window, DWORD time, DWORD mousePosition, HRAWINPUT hRawInput)
 {
 	UINT size;
 	ThrowWin32IfNot(GetRawInputData(hRawInput, RID_INPUT, nullptr, &size, sizeof(RAWINPUTHEADER)) == 0);
@@ -97,6 +97,7 @@ void InputManager::DispatchHIDInputMessage(HWND hWnd, DWORD time, DWORD mousePos
 	ThrowWin32IfNot(GetRawInputData(hRawInput, RID_INPUT, data.get(), &size, sizeof(RAWINPUTHEADER)) == size);
 
 	auto rawInput = reinterpret_cast<PRAWINPUT>(data.get());
+	if (!rawInput->header.hDevice) return;
 	auto callback = _callback;
 	if (callback)
 	{
@@ -138,7 +139,7 @@ void InputManager::DispatchHIDInputMessage(HWND hWnd, DWORD time, DWORD mousePos
 			}
 			input.XDelta = data.lLastX;
 			input.YDelta = data.lLastY;
-			callback->OnMouseInput(inputDevice.Get(), &input);
+			callback->OnMouseInput(window, inputDevice.Get(),  &input);
 			break;
 		}
 		default:

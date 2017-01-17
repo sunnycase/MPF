@@ -1,5 +1,6 @@
 ﻿using MPF.Interop;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -50,10 +51,12 @@ namespace MPF.Media
         }
 
         private UIElement _rootVisual;
+        public UIElement RootVisual => _rootVisual;
 
         public CoreWindow()
         {
             _nativeWindow = Platform.CreateNativeWindow(new Callback(this));
+            _coreWindows[_nativeWindow] = this;
             _swapChain = DeviceContext.Current.CreateSwapChain(_nativeWindow);
         }
 
@@ -62,7 +65,11 @@ namespace MPF.Media
             var e = new CancellableEventArgs();
             Closing?.Invoke(this, e);
             if (!e.Cancelled)
+            {
                 _nativeWindow.Destroy();
+                CoreWindow cw;
+                _coreWindows.TryRemove(_nativeWindow, out cw);
+            }
         }
 
         private void OnSizeChanged(Size size)
@@ -124,6 +131,15 @@ namespace MPF.Media
             {
                 GetTarget()?.OnSizeChanged(size);
             }
+        }
+
+        private static ConcurrentDictionary<INativeWindow, CoreWindow> _coreWindows = new ConcurrentDictionary<INativeWindow, CoreWindow>();
+        internal static CoreWindow FindWindow(INativeWindow window)
+        {
+            CoreWindow cw;
+            if (_coreWindows.TryGetValue(window, out cw))
+                return cw;
+            return null;
         }
     }
 }

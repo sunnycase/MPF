@@ -22,7 +22,7 @@ public:
 	STDMETHODIMP SetCallback(IInputManagerCallback* callback);
 	STDMETHODIMP SetHIDAware(const HIDUsage usages[], UINT length);
 
-	void DispatchHIDInputMessage(HWND hWnd, DWORD time, DWORD mousePosition, HRAWINPUT hRawInput);
+	void DispatchHIDInputMessage(INativeWindow* window, DWORD time, DWORD mousePosition, HRAWINPUT hRawInput);
 private:
 	WRL::ComPtr<IInputManagerCallback> _callback;
 	std::unordered_map<HANDLE, WRL::ComPtr<IInputDevice>> _inputDevices;

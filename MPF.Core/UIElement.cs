@@ -47,6 +47,8 @@ namespace MPF
             set { this.SetLocalValue(VisibilityProperty, value); }
         }
 
+        public static readonly RoutedEvent<PointerRoutedEventArgs> PointerMoveEvent = RoutedEvent.Register<PointerRoutedEventArgs>(nameof(PointerMove),
+            typeof(UIElement), RoutingStrategy.Bubble);
         public static readonly RoutedEvent<PointerRoutedEventArgs> PointerPressedEvent = RoutedEvent.Register<PointerRoutedEventArgs>(nameof(PointerPressed),
             typeof(UIElement), RoutingStrategy.Bubble);
 
@@ -54,6 +56,12 @@ namespace MPF
         {
             add { AddHandler(PointerPressedEvent, value); }
             remove { RemoveHandler(PointerPressedEvent, value); }
+        }
+
+        public event EventHandler<PointerRoutedEventArgs> PointerMove
+        {
+            add { AddHandler(PointerMoveEvent, value); }
+            remove { RemoveHandler(PointerMoveEvent, value); }
         }
 
         private Size _desiredSize;

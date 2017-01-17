@@ -6,6 +6,7 @@
 //
 #include "stdafx.h"
 #include "NativeWindow.h"
+#include "../Input/InputManager.h"
 #include <atomic>
 #include <algorithm>
 using namespace WRL;
@@ -291,6 +292,9 @@ LRESULT NativeWindow::WindowProc(HWND hWnd, uint32_t uMsg, WPARAM wParam, LPARAM
 		}
 		break;
 	}
+	case WM_INPUT:
+		DispatchHIDInputMessage(lParam);
+		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
@@ -303,4 +307,9 @@ LRESULT NativeWindow::WindowProc(HWND hWnd, uint32_t uMsg, WPARAM wParam, LPARAM
 void NativeWindow::AppendMessageHandler(std::function<void(NativeWindowMessages)>&& messageHandler)
 {
 	_messageHandlers.emplace_back(std::move(messageHandler));
+}
+
+void NativeWindow::DispatchHIDInputMessage(LPARAM lParam)
+{
+	InputManager::GetCurrent()->DispatchHIDInputMessage(this, GetMessageTime(), GetMessagePos(), (HRAWINPUT)lParam);
 }

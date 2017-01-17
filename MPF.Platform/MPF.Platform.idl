@@ -275,7 +275,7 @@ interface IInputDevice : IUnknown
 ]
 interface IInputManagerCallback : IUnknown
 {
-	HRESULT OnMouseInput([in]IInputDevice* inputDevice, [in]HIDMouseInput* input);
+	HRESULT OnMouseInput([in]INativeWindow* window, [in]IInputDevice* inputDevice, [in]HIDMouseInput* input);
 };
 
 [

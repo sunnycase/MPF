@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using MPF.Media;
 
 namespace MPF.Input
 {
@@ -41,10 +42,23 @@ namespace MPF.Input
         {
 
         }
-        
-        private void OnMouseInput(IInputDevice device, ref HIDMouseInput input)
-        {
 
+        private void OnMouseInput(INativeWindow window, IInputDevice device, ref HIDMouseInput input)
+        {
+            var mouseDevice = (MouseDevice)InputDevice.GetOrAddDevice(device);
+            var coreWindow = window == null ? null : CoreWindow.FindWindow(window);
+            var rootVisual = coreWindow?.RootVisual;
+            if(rootVisual != null)
+            {
+                var element = rootVisual;
+                if (input.ChangedButton == 0)
+                    UIElement.RaiseEvent(new PointerRoutedEventArgs(UIElement.PointerMoveEvent, element));
+                else if (input.ChangedButton == 6) ;
+                else
+                {
+                    UIElement.RaiseEvent(new PointerRoutedEventArgs(UIElement.PointerPressedEvent, element));
+                }
+            }
         }
 
         private class Callback : IInputManagerCallback
@@ -55,9 +69,9 @@ namespace MPF.Input
                 _inputManager = new WeakReference<InputManager>(inputManager);
             }
 
-            public void OnMouseInput([In] IInputDevice device, [In]ref HIDMouseInput input)
+            public void OnMouseInput([In]INativeWindow window, [In] IInputDevice device, [In]ref HIDMouseInput input)
             {
-                GetTarget()?.OnMouseInput(device, ref input);
+                GetTarget()?.OnMouseInput(window, device, ref input);
             }
 
             private InputManager GetTarget()

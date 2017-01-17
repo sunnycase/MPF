@@ -24,7 +24,7 @@ namespace MPF.Interop
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IInputManagerCallback
     {
-        void OnMouseInput([In]IInputDevice device, [In]ref HIDMouseInput input);
+        void OnMouseInput([In]INativeWindow window, [In]IInputDevice device, [In]ref HIDMouseInput input);
     }
 
     [ComImport]

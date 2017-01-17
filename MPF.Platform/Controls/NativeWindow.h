@@ -59,6 +59,7 @@ private:
 	static LRESULT CALLBACK NativeWindowProcWrapper(HWND hWnd, uint32_t uMsg, WPARAM wParam, LPARAM lParam);
 	static void RegisterNativeWindowClass();
 	void BroadcastMessage(NativeWindowMessages message);
+	void DispatchHIDInputMessage(LPARAM lParam);
 private:
 	WRL::ComPtr<INativeWindowCallback> _callback;
 	HWND _hWnd = nullptr;

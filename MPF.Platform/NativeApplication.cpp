@@ -45,7 +45,7 @@ HRESULT NativeApplication::Run(void)
 			try
 			{
 				TranslateMessage(&msg);
-				if (msg.message == WM_INPUT)
+				if (msg.message == WM_INPUT && !msg.hwnd)
 					DispatchHIDInputMessage(msg);
 				else
 					DispatchMessage(&msg);
@@ -93,5 +93,5 @@ void NativeApplication::AddAtExit(std::function<void()>&& callback)
 
 void NativeApplication::DispatchHIDInputMessage(const MSG& msg)
 {
-	InputManager::GetCurrent()->DispatchHIDInputMessage(msg.hwnd, msg.time, GetMessagePos(), (HRAWINPUT)msg.lParam);
+	InputManager::GetCurrent()->DispatchHIDInputMessage(nullptr, msg.time, GetMessagePos(), (HRAWINPUT)msg.lParam);
 }
