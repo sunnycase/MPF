@@ -36,12 +36,12 @@ namespace MPF
 
         public static Point operator +(Point left, Vector2 right)
         {
-            return (Point)((Vector2)left + right);
+            return new Point(left.X + right.X, left.Y + right.Y);
         }
 
         public static Point operator -(Point left, Vector2 right)
         {
-            return (Point)((Vector2)left - right);
+            return new Point(left.X - right.X, left.Y - right.Y);
         }
     }
 }

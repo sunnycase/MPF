@@ -62,6 +62,8 @@ namespace MPF.Controls
 
         public TextBlock()
         {
+            AddVisualChild(_run);
+
             BindingOperations.SetBinding(_run, Run.FontFamilyProperty, new Binding { Source = this, Path = "FontFamily" });
             BindingOperations.SetBinding(_run, Run.FontSizeProperty, new Binding { Source = this, Path = "FontSize" });
             BindingOperations.SetBinding(_run, Run.ForegroundProperty, new Binding { Source = this, Path = "Foreground" });

@@ -136,12 +136,7 @@ namespace MPF.Media
                 {
                     foreach (var child in VisualChildren)
                     {
-                        var childPoint = point;
-                        childPoint -= child.VisualOffset;
-
-                        param.SetHitPoint(childPoint);
                         var hitTestResultBehavior = child.HitTestPoint(param, filter, resultCallback);
-                        param.SetHitPoint(hitPoint);
                         if (hitTestResultBehavior == HitTestResultBehavior.Stop)
                             return HitTestResultBehavior.Stop;
                     }
@@ -185,7 +180,7 @@ namespace MPF.Media
 
         protected void InvalidateBoundingBox()
         {
-            VisualFlags = VisualFlags | VisualFlags.BBoxDirty;
+            VisualFlags |= VisualFlags.BBoxDirty;
         }
 
         protected virtual void PrecomputeRecursive(out Rect bboxSubgraph)
@@ -199,7 +194,7 @@ namespace MPF.Media
                     child.PrecomputeRecursive(out rect);
                     _bboxSubgraph = Rect.Union(_bboxSubgraph, rect);
                 }
-                VisualFlags = VisualFlags & ~VisualFlags.BBoxDirty;
+                VisualFlags &= ~VisualFlags.BBoxDirty;
             }
             bboxSubgraph = _bboxSubgraph;
         }
@@ -210,6 +205,7 @@ namespace MPF.Media
                 throw new InvalidOperationException("Visual already has a parent.");
             visual._parent = this;
             visual.VisualLevel = VisualLevel + 1;
+            InvalidateBoundingBox();
         }
 
         protected void RemoveVisualChild(Visual visual)
@@ -218,6 +214,7 @@ namespace MPF.Media
                 throw new InvalidOperationException("Visual's parent is not this.");
             visual._parent = null;
             visual.VisualLevel = 0;
+            InvalidateBoundingBox();
         }
 
         protected virtual PointHitTestResult HitTestOverride(PointHitTestParameters param)
@@ -232,7 +229,7 @@ namespace MPF.Media
 
         protected virtual Rect GetContentBounds()
         {
-            return Rect.Zero;
+            return new Rect((Point)VisualOffset, Size.Zero);
         }
 
         protected virtual Rect GetHitTestBounds()

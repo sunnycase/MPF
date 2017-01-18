@@ -19,6 +19,11 @@ namespace MPF
             Height = height;
         }
 
+        public override string ToString()
+        {
+            return $"{Width}, {Height}";
+        }
+
         public static explicit operator Point(Size size)
         {
             return new Point(size.Width, size.Height);

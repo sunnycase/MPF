@@ -96,13 +96,13 @@ namespace MPF
         {
             SetUIFlags(UIElementFlags.ArrangeDirty);
             LayoutManager.Current.RegisterArrange(this);
-            InvalidateBoundingBox();
         }
 
         public void Arrange(Rect finalRect)
         {
             ClearFlags(UIElementFlags.ArrangeDirty);
             ArrangeOverride(finalRect);
+            InvalidateBoundingBox();
             InvalidateRender();
         }
 
@@ -228,7 +228,7 @@ namespace MPF
 
         protected override Rect GetContentBounds()
         {
-            return new Rect(Point.Zero, RenderSize);
+            return new Rect((Point)VisualOffset, RenderSize);
         }
 
         public IInputElement InputHitTest(Point point)
