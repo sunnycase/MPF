@@ -4,9 +4,7 @@ using System.Text;
 
 namespace MPF.Input
 {
-    public enum MouseButtonState
+    public interface IInputElement
     {
-        Released = 0,
-        Pressed = 1
     }
 }

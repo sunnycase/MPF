@@ -48,15 +48,20 @@ namespace MPF.Input
             var mouseDevice = (MouseDevice)InputDevice.GetOrAddDevice(device);
             var coreWindow = window == null ? null : CoreWindow.FindWindow(window);
             var rootVisual = coreWindow?.RootVisual;
-            if(rootVisual != null)
+            var hitUIElement = rootVisual?.InputHitTest(new Point(input.CursorX, input.CursorY));
+            if (hitUIElement != null)
             {
-                var element = rootVisual;
                 if (input.ChangedButton == 0)
-                    UIElement.RaiseEvent(new PointerRoutedEventArgs(UIElement.PointerMoveEvent, element));
+                    UIElement.RaiseEvent(new PointerRoutedEventArgs(UIElement.PointerMoveEvent, hitUIElement, mouseDevice));
                 else if (input.ChangedButton == 6) ;
                 else
                 {
-                    UIElement.RaiseEvent(new PointerRoutedEventArgs(UIElement.PointerPressedEvent, element));
+                    if (input.ChangedButtonState == PointerButtonState.Pressed)
+                        UIElement.RaiseEvent(new PointerButtonRoutedEventArgs(UIElement.PointerPressedEvent, hitUIElement, mouseDevice,
+                            input.ChangedButton, input.ChangedButtonState));
+                    else if (input.ChangedButtonState == PointerButtonState.Released)
+                        UIElement.RaiseEvent(new PointerButtonRoutedEventArgs(UIElement.PointerReleasedEvent, hitUIElement, mouseDevice,
+                            input.ChangedButton, input.ChangedButtonState));
                 }
             }
         }

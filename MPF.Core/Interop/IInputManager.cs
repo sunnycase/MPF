@@ -13,7 +13,7 @@ namespace MPF.Interop
         public int CursorX;
         public int CursorY;
         public ushort ChangedButton;
-        public MouseButtonState ChangedButtonState;
+        public PointerButtonState ChangedButtonState;
         public short WheelDelta;
         public int XDelta;
         public int YDelta;

@@ -83,12 +83,37 @@ namespace MPF.Media
             _renderableObject = DeviceContext.Current.CreateRenderableObject();
         }
 
-        public void HitTest(PointHitTestParameters param, HitTestFilterCallback<Visual> filter, HitTestResultCallback<PointHitTestResult> resultCallback)
+        internal void HitTest(PointHitTestParameters param, HitTestFilterCallback<Visual> filter, HitTestResultCallback<PointHitTestResult> resultCallback)
         {
-            if (!IsHitTestVisible) return;
-
             Precompute();
             HitTestPoint(param, filter, resultCallback);
+        }
+
+        public PointHitTestResult HitTest(Point point)
+        {
+            var result = new TopMostHitResult();
+            VisualTreeHelper.HitTest(this, new PointHitTestParameters(point), null, result.HitTestResult);
+            return result.HitResult;
+        }
+
+        class TopMostHitResult
+        {
+            public PointHitTestResult HitResult { get; private set; }
+
+            internal HitTestResultBehavior HitTestResult(PointHitTestResult result)
+            {
+                HitResult = result;
+                return HitTestResultBehavior.Stop;
+            }
+
+            internal HitTestFilterBehavior NoNested2DFilter(DependencyObject potentialHitTestTarget)
+            {
+                //if (potentialHitTestTarget is Viewport2DVisual3D)
+                //{
+                //    return HitTestFilterBehavior.ContinueSkipChildren;
+                //}
+                return HitTestFilterBehavior.Continue;
+            }
         }
 
         private HitTestResultBehavior HitTestPoint(PointHitTestParameters param, HitTestFilterCallback<Visual> filter, HitTestResultCallback<PointHitTestResult> resultCallback)
@@ -111,14 +136,42 @@ namespace MPF.Media
                 {
                     foreach (var child in VisualChildren)
                     {
+                        var childPoint = point;
+                        childPoint -= child.VisualOffset;
+
+                        param.SetHitPoint(childPoint);
                         var hitTestResultBehavior = child.HitTestPoint(param, filter, resultCallback);
                         param.SetHitPoint(hitPoint);
                         if (hitTestResultBehavior == HitTestResultBehavior.Stop)
                             return HitTestResultBehavior.Stop;
                     }
                 }
+
+                if (hitTestFilterBehavior != HitTestFilterBehavior.ContinueSkipSelf)
+                {
+                    param.SetHitPoint(point);
+                    var hitTestResultBehavior = this.HitTestOverride(param, filter, resultCallback);
+                    param.SetHitPoint(hitPoint);
+                    if (hitTestResultBehavior == HitTestResultBehavior.Stop)
+                        return HitTestResultBehavior.Stop;
+                }
             }
             return HitTestResultBehavior.Continue;
+        }
+
+        protected virtual HitTestResultBehavior HitTestOverride(PointHitTestParameters param, HitTestFilterCallback<Visual> filter, HitTestResultCallback<PointHitTestResult> resultCallback)
+        {
+            var hitTestResult = HitTestCore(param);
+            if (hitTestResult != null)
+                return resultCallback(hitTestResult);
+            return HitTestResultBehavior.Continue;
+        }
+
+        protected virtual PointHitTestResult HitTestCore(PointHitTestParameters param)
+        {
+            if (GetHitTestBounds().Contains(param.HitPoint))
+                return new PointHitTestResult(param.HitPoint, this);
+            return null;
         }
 
         private void Precompute()
@@ -139,9 +192,10 @@ namespace MPF.Media
         {
             if (VisualFlags.HasFlag(VisualFlags.BBoxDirty))
             {
-                Rect rect;
+                PrecomputeContent();
                 foreach (var child in VisualChildren)
                 {
+                    Rect rect;
                     child.PrecomputeRecursive(out rect);
                     _bboxSubgraph = Rect.Union(_bboxSubgraph, rect);
                 }

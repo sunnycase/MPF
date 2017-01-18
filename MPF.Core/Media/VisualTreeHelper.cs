@@ -10,5 +10,10 @@ namespace MPF.Media
         {
             return visual.Parent;
         }
+
+        public static void HitTest(Visual visual, PointHitTestParameters param, HitTestFilterCallback<Visual> filter, HitTestResultCallback<PointHitTestResult> resultCallback)
+        {
+            visual.HitTest(param, filter, resultCallback);
+        }
     }
 }

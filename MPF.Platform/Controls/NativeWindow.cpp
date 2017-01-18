@@ -9,6 +9,7 @@
 #include "../Input/InputManager.h"
 #include <atomic>
 #include <algorithm>
+#include <windowsx.h>
 using namespace WRL;
 
 HRESULT __stdcall CreateNativeWindow(NS_PLATFORM::INativeWindowCallback* callback, NS_PLATFORM::INativeWindow** obj) noexcept
@@ -311,5 +312,9 @@ void NativeWindow::AppendMessageHandler(std::function<void(NativeWindowMessages)
 
 void NativeWindow::DispatchHIDInputMessage(LPARAM lParam)
 {
-	InputManager::GetCurrent()->DispatchHIDInputMessage(this, GetMessageTime(), GetMessagePos(), (HRAWINPUT)lParam);
+	const auto pos = GetMessagePos();
+	POINT cursorPt{ GET_X_LPARAM(pos), GET_Y_LPARAM(pos) };
+	ScreenToClient(_hWnd, &cursorPt);
+
+	InputManager::GetCurrent()->DispatchHIDInputMessage(this, GetMessageTime(), MAKELONG(cursorPt.x, cursorPt.y), (HRAWINPUT)lParam);
 }

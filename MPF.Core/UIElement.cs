@@ -20,7 +20,7 @@ namespace MPF
         ArrangeDirty = 0x4
     }
 
-    public class UIElement : Visual
+    public class UIElement : Visual, IInputElement
     {
         private UIElementFlags _uiFlags = UIElementFlags.ArrangeDirty;
         internal UIElementFlags UIFlags => _uiFlags;
@@ -35,27 +35,44 @@ namespace MPF
         public static readonly DependencyProperty<Visibility> VisibilityProperty = DependencyProperty.Register(nameof(Visibility), typeof(UIElement),
             new PropertyMetadata<Visibility>(Visibility.Visible, OnVisibilityPropertyChanged));
 
+        public static readonly DependencyProperty<bool> IsEnabledProperty = DependencyProperty.Register(nameof(IsEnabled), typeof(UIElement),
+            new PropertyMetadata<bool>(true));
+
         public Visibility Visibility
         {
             get { return GetValue(VisibilityProperty); }
             set { this.SetLocalValue(VisibilityProperty, value); }
         }
 
+        public bool IsEnabled
+        {
+            get { return GetValue(IsEnabledProperty); }
+            set { this.SetLocalValue(IsEnabledProperty, value); }
+        }
+
         public static readonly RoutedEvent<PointerRoutedEventArgs> PointerMoveEvent = RoutedEvent.Register<PointerRoutedEventArgs>(nameof(PointerMove),
             typeof(UIElement), RoutingStrategy.Bubble);
-        public static readonly RoutedEvent<PointerRoutedEventArgs> PointerPressedEvent = RoutedEvent.Register<PointerRoutedEventArgs>(nameof(PointerPressed),
+        public static readonly RoutedEvent<PointerButtonRoutedEventArgs> PointerPressedEvent = RoutedEvent.Register<PointerButtonRoutedEventArgs>(nameof(PointerPressed),
             typeof(UIElement), RoutingStrategy.Bubble);
-
-        public event EventHandler<PointerRoutedEventArgs> PointerPressed
-        {
-            add { AddHandler(PointerPressedEvent, value); }
-            remove { RemoveHandler(PointerPressedEvent, value); }
-        }
+        public static readonly RoutedEvent<PointerButtonRoutedEventArgs> PointerReleasedEvent = RoutedEvent.Register<PointerButtonRoutedEventArgs>(nameof(PointerReleased),
+            typeof(UIElement), RoutingStrategy.Bubble);
 
         public event EventHandler<PointerRoutedEventArgs> PointerMove
         {
             add { AddHandler(PointerMoveEvent, value); }
             remove { RemoveHandler(PointerMoveEvent, value); }
+        }
+
+        public event EventHandler<PointerButtonRoutedEventArgs> PointerPressed
+        {
+            add { AddHandler(PointerPressedEvent, value); }
+            remove { RemoveHandler(PointerPressedEvent, value); }
+        }
+
+        public event EventHandler<PointerButtonRoutedEventArgs> PointerReleased
+        {
+            add { AddHandler(PointerReleasedEvent, value); }
+            remove { RemoveHandler(PointerReleasedEvent, value); }
         }
 
         private Size _desiredSize;
@@ -66,6 +83,7 @@ namespace MPF
             UpdateVisualVisibility(Visibility);
             InvalidateArrange();
             InvalidateRender();
+            InvalidateBoundingBox();
         }
 
         internal new void Render()
@@ -78,6 +96,7 @@ namespace MPF
         {
             SetUIFlags(UIElementFlags.ArrangeDirty);
             LayoutManager.Current.RegisterArrange(this);
+            InvalidateBoundingBox();
         }
 
         public void Arrange(Rect finalRect)
@@ -140,6 +159,7 @@ namespace MPF
             ((UIElement)sender).UpdateVisualVisibility(e.NewValue);
         }
 
+        #region Routed Events
 
         private readonly ConcurrentDictionary<RoutedEvent, List<Tuple<Delegate, bool>>> _eventHandlers = new ConcurrentDictionary<RoutedEvent, List<Tuple<Delegate, bool>>>();
 
@@ -152,7 +172,7 @@ namespace MPF
         public void RemoveHandler<TArgs>(RoutedEvent<TArgs> routedEvent, EventHandler<TArgs> handler) where TArgs : RoutedEventArgs
         {
             List<Tuple<Delegate, bool>> storage;
-            if(_eventHandlers.TryGetValue(routedEvent, out storage))
+            if (_eventHandlers.TryGetValue(routedEvent, out storage))
             {
                 var index = storage.FindLastIndex(o => o.Item1 == (Delegate)handler);
                 if (index != -1)
@@ -202,6 +222,86 @@ namespace MPF
                         ((EventHandler<TArgs>)handler.Item1)(this, eventArgs);
                 }
             }
+        }
+
+        #endregion
+
+        protected override Rect GetContentBounds()
+        {
+            return new Rect(Point.Zero, RenderSize);
+        }
+
+        public IInputElement InputHitTest(Point point)
+        {
+            IInputElement result;
+            IInputElement inputElement;
+            InputHitTest(point, out result, out inputElement);
+            return result;
+        }
+
+        private void InputHitTest(Point pt, out IInputElement enabledHit, out IInputElement rawHit)
+        {
+            PointHitTestResult hitTestResult;
+            InputHitTest(pt, out enabledHit, out rawHit, out hitTestResult);
+        }
+
+        private void InputHitTest(Point pt, out IInputElement enabledHit, out IInputElement rawHit, out PointHitTestResult rawHitResult)
+        {
+            var hitTestParameters = new PointHitTestParameters(pt);
+            var inputHitTestResult = new InputHitTestResult();
+            VisualTreeHelper.HitTest(this, hitTestParameters, InputHitTestFilterCallback, inputHitTestResult.InputHitTestResultCallback);
+            var visualHit = inputHitTestResult.Result;
+            rawHit = (visualHit as IInputElement);
+            rawHitResult = inputHitTestResult.HitTestResult;
+            enabledHit = null;
+            while (visualHit != null)
+            {
+                var uIElement = visualHit as UIElement;
+                if (uIElement != null)
+                {
+                    if (rawHit == null)
+                    {
+                        rawHit = uIElement;
+                        rawHitResult = null;
+                    }
+                    if (uIElement.IsEnabled)
+                    {
+                        enabledHit = uIElement;
+                        return;
+                    }
+                }
+                if (visualHit == this)
+                    break;
+                visualHit = visualHit.Parent;
+            }
+        }
+
+        class InputHitTestResult
+        {
+            public Visual Result => HitTestResult?.VisualHit;
+
+            public PointHitTestResult HitTestResult { get; private set; }
+
+            public HitTestResultBehavior InputHitTestResultCallback(PointHitTestResult result)
+            {
+                HitTestResult = result;
+                return HitTestResultBehavior.Stop;
+            }
+        }
+
+        private HitTestFilterBehavior InputHitTestFilterCallback(Visual currentNode)
+        {
+            var result = HitTestFilterBehavior.Continue;
+            if (currentNode is UIElement)
+            {
+                if (!((UIElement)currentNode).IsVisualVisible)
+                    result = HitTestFilterBehavior.ContinueSkipSelfAndChildren;
+                else if (!((UIElement)currentNode).IsHitTestVisible)
+                    result = HitTestFilterBehavior.ContinueSkipSelfAndChildren;
+            }
+            else
+                result = HitTestFilterBehavior.Continue;
+            return result;
         }
     }
 }

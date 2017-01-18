@@ -19,6 +19,11 @@ namespace MPF
             Y = y;
         }
 
+        public override string ToString()
+        {
+            return $"{X}, {Y}";
+        }
+
         public static explicit operator Vector2(Point point)
         {
             return new Vector2(point.X, point.Y);
@@ -27,6 +32,16 @@ namespace MPF
         public static explicit operator Point(Vector2 vector)
         {
             return new Point(vector.X, vector.Y);
+        }
+
+        public static Point operator +(Point left, Vector2 right)
+        {
+            return (Point)((Vector2)left + right);
+        }
+
+        public static Point operator -(Point left, Vector2 right)
+        {
+            return (Point)((Vector2)left - right);
         }
     }
 }

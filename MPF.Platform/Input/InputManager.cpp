@@ -114,6 +114,7 @@ void InputManager::DispatchHIDInputMessage(INativeWindow* window, DWORD time, DW
 			else
 				inputDevice = it->second;
 		}
+
 		switch (rawInput->header.dwType)
 		{
 		case RIM_TYPEMOUSE:

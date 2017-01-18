@@ -41,7 +41,8 @@ namespace MPF.HelloDesktop
                 Child = new ContentControl
                 {
                     ContentTemplate = new DataTemplate(t =>
-                        new TextBlock
+                    {
+                        var tb = new TextBlock
                         {
                             Margin = new Thickness(5),
                             FontSize = 25,
@@ -49,7 +50,10 @@ namespace MPF.HelloDesktop
                             Text = "baka帝球",
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center
-                        })
+                        };
+                        tb.PointerPressed += window_PointerPressed;
+                        return tb;
+                    })
                 }
             };
             _window.PointerPressed += window_PointerPressed;
@@ -60,6 +64,7 @@ namespace MPF.HelloDesktop
         private void window_PointerPressed(object sender, Input.PointerRoutedEventArgs e)
         {
             Console.WriteLine($"{e.Source} : {e.RoutedEvent.Name}");
+            e.Handled = true;
         }
 
         private void ShowWindow2()
