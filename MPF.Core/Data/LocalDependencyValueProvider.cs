@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MPF.Data;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
@@ -33,7 +34,7 @@ namespace MPF.Data
             storage.TryRemove(this, property, out eValue);
         }
 
-        class LocalEffectiveValue<T> : IEffectiveValue<T>
+        internal class LocalEffectiveValue<T> : IEffectiveValue<T>
         {
             public EventHandler<EffectiveValueChangedEventArgs> ValueChanged { get; set; }
 
@@ -66,17 +67,44 @@ namespace MPF.Data
     {
         public static bool TryGetLocalValue<T>(this DependencyObject d, DependencyProperty<T> property, out T value)
         {
-            return LocalDependencyValueProvider.Current.TryGetValue(property, d.ValueStorage, out value);
+            return LocalDependencyValueProvider.Current.TryGetValue(property, d.ValueStorage.Default, out value);
         }
 
         public static void SetLocalValue<T>(this DependencyObject d, DependencyProperty<T> property, T value)
         {
-            LocalDependencyValueProvider.Current.SetValue(property, d.ValueStorage, value);
+            LocalDependencyValueProvider.Current.SetValue(property, d.ValueStorage.Default, value);
         }
 
         public static void ClearLocalValue<T>(this DependencyObject d, DependencyProperty<T> property)
         {
-            LocalDependencyValueProvider.Current.ClearValue(property, d.ValueStorage);
+            LocalDependencyValueProvider.Current.ClearValue(property, d.ValueStorage.Default);
+        }
+    }
+}
+
+namespace MPF
+{
+    public static class LocalDependencyValueStyleExtensions
+    {
+        public static Style SetLocalValue<T>(this Style style, DependencyProperty<T> property, T value)
+        {
+            style.SetValue(property, new LocalEffectiveValueProvider<T>(value));
+            return style;
+        }
+
+        class LocalEffectiveValueProvider<T> : IEffectiveValueProvider<T>
+        {
+            private readonly T _value;
+
+            public LocalEffectiveValueProvider(T value)
+            {
+                _value = value;
+            }
+
+            public IEffectiveValue ProviderValue(DependencyObject d)
+            {
+                return new LocalDependencyValueProvider.LocalEffectiveValue<T>(_value);
+            }
         }
     }
 }

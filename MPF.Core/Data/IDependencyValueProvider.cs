@@ -8,4 +8,14 @@ namespace MPF.Data
     {
         float Priority { get; }
     }
+
+    public interface IEffectiveValueProvider
+    {
+        IEffectiveValue ProviderValue(DependencyObject d);
+    }
+
+    public interface IEffectiveValueProvider<T> : IEffectiveValueProvider
+    {
+
+    }
 }

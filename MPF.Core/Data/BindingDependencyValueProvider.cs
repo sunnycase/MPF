@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MPF.Data;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
@@ -35,7 +36,7 @@ namespace MPF.Data
             storage.TryRemove(this, property, out eValue);
         }
 
-        class BindingEffectiveValue<T> : IEffectiveValue<T>
+        internal class BindingEffectiveValue<T> : IEffectiveValue<T>
         {
             public EventHandler<EffectiveValueChangedEventArgs> ValueChanged { get; set; }
 
@@ -164,6 +165,33 @@ namespace MPF.Data
                 {
                     Changed?.Invoke(this, EventArgs.Empty);
                 }
+            }
+        }
+    }
+}
+
+namespace MPF
+{
+    public static class BindingDependencyValueStyleProvider
+    {
+        public static Style SetBinding<T>(this Style style, DependencyProperty<T> property, BindingBase value)
+        {
+            style.SetValue(property, new BindingDependencyValueProvider<T>(value));
+            return style;
+        }
+
+        class BindingDependencyValueProvider<T> : IEffectiveValueProvider<T>
+        {
+            private readonly BindingBase _binding;
+
+            public BindingDependencyValueProvider(BindingBase binding)
+            {
+                _binding = binding;
+            }
+
+            public IEffectiveValue ProviderValue(DependencyObject d)
+            {
+                return new BindingDependencyValueProvider.BindingEffectiveValue<T>(d, _binding);
             }
         }
     }

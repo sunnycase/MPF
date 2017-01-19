@@ -10,18 +10,18 @@ namespace MPF.Data
     {
         public static void SetBinding<T>(DependencyObject d, DependencyProperty<T> property, BindingBase binding)
         {
-            BindingDependencyValueProvider.Current.SetValue(d, property, d.ValueStorage, binding);
+            BindingDependencyValueProvider.Current.SetValue(d, property, d.ValueStorage.Default, binding);
         }
 
         public static void ClearBinding<T>(DependencyObject d, DependencyProperty<T> property)
         {
-            BindingDependencyValueProvider.Current.ClearValue(property, d.ValueStorage);
+            BindingDependencyValueProvider.Current.ClearValue(property, d.ValueStorage.Default);
         }
 
         public static BindingBase GetBinding<T>(DependencyObject d, DependencyProperty<T> property)
         {
             BindingBase binding;
-            if (BindingDependencyValueProvider.Current.TryGetValue(property, d.ValueStorage, out binding))
+            if (BindingDependencyValueProvider.Current.TryGetValue(property, d.ValueStorage.Default, out binding))
                 return binding;
             return null;
         }

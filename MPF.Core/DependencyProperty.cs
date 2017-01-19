@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MPF.Data;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -77,6 +78,9 @@ namespace MPF
             if (!_fromNameMaps.TryAdd(new FromNameKey(name, ownerType), this))
                 throw new ArgumentException($"Property {ownerType.Name}.{name} is already registered.");
         }
+
+        internal abstract object GetEffectiveValueHelper(IEffectiveValue value);
+        internal abstract bool EqualsEffectiveValueHelper(IEffectiveValue a, IEffectiveValue b);
 
         public static readonly UnsetValueType UnsetValue = default(UnsetValueType);
 
@@ -199,6 +203,16 @@ namespace MPF
                 throw new InvalidOperationException("The type of new metadata must be derived from the type of old metadata.");
             newMetadata.Merge(oldMetadata);
             return newMetadata;
+        }
+
+        internal override object GetEffectiveValueHelper(IEffectiveValue value)
+        {
+            return ((IEffectiveValue<T>)value).Value;
+        }
+
+        internal override bool EqualsEffectiveValueHelper(IEffectiveValue a, IEffectiveValue b)
+        {
+            return EqualityComparer<T>.Default.Equals(((IEffectiveValue<T>)a).Value, ((IEffectiveValue<T>)b).Value);
         }
     }
 }

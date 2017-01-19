@@ -9,6 +9,19 @@ namespace MPF.Data
     {
         private readonly ConcurrentDictionary<DependencyProperty, SortedList<float, IEffectiveValue>> _dict = new ConcurrentDictionary<DependencyProperty, SortedList<float, IEffectiveValue>>();
 
+        public IEnumerable<DependencyProperty> Keys
+        {
+            get
+            {
+                foreach (var dp in _dict)
+                {
+                    var lst = dp.Value;
+                    if (lst.Count != 0)
+                        yield return dp.Key;
+                }
+            }
+        }
+
         public event EventHandler<CurrentValueChangedEventArgs> CurrentValueChanged;
 
         public DependencyValueStorage()
@@ -65,10 +78,22 @@ namespace MPF.Data
 
         public bool TryGetCurrentEffectiveValue<T>(DependencyProperty<T> key, out IEffectiveValue<T> value)
         {
+            IEffectiveValue eValue;
+            if (TryGetCurrentEffectiveValue(key, out eValue))
+            {
+                value = (IEffectiveValue<T>)eValue;
+                return true;
+            }
+            value = null;
+            return false;
+        }
+
+        public bool TryGetCurrentEffectiveValue(DependencyProperty key, out IEffectiveValue value)
+        {
             SortedList<float, IEffectiveValue> list;
             if (_dict.TryGetValue(key, out list) && list.Count > 0)
             {
-                value = (IEffectiveValue<T>)list.Values[0];
+                value = list.Values[0];
                 return true;
             }
             value = null;
@@ -107,7 +132,7 @@ namespace MPF.Data
         {
             var storage = GetStorage(provider, key);
             IEffectiveValue eValue;
-            if( storage.TryGetValue(provider.Priority, out eValue))
+            if (storage.TryGetValue(provider.Priority, out eValue))
             {
                 value = (IEffectiveValue<T>)eValue;
                 return true;
@@ -139,7 +164,7 @@ namespace MPF.Data
         }
     }
 
-    internal class CurrentValueChangedEventArgs : EventArgs
+    public class CurrentValueChangedEventArgs : EventArgs
     {
         public DependencyProperty Property { get; }
         public object OldValue { get; }

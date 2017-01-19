@@ -22,6 +22,9 @@ namespace MPF
         public static readonly DependencyProperty<object> DataContextProperty = DependencyProperty.Register(nameof(DataContext),
             typeof(FrameworkElement), new FrameworkPropertyMetadata<object>(null, FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.None));
 
+        public static readonly DependencyProperty<Style> StyleProperty = DependencyProperty.Register(nameof(Style),
+            typeof(FrameworkElement), new PropertyMetadata<Style>(DependencyProperty.UnsetValue, OnStylePropertyChanged));
+
         public HorizontalAlignment HorizontalAlignment
         {
             get { return GetValue(HorizontalAlignmentProperty); }
@@ -44,6 +47,12 @@ namespace MPF
         {
             get { return GetValue(DataContextProperty); }
             set { this.SetLocalValue(DataContextProperty, value); }
+        }
+
+        public Style Style
+        {
+            get { return GetValue(StyleProperty); }
+            set { this.SetLocalValue(StyleProperty, value); }
         }
 
         protected internal virtual IEnumerator LogicalChildren
@@ -139,6 +148,19 @@ namespace MPF
             }
 
             return new Vector2(left, top);
+        }
+
+        private static void OnStylePropertyChanged(object sender, PropertyChangedEventArgs<Style> e)
+        {
+            (sender as FrameworkElement)?.OnStyleChanged(e.NewValue);
+        }
+
+        private void OnStyleChanged(Style style)
+        {
+            if (style != null)
+                style.Apply(this);
+            else
+                Style.Clear(this);
         }
     }
 }

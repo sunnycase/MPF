@@ -11,9 +11,8 @@ namespace MPF
     public class DependencyObject
     {
         private readonly Type _realType;
-
-        private readonly DependencyValueStorage _valueStorage = new DependencyValueStorage();
-        public IDependencyValueStorage ValueStorage => _valueStorage;
+        
+        public DependencyValueStorageChain ValueStorage { get; } = new DependencyValueStorageChain();
 
         public readonly ConcurrentDictionary<DependencyProperty, Delegate> _propertyChangedHandlers = new ConcurrentDictionary<DependencyProperty, Delegate>();
         public readonly ConcurrentDictionary<DependencyProperty, Delegate> _propertyChangedHandlersGen = new ConcurrentDictionary<DependencyProperty, Delegate>();
@@ -21,13 +20,13 @@ namespace MPF
         public DependencyObject()
         {
             _realType = this.GetType();
-            _valueStorage.CurrentValueChanged += valueStorage_CurrentValueChanged;
+            ValueStorage.CurrentValueChanged += valueStorage_CurrentValueChanged;
         }
 
         public T GetValue<T>(DependencyProperty<T> property)
         {
             T value;
-            if (!_valueStorage.TryGetCurrentValue(property, out value))
+            if (!ValueStorage.TryGetCurrentValue(property, out value))
                 return GetDefaultValue(property);
             return value;
         }
@@ -35,7 +34,7 @@ namespace MPF
         public void SetCurrentValue<T>(DependencyProperty<T> property, T value)
         {
             IEffectiveValue<T> eValue;
-            if (_valueStorage.TryGetCurrentEffectiveValue(property, out eValue) && eValue.CanSetValue)
+            if (ValueStorage.TryGetCurrentEffectiveValue(property, out eValue) && eValue.CanSetValue)
                 eValue.Value = value;
             else
                 this.SetLocalValue(property, value);

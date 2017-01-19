@@ -45,11 +45,12 @@ namespace MPF.HelloDesktop
                         var tb = new TextBlock
                         {
                             Margin = new Thickness(5),
-                            FontSize = 25,
-                            FontFamily = new FontFamily("Microsoft YaHei"),
                             Text = "baka帝球",
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center
+                            Style = new Style(typeof(TextBlock))
+                                .SetLocalValue(TextBlock.FontFamilyProperty, new FontFamily("Microsoft YaHei"))
+                                .SetLocalValue(TextBlock.FontSizeProperty, 25)
+                                .SetLocalValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center)
+                                .SetLocalValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center)
                         };
                         tb.PointerPressed += window_PointerPressed;
                         return tb;
@@ -63,7 +64,7 @@ namespace MPF.HelloDesktop
 
         private void window_PointerPressed(object sender, Input.PointerRoutedEventArgs e)
         {
-            Console.WriteLine($"{e.Source} : {e.RoutedEvent.Name}");
+            Console.WriteLine($"{e.Source}({e.OriginalSource}) : {e.RoutedEvent.Name}");
             e.Handled = true;
         }
 
