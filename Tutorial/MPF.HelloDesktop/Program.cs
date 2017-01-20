@@ -32,30 +32,27 @@ namespace MPF.HelloDesktop
             {
                 Size = new Size(1024, 768)
             };
-            _window.Content = new Border
+            _window.Content = new Button
             {
                 BorderThickness = new Thickness(1.0f),
                 BorderBrush = new SolidColorBrush { Color = Color.FromArgb(0xFF888888) },
                 Background = new SolidColorBrush { Color = Color.FromArgb(0x2200FF00) },
                 Margin = new Thickness(5),
-                Child = new ContentControl
+                ContentTemplate = new DataTemplate(t =>
                 {
-                    ContentTemplate = new DataTemplate(t =>
+                    var tb = new TextBlock
                     {
-                        var tb = new TextBlock
-                        {
-                            Margin = new Thickness(5),
-                            Text = "baka帝球",
-                            Style = new Style(typeof(TextBlock))
-                                .SetLocalValue(TextBlock.FontFamilyProperty, new FontFamily("Microsoft YaHei"))
-                                .SetLocalValue(TextBlock.FontSizeProperty, 25)
-                                .SetLocalValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center)
-                                .SetLocalValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center)
-                        };
-                        tb.PointerPressed += window_PointerPressed;
-                        return tb;
-                    })
-                }
+                        Margin = new Thickness(5),
+                        Text = "baka帝球",
+                        Style = new Style(typeof(TextBlock))
+                            .SetLocalValue(TextBlock.FontFamilyProperty, new FontFamily("Microsoft YaHei"))
+                            .SetLocalValue(TextBlock.FontSizeProperty, 25)
+                            .SetLocalValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center)
+                            .SetLocalValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center)
+                    };
+                    tb.PointerPressed += window_PointerPressed;
+                    return tb;
+                })
             };
             _window.PointerPressed += window_PointerPressed;
             _window.Show();

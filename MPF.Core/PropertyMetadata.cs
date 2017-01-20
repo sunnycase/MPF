@@ -60,14 +60,15 @@ namespace MPF
         {
         }
 
-        internal void Merge(PropertyMetadata<T> old)
+        internal void Merge(PropertyMetadata<T> old, bool ownerIsDerived)
         {
             if (!_defaultValueSet && old._defaultValueSet)
             {
                 _defaultValue = old._defaultValue;
                 _defaultValueSet = true;
             }
-            PropertyChanged = (EventHandler<PropertyChangedEventArgs<T>>)Delegate.Combine(old.PropertyChanged, PropertyChanged);
+            if (ownerIsDerived)
+                PropertyChanged = (EventHandler<PropertyChangedEventArgs<T>>)Delegate.Combine(old.PropertyChanged, PropertyChanged);
             MergeOverride(old);
         }
     }

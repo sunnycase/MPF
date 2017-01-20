@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MPF.Controls
+namespace MPF.Controls.Primitives
 {
     public class ButtonBase : ContentControl
     {

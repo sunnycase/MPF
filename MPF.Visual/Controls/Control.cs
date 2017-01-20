@@ -12,6 +12,30 @@ namespace MPF.Controls
         public static readonly DependencyProperty<ControlTemplate> TemplateProperty = DependencyProperty.Register(nameof(Template),
             typeof(Control), new UIPropertyMetadata<ControlTemplate>(null, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender));
 
+        public static readonly DependencyProperty<Brush> BorderBrushProperty = Border.BorderBrushProperty.AddOwner(typeof(Control), new PropertyMetadata<Brush>(null));
+
+        public static readonly DependencyProperty<Thickness> BorderThicknessProperty = Border.BorderThicknessProperty.AddOwner(typeof(Control), new UIPropertyMetadata<Thickness>(default(Thickness)));
+
+        public static readonly DependencyProperty<Brush> BackgroundProperty = Border.BackgroundProperty.AddOwner(typeof(Control), new UIPropertyMetadata<Brush>(null));
+
+        public Brush BorderBrush
+        {
+            get { return GetValue(BorderBrushProperty); }
+            set { this.SetLocalValue(BorderBrushProperty, value); }
+        }
+
+        public Thickness BorderThickness
+        {
+            get { return GetValue(BorderThicknessProperty); }
+            set { this.SetLocalValue(BorderThicknessProperty, value); }
+        }
+
+        public Brush Background
+        {
+            get { return GetValue(BackgroundProperty); }
+            set { this.SetLocalValue(BackgroundProperty, value); }
+        }
+
         public ControlTemplate Template
         {
             get { return GetValue(TemplateProperty); }

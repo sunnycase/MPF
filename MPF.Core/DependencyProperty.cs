@@ -144,14 +144,16 @@ namespace MPF
             if (metadata == null)
                 throw new ArgumentNullException(nameof(metadata));
 
-            metadata = MergeMetadata(_baseMetadata, metadata);
+            bool metadataIsDervied;
+            var oldMetadata = GetMetadata(type, out metadataIsDervied);
+            metadata = MergeMetadata(metadataIsDervied, oldMetadata, metadata);
             if (type == OwnerType)
                 _baseMetadata = metadata;
             else
             {
                 _metadatas.AddOrUpdate(type, metadata, (k, old) =>
                 {
-                    metadata = MergeMetadata(old, metadata);
+                    metadata = MergeMetadata(metadataIsDervied, old, metadata);
                     return metadata;
                 });
             }
@@ -181,6 +183,12 @@ namespace MPF
 
         private PropertyMetadata<T> GetMetadata(Type type)
         {
+            bool metadataIsDervied;
+            return GetMetadata(type, out metadataIsDervied);
+        }
+
+        private PropertyMetadata<T> GetMetadata(Type type, out bool metadataIsDervied)
+        {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
@@ -190,18 +198,22 @@ namespace MPF
                 while (type != null)
                 {
                     if (_metadatas.TryGetValue(type, out metadata))
+                    {
+                        metadataIsDervied = true;
                         return metadata;
+                    }
                     type = type.GetTypeInfo().BaseType;
                 }
             }
+            metadataIsDervied = false;
             return _baseMetadata;
         }
 
-        private PropertyMetadata<T> MergeMetadata(PropertyMetadata<T> oldMetadata, PropertyMetadata<T> newMetadata)
+        private PropertyMetadata<T> MergeMetadata(bool ownerIsDerived, PropertyMetadata<T> oldMetadata, PropertyMetadata<T> newMetadata)
         {
             if (!oldMetadata.GetType().GetTypeInfo().IsAssignableFrom(newMetadata.GetType().GetTypeInfo()))
                 throw new InvalidOperationException("The type of new metadata must be derived from the type of old metadata.");
-            newMetadata.Merge(oldMetadata);
+            newMetadata.Merge(oldMetadata, ownerIsDerived);
             return newMetadata;
         }
 
