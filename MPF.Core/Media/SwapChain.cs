@@ -48,6 +48,8 @@ namespace MPF.Media
 
         private void OnUpdate()
         {
+            LayoutManager.Current.Update();
+
             var rootVisual = RootVisual;
             if (rootVisual != null)
                 OnUpdate(rootVisual, null, false);
@@ -64,7 +66,7 @@ namespace MPF.Media
         {
             var flags = element.UIFlags;
             if (forceArrange || flags.HasFlag(UIElementFlags.MeasureDirty))
-                element.Measure(parent?.RenderSize ?? new Size(float.NaN, float.NaN));
+                element.Measure(parent?.RenderSize ?? new Size(float.PositiveInfinity, float.PositiveInfinity));
             if (forceArrange || flags.HasFlag(UIElementFlags.ArrangeDirty))
             {
                 forceArrange = true;

@@ -42,7 +42,7 @@ namespace MPF.Media
             foreach (var character in _characters)
             {
                 var isControl = char.IsControl(character);
-                if(!isControl)
+                if (!isControl)
                 {
                     uint code;
                     if (char.IsHighSurrogate(character))
@@ -56,7 +56,7 @@ namespace MPF.Media
                         code = (uint)char.ConvertToUtf32(highSurrogate, character);
                     }
                     else
-                        code = (uint)character; 
+                        code = (uint)character;
 
                     var glyph = _fontFamily.FindGlyph(code);
                     if (glyph != null)
@@ -75,7 +75,10 @@ namespace MPF.Media
                             Transform = transform
                         });
 
-                        _width += glyphMetrics.AdvanceWidth * scale;
+                        if (_width == 0)
+                            _width = (glyphMetrics.AdvanceWidth * scale) * 2;
+                        else
+                            _width += glyphMetrics.AdvanceWidth * scale;
                         _height = Math.Max(_height, height * scale);
                         continue;
                     }

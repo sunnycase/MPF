@@ -16,6 +16,7 @@ namespace MPF
 
         public readonly ConcurrentDictionary<DependencyProperty, Delegate> _propertyChangedHandlers = new ConcurrentDictionary<DependencyProperty, Delegate>();
         public readonly ConcurrentDictionary<DependencyProperty, Delegate> _propertyChangedHandlersGen = new ConcurrentDictionary<DependencyProperty, Delegate>();
+        private Delegate _anyPropertyChangedHandler;
 
         public DependencyObject()
         {
@@ -72,6 +73,16 @@ namespace MPF
                 _propertyChangedHandlersGen.AddOrUpdate(property, k => Delegate.Remove(d, handler), (k, old) => Delegate.Combine(old, Delegate.Remove(d, handler)));
         }
 
+        public void RegisterAnyPropertyChangedHandler(EventHandler<PropertyChangedEventArgs> handler)
+        {
+            _anyPropertyChangedHandler = Delegate.Combine(_anyPropertyChangedHandler, handler);
+        }
+
+        public void RemoveAnyPropertyChangedHandler(EventHandler<PropertyChangedEventArgs> handler)
+        {
+            _anyPropertyChangedHandler = Delegate.Remove(_anyPropertyChangedHandler, handler);
+        }
+
         internal void RaisePropertyChangedHelper<T>(DependencyProperty<T> property, CurrentValueChangedEventArgs e)
         {
             var oldValue = e.HasOldValue ? (T)e.OldValue : GetDefaultValue(property);
@@ -92,6 +103,7 @@ namespace MPF
 
             if (_propertyChangedHandlersGen.TryGetValue(e.Property, out d))
                 ((EventHandler<PropertyChangedEventArgs>)d)?.Invoke(this, e);
+            ((EventHandler<PropertyChangedEventArgs>)_anyPropertyChangedHandler)?.Invoke(this, e);
         }
 
         private T GetDefaultValue<T>(DependencyProperty<T> property)

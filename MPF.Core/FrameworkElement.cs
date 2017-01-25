@@ -1,4 +1,5 @@
 ﻿using MPF.Data;
+using MPF.Media;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -60,14 +61,26 @@ namespace MPF
             get { yield break; }
         }
 
-        protected sealed override void ArrangeOverride(Rect finalRect)
+        public FrameworkElement()
+        {
+            LayoutManager.Current.RegisterInitialize(this);
+        }
+
+        protected sealed override void ArrangeCore(Rect finalRect)
         {
             var size = finalRect.Size;
-            var margin = Margin;
+            if (HorizontalAlignment != HorizontalAlignment.Stretch)
+                size.Width = Math.Min(size.Width, DesiredSize.Width);
+            if (VerticalAlignment != VerticalAlignment.Stretch)
+                size.Height = Math.Min(size.Height, DesiredSize.Height);
 
-            size = new Size(size.Width - margin.Left - margin.Right, size.Height - margin.Top - margin.Bottom);
-            var renderSize = ArrangeOverride(ComputeAlignmentSize(size));
+            var margin = Margin;
+            size.Width -= margin.Left + margin.Right;
+            size.Height -= margin.Top + margin.Bottom;
+
+            var renderSize = ArrangeOverride(size);
             RenderSize = renderSize;
+
             var offset = ComputeAlignmentOffset(size);
             offset.X += finalRect.Left + margin.Left;
             offset.Y += finalRect.Top + margin.Top;
@@ -83,6 +96,19 @@ namespace MPF
         protected virtual Size ArrangeOverride(Size finalSize)
         {
             return finalSize;
+        }
+
+        protected sealed override Size MeasureCore(Size availableSize)
+        {
+            var margin = Margin;
+            var size = new Size(Math.Max(availableSize.Width - margin.Left - margin.Right, 0), Math.Max(availableSize.Height - margin.Top - margin.Bottom, 0));
+            size = MeasureOverride(size);
+            return size;
+        }
+
+        protected virtual Size MeasureOverride(Size availableSize)
+        {
+            return default(Size);
         }
 
         private Size ComputeAlignmentSize(Size clientSize)
@@ -155,12 +181,30 @@ namespace MPF
             (sender as FrameworkElement)?.OnStyleChanged(e.NewValue);
         }
 
+        bool _styleLoaded = false;
+
         private void OnStyleChanged(Style style)
         {
+            _styleLoaded = true;
             if (style != null)
                 style.Apply(this);
             else
                 Style.Clear(this);
+        }
+
+        internal void OnInitialize()
+        {
+            if(!_styleLoaded)
+            {
+                LoadStyle();
+                _styleLoaded = true;
+            }
+        }
+
+        private void LoadStyle()
+        {
+            var style = Style;
+            style?.Apply(this);
         }
     }
 }

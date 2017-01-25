@@ -101,12 +101,12 @@ namespace MPF
         public void Arrange(Rect finalRect)
         {
             ClearFlags(UIElementFlags.ArrangeDirty);
-            ArrangeOverride(finalRect);
+            ArrangeCore(finalRect);
             InvalidateBoundingBox();
             InvalidateRender();
         }
 
-        protected virtual void ArrangeOverride(Rect finalRect)
+        protected virtual void ArrangeCore(Rect finalRect)
         {
             RenderSize = finalRect.Size;
             VisualOffset = (Vector2)finalRect.Location;
@@ -121,11 +121,11 @@ namespace MPF
         public void Measure(Size availableSize)
         {
             ClearFlags(UIElementFlags.MeasureDirty);
-            _desiredSize = MeasureOverride(availableSize);
+            _desiredSize = MeasureCore(availableSize);
             InvalidateArrange();
         }
 
-        protected virtual Size MeasureOverride(Size availableSize)
+        protected virtual Size MeasureCore(Size availableSize)
         {
             return Size.Zero;
         }

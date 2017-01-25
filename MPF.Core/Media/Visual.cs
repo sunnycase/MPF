@@ -59,7 +59,19 @@ namespace MPF.Media
         internal readonly IRenderableObject _renderableObject;
 
         private Visual _parent;
-        internal Visual Parent => _parent;
+        internal Visual Parent
+        {
+            get { return _parent; }
+            private set
+            {
+                if(_parent != value)
+                {
+                    _parent = value;
+                    ParentChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+        internal event EventHandler ParentChanged;
 
         private int _visualLevel = 0;
         internal int VisualLevel
@@ -201,18 +213,18 @@ namespace MPF.Media
 
         protected void AddVisualChild(Visual visual)
         {
-            if (visual._parent != null)
+            if (visual.Parent != null)
                 throw new InvalidOperationException("Visual already has a parent.");
-            visual._parent = this;
+            visual.Parent = this;
             visual.VisualLevel = VisualLevel + 1;
             InvalidateBoundingBox();
         }
 
         protected void RemoveVisualChild(Visual visual)
         {
-            if (visual._parent != this)
+            if (visual.Parent != this)
                 throw new InvalidOperationException("Visual's parent is not this.");
-            visual._parent = null;
+            visual.Parent = null;
             visual.VisualLevel = 0;
             InvalidateBoundingBox();
         }

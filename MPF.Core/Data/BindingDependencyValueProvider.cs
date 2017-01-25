@@ -123,10 +123,21 @@ namespace MPF.Data
                         if (node.Expression.NodeType == ExpressionType.Constant)
                             _currentObj = ((ConstantExpression)node.Expression).Value;
                         else
-                            _currentObj = ((PropertyInfo)member).GetValue(_currentObj);
+                            throw new NotImplementedException();
                         Dependents.Add(new Dependent(_currentObj, node));
                     }
                     return base.VisitMember(node);
+                }
+
+                protected override Expression VisitMethodCall(MethodCallExpression node)
+                {
+                    if (node.Method.DeclaringType == typeof(DependencyObject) && node.Method.Name == "GetValue")
+                    {
+                        if (node.Object is ConstantExpression)
+                            _currentObj = ((ConstantExpression)node.Object).Value;
+                        Dependents.Add(new Dependent(_currentObj, node));
+                    }
+                    return base.VisitMethodCall(node);
                 }
             }
 
@@ -152,6 +163,15 @@ namespace MPF.Data
                     if (!registered && source is INotifyPropertyChanged)
                     {
 
+                    }
+                }
+
+                public Dependent(object source, MethodCallExpression exp)
+                {
+                    if (source is DependencyObject)
+                    {
+                        _dp = (DependencyProperty)((ConstantExpression)exp.Arguments[0]).Value;
+                        ((DependencyObject)source).RegisterPropertyChangedHandler(_dp, OnDependencyPropertyChanged);
                     }
                 }
 

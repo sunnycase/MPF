@@ -15,29 +15,36 @@ namespace MPF.Media
         private SortedSet<UIElement> _measureSet = new SortedSet<UIElement>(VisualLevelComparer.Default);
         private SortedSet<UIElement> _renderSetLast = new SortedSet<UIElement>(VisualLevelComparer.Default);
         private SortedSet<UIElement> _renderSet = new SortedSet<UIElement>(VisualLevelComparer.Default);
+        private SortedSet<FrameworkElement> _initializeSetLast = new SortedSet<FrameworkElement>(VisualLevelComparer.Default);
+        private SortedSet<FrameworkElement> _initializeSet = new SortedSet<FrameworkElement>(VisualLevelComparer.Default);
 
         public void Update()
         {
-            Swap(ref _measureSet, ref _measureSetLast);
-            foreach (var item in _measureSetLast)
-            {
-                var size = (item.Parent as UIElement)?.RenderSize ?? new Size(float.NaN, float.NaN);
-                item.Measure(size);
-            }
-            _measureSetLast.Clear();
+            //Swap(ref _measureSet, ref _measureSetLast);
+            //foreach (var item in _measureSetLast)
+            //{
+            //    var size = (item.Parent as UIElement)?.RenderSize ?? new Size(float.NaN, float.NaN);
+            //    item.Measure(size);
+            //}
+            //_measureSetLast.Clear();
 
-            Swap(ref _arrangeSet, ref _arrangeSetLast);
-            foreach (var item in _arrangeSetLast)
-            {
-                if (item.UIFlags.HasFlag(UIElementFlags.ArrangeDirty))
-                    OnUpdate(item, item.Parent as UIElement, false);
-            }
-            _arrangeSetLast.Clear();
+            //Swap(ref _arrangeSet, ref _arrangeSetLast);
+            //foreach (var item in _arrangeSetLast)
+            //{
+            //    if (item.UIFlags.HasFlag(UIElementFlags.ArrangeDirty))
+            //        OnUpdate(item, item.Parent as UIElement, false);
+            //}
+            //_arrangeSetLast.Clear();
 
-            Swap(ref _renderSet, ref _renderSetLast);
-            foreach (var item in _renderSetLast)
-                item.Render();
-            _renderSetLast.Clear();
+            //Swap(ref _renderSet, ref _renderSetLast);
+            //foreach (var item in _renderSetLast)
+            //    item.Render();
+            //_renderSetLast.Clear();
+
+            Swap(ref _initializeSet, ref _initializeSetLast);
+            foreach (var item in _initializeSetLast)
+                item.OnInitialize();
+            _initializeSetLast.Clear();
         }
 
         private Rect GetArrangeRect(UIElement element)
@@ -77,6 +84,11 @@ namespace MPF.Media
         public void RegisterRender(UIElement element)
         {
             _renderSet.Add(element);
+        }
+
+        public void RegisterInitialize(FrameworkElement element)
+        {
+            _initializeSet.Add(element);
         }
 
         private void Swap<T>(ref T a, ref T b) where T : class

@@ -69,11 +69,6 @@ namespace MPF.Controls
         {
         }
 
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            return base.MeasureOverride(availableSize);
-        }
-
         protected virtual void OnApplyTemplate()
         {
 
@@ -89,6 +84,28 @@ namespace MPF.Controls
         object IHasTemplateChild.GetTemplateChild(FrameworkTemplate template)
         {
             return template == Template ? TemplateChild : null;
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var child = TemplateChild;
+            if (child != null)
+            {
+                child.Measure(availableSize);
+                return child.DesiredSize;
+            }
+            return default(Size);
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            return finalSize;
+        }
+
+        protected override void OnAfterArrange()
+        {
+            var child = TemplateChild;
+            child?.InvalidateArrange();
         }
     }
 }

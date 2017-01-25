@@ -52,7 +52,9 @@ namespace MPF.HelloDesktop
                     };
                     tb.PointerPressed += window_PointerPressed;
                     return tb;
-                })
+                }),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
             };
             _window.PointerPressed += window_PointerPressed;
             _window.Show();

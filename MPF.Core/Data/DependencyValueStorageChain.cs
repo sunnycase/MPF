@@ -99,17 +99,17 @@ namespace MPF.Data
                     IEffectiveValue oldEValue;
                     if (oldValues.TryGetValue(dp, out oldEValue))
                     {
-                        if (!dp.EqualsEffectiveValueHelper(oldEValue, newEValue))
-                            RaiseCurrentValueChanged(dp, true, dp.GetEffectiveValueHelper(oldEValue), true, dp.GetEffectiveValueHelper(newEValue));
+                        if (!dp.Helper.EqualsEffectiveValue(oldEValue, newEValue))
+                            RaiseCurrentValueChanged(dp, true, dp.Helper.GetEffectiveValue(oldEValue), true, dp.Helper.GetEffectiveValue(newEValue));
                     }
                     else
-                        RaiseCurrentValueChanged(dp, false, null, true, dp.GetEffectiveValueHelper(newEValue));
+                        RaiseCurrentValueChanged(dp, false, null, true, dp.Helper.GetEffectiveValue(newEValue));
                 }
                 else
                 {
                     IEffectiveValue oldEValue;
                     if (oldValues.TryGetValue(dp, out oldEValue))
-                        RaiseCurrentValueChanged(dp, true, dp.GetEffectiveValueHelper(oldEValue), false, null);
+                        RaiseCurrentValueChanged(dp, true, dp.Helper.GetEffectiveValue(oldEValue), false, null);
                 }
             }
         }
@@ -132,7 +132,7 @@ namespace MPF.Data
             return false;
         }
 
-        private bool TryGetCurrentEffectiveValue(DependencyProperty key, out IEffectiveValue value)
+        internal bool TryGetCurrentEffectiveValue(DependencyProperty key, out IEffectiveValue value)
         {
             foreach (var storage in _storages.Values)
                 if (storage.TryGetCurrentEffectiveValue(key, out value))
@@ -153,6 +153,14 @@ namespace MPF.Data
             return false;
         }
 
+        private IDependencyValueStorage GetCurrentValueStorage(DependencyProperty key)
+        {
+            foreach (var storage in _storages.Values)
+                if (storage.Keys.Contains(key))
+                    return storage;
+            return null;
+        }
+
         private void RaiseCurrentValueChanged(DependencyProperty key, bool hasOldValue, object oldValue, bool hasNewValue, object newValue)
         {
             CurrentValueChanged?.Invoke(this, new CurrentValueChangedEventArgs(key, hasOldValue, oldValue, hasNewValue, newValue));
@@ -162,7 +170,7 @@ namespace MPF.Data
         {
             var storage = (IDependencyValueStorage)sender;
             var dp = e.Property;
-            if (_storages.Values.First() == storage)
+            if (GetCurrentValueStorage(dp) == storage)
             {
                 bool hasOldValue = false;
                 object oldValue = null;
@@ -178,7 +186,7 @@ namespace MPF.Data
                     if (TryGetCurrentEffectiveValueExcept(dp, storage, out oldEValue))
                     {
                         hasOldValue = true;
-                        oldValue = dp.GetEffectiveValueHelper(oldEValue);
+                        oldValue = dp.Helper.GetEffectiveValue(oldEValue);
                     }
                 }
 
@@ -196,7 +204,7 @@ namespace MPF.Data
                     if (TryGetCurrentEffectiveValueExcept(dp, storage, out newEValue))
                     {
                         hasNewValue = true;
-                        newValue = dp.GetEffectiveValueHelper(newEValue);
+                        newValue = dp.Helper.GetEffectiveValue(newEValue);
                     }
                 }
                 RaiseCurrentValueChanged(dp, hasOldValue, oldValue, hasNewValue, newValue);

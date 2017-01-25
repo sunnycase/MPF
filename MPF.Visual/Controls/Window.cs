@@ -58,11 +58,6 @@ namespace MPF.Controls
             ((Window)sender)._coreWindow.Size = e.NewValue;
         }
 
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            return _coreWindow.ClientSize;
-        }
-
         public void Show()
         {
             _coreWindow.Show();

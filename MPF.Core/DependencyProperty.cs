@@ -18,6 +18,7 @@ namespace MPF
         public string Name { get; }
         public Type OwnerType { get; }
         public abstract Type PropertyType { get; }
+        internal abstract IDependencyPropertyHelper Helper { get; }
 
         private readonly int _globalId;
 
@@ -79,9 +80,6 @@ namespace MPF
                 throw new ArgumentException($"Property {ownerType.Name}.{name} is already registered.");
         }
 
-        internal abstract object GetEffectiveValueHelper(IEffectiveValue value);
-        internal abstract bool EqualsEffectiveValueHelper(IEffectiveValue a, IEffectiveValue b);
-
         public static readonly UnsetValueType UnsetValue = default(UnsetValueType);
 
         public struct UnsetValueType
@@ -124,10 +122,12 @@ namespace MPF
 
     public sealed class DependencyProperty<T> : DependencyProperty
     {
+        private static readonly IDependencyPropertyHelper _helper = new DependencyPropertyHelper<T>();
         private PropertyMetadata<T> _baseMetadata;
         private readonly ConcurrentDictionary<Type, PropertyMetadata<T>> _metadatas = new ConcurrentDictionary<Type, PropertyMetadata<T>>();
 
         public override Type PropertyType => typeof(T);
+        internal override IDependencyPropertyHelper Helper => _helper;
 
         internal DependencyProperty(string name, Type ownerType, PropertyMetadata<T> metadata)
             : base(name, ownerType)
@@ -215,16 +215,6 @@ namespace MPF
                 throw new InvalidOperationException("The type of new metadata must be derived from the type of old metadata.");
             newMetadata.Merge(oldMetadata, ownerIsDerived);
             return newMetadata;
-        }
-
-        internal override object GetEffectiveValueHelper(IEffectiveValue value)
-        {
-            return ((IEffectiveValue<T>)value).Value;
-        }
-
-        internal override bool EqualsEffectiveValueHelper(IEffectiveValue a, IEffectiveValue b)
-        {
-            return EqualityComparer<T>.Default.Equals(((IEffectiveValue<T>)a).Value, ((IEffectiveValue<T>)b).Value);
         }
     }
 }

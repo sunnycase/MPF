@@ -93,5 +93,27 @@ namespace MPF.Controls
         {
             _templateChildLoaded = false;
         }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var child = TemplateChild as UIElement;
+            if (child != null)
+            {
+                child.Measure(availableSize);
+                return child.DesiredSize;
+            }
+            return default(Size);
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            return finalSize;
+        }
+
+        protected override void OnAfterArrange()
+        {
+            var child = TemplateChild as UIElement;
+            child?.InvalidateArrange();
+        }
     }
 }

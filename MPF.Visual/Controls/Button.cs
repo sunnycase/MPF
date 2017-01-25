@@ -1,5 +1,6 @@
 ﻿using MPF.Controls.Primitives;
 using MPF.Data;
+using MPF.Media;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,15 +13,19 @@ namespace MPF.Controls
         {
             StyleProperty.OverrideMetadata(typeof(Button), new PropertyMetadata<Style>(
                 new Style(typeof(Button))
-                    .SetLocalValue(Button.TemplateProperty, ControlTemplate.Create<Button>(t=>
+                    .SetLocalValue(Button.TemplateProperty, ControlTemplate.Create<Button>(t =>
                     {
-                        var root = new Border();
+                        var root = new Border
+                        {
+                            Child = new ContentPresenter()
+                        };
                         BindingOperations.SetBinding(root, Border.BorderThicknessProperty, new Binding { Path = new PropertyPath("BorderThickness"), Source = t });
                         BindingOperations.SetBinding(root, Border.BackgroundProperty, new Binding { Path = new PropertyPath("Background"), Source = t });
                         BindingOperations.SetBinding(root, Border.BorderBrushProperty, new Binding { Path = new PropertyPath("BorderBrush"), Source = t });
 
                         return root;
-                    }))));
+                    }))
+                    ));
         }
     }
 }
