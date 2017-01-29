@@ -8,7 +8,9 @@
 
 struct NonCopyable
 {
-	NonCopyable(){}
+	NonCopyable() = default;
 	NonCopyable(NonCopyable&) = delete;
+	NonCopyable(NonCopyable&&) = default;
 	NonCopyable& operator=(NonCopyable&) = delete;
+	NonCopyable& operator=(NonCopyable&&) = default;
 };

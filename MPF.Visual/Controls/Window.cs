@@ -15,10 +15,8 @@ namespace MPF.Controls
 
         public static readonly DependencyProperty<bool> HasMaximizeProperty = DependencyProperty.Register(nameof(HasMaximize), typeof(Window),
             new PropertyMetadata<bool>(true, propertyChangedHandler: OnHasMaximizePropertyChanged));
-        public static readonly DependencyProperty<string> TitleProperty = DependencyProperty.Register(nameof(Title), typeof(Window), 
+        public static readonly DependencyProperty<string> TitleProperty = DependencyProperty.Register(nameof(Title), typeof(Window),
             new PropertyMetadata<string>(string.Empty, propertyChangedHandler: OnTitlePropertyChanged));
-        public static readonly DependencyProperty<Size> SizeProperty = DependencyProperty.Register(nameof(Size), typeof(Window),
-            new UIPropertyMetadata<Size>(DependencyProperty.UnsetValue, UIPropertyMetadataOptions.AffectArrange, OnSizePropertyChanged));
 
         public bool HasMaximize
         {
@@ -32,35 +30,25 @@ namespace MPF.Controls
             set { this.SetLocalValue(TitleProperty, value); }
         }
 
-        public Size Size
-        {
-            get { return GetValue(SizeProperty); }
-            set { this.SetLocalValue(SizeProperty, value); }
-        }
-
         public Window()
         {
             _coreWindow.HasMaximize = HasMaximize;
             _coreWindow.Title = Title;
-            Size = _coreWindow.Size;
-            _coreWindow.SizeChanged += coreWindow_SizeChanged;
+            _coreWindow.Size = new Size(Width, Height);
 
             _coreWindow.SetRootVisual(this);
         }
 
-        private void coreWindow_SizeChanged(object sender, EventArgs e)
+        protected override Size ArrangeOverride(Size finalSize)
         {
-            Size = _coreWindow.Size;
-        }
-
-        private static void OnSizePropertyChanged(object sender, PropertyChangedEventArgs<Size> e)
-        {
-            ((Window)sender)._coreWindow.Size = e.NewValue;
+            _coreWindow.Size = finalSize;
+            return base.ArrangeOverride(_coreWindow.ClientSize);
         }
 
         public void Show()
         {
             _coreWindow.Show();
+            InvalidateArrange();
         }
 
         public void Hide()

@@ -94,7 +94,22 @@ namespace MPF.Data
             {
                 DependencyObject d;
                 if (_d.TryGetTarget(out d))
-                    return (T)_getter(d);
+                {
+                    var value = _getter(d);
+                    if (value is T) return (T)value;
+                    else if (value != null)
+                    {
+                        var valueType = value.GetType();
+                        var convert = TypeDescriptor.GetConverter(valueType);
+                        if (convert.CanConvertTo(typeof(T)))
+                            return (T)convert.ConvertTo(value, typeof(T));
+
+                        convert = TypeDescriptor.GetConverter(typeof(T));
+                        if (convert.CanConvertFrom(valueType))
+                            return (T)convert.ConvertFrom(value);
+                        throw new InvalidCastException($"Cannot cast from {value} to type {typeof(T)}");
+                    }
+                }
                 return default(T);
             }
 

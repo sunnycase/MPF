@@ -11,7 +11,7 @@ namespace MPF
     public class DependencyObject
     {
         private readonly Type _realType;
-        
+
         public DependencyValueStorageChain ValueStorage { get; } = new DependencyValueStorageChain();
 
         public readonly ConcurrentDictionary<DependencyProperty, Delegate> _propertyChangedHandlers = new ConcurrentDictionary<DependencyProperty, Delegate>();
@@ -27,7 +27,8 @@ namespace MPF
         public T GetValue<T>(DependencyProperty<T> property)
         {
             T value;
-            if (!ValueStorage.TryGetCurrentValue(property, out value))
+            if (!(ValueStorage.TryGetCurrentValue(property, out value) ||
+                property.TryGetNonDefaultValue(this, _realType, out value)))
                 return GetDefaultValue(property);
             return value;
         }
@@ -56,7 +57,7 @@ namespace MPF
         {
             Delegate d = null;
             _propertyChangedHandlers.TryRemove(property, out d);
-            if(d != (Delegate)handler)
+            if (d != (Delegate)handler)
                 _propertyChangedHandlers.AddOrUpdate(property, k => Delegate.Remove(d, handler), (k, old) => Delegate.Combine(old, Delegate.Remove(d, handler)));
         }
 
@@ -87,12 +88,12 @@ namespace MPF
         {
             var oldValue = e.HasOldValue ? (T)e.OldValue : GetDefaultValue(property);
             var newValue = e.HasNewValue ? (T)e.NewValue : GetDefaultValue(property);
-            if (!EqualityComparer<T>.Default.Equals(oldValue, newValue))
-            {
-                var args = new PropertyChangedEventArgs<T>(property, oldValue, newValue);
-                property.RaisePropertyChanged(_realType, this, args);
-                InvokeLocalPropertyChangedHandlers(args);
-            }
+
+            if (e.HasOldValue && e.HasNewValue && EqualityComparer<T>.Default.Equals((T)e.OldValue, (T)e.NewValue))
+                return;
+            var args = new PropertyChangedEventArgs<T>(property, oldValue, newValue);
+            property.RaisePropertyChanged(_realType, this, args);
+            InvokeLocalPropertyChangedHandlers(args);
         }
 
         private void InvokeLocalPropertyChangedHandlers<T>(PropertyChangedEventArgs<T> e)
@@ -132,7 +133,7 @@ namespace MPF
         public T NewValue { get; }
 
         public PropertyChangedEventArgs(DependencyProperty<T> property, T oldValue, T newValue)
-            :base(property)
+            : base(property)
         {
             OldValue = oldValue;
             NewValue = newValue;

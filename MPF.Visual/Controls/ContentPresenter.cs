@@ -10,10 +10,15 @@ namespace MPF.Controls
     public class ContentPresenter : FrameworkElement
     {
         public static readonly DependencyProperty<DataTemplate> ContentTemplateProperty = DependencyProperty.Register(nameof(ContentTemplate),
-            typeof(ContentPresenter), new FrameworkPropertyMetadata<DataTemplate>(null, FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.AffectMeasure, OnContentTemplatePropertyChanged));
+            typeof(ContentPresenter), new FrameworkPropertyMetadata<DataTemplate>(new DataTemplate(t =>
+            {
+                var tb = new TextBlock();
+                BindingOperations.SetBinding(tb, TextBlock.TextProperty, new Binding { Path = "Content", Source = t, Mode = BindingMode.OneWay });
+                return tb;
+            }), FrameworkPropertyMetadataOptions.None, UIPropertyMetadataOptions.AffectMeasure, OnContentTemplatePropertyChanged));
 
         public static readonly DependencyProperty<object> ContentProperty = DependencyProperty.Register(nameof(Content),
-            typeof(ContentPresenter), new FrameworkPropertyMetadata<object>(null, FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.AffectMeasure, OnContentPropertyChanged));
+            typeof(ContentPresenter), new FrameworkPropertyMetadata<object>(null, FrameworkPropertyMetadataOptions.None, UIPropertyMetadataOptions.AffectMeasure, OnContentPropertyChanged));
 
         public DataTemplate ContentTemplate
         {
@@ -47,21 +52,23 @@ namespace MPF.Controls
                 if (!_templateChildLoaded)
                 {
                     _templateChildLoaded = true;
-                    if (_templateChild != null)
-                        RemoveVisualChild(_templateChild);
-                    if (Content is Visual)
-                    {
-                        _templateChild = (Visual)Content;
-                    }
+                    var templateChild = _templateChild;
+                    if (templateChild != null)
+                        RemoveVisualChild(templateChild);
+                    var content = Content;
+
+                    if (content is Visual)
+                        templateChild = (Visual)content;
                     else
                     {
-                        var templateChild = (FrameworkElement)ContentTemplate?.LoadContent(this);
+                        templateChild = (FrameworkElement)ContentTemplate?.LoadContent(this);
                         if (templateChild != null)
-                            templateChild.DataContext = Content;
-                        _templateChild = templateChild;
+                            ((FrameworkElement)templateChild).DataContext = Content;
                     }
-                    if (_templateChild != null)
-                        AddVisualChild(_templateChild);
+                    if (templateChild != null)
+                        AddVisualChild(templateChild);
+                    _templateChild = templateChild;
+                    return templateChild;
                 }
                 return _templateChild;
             }
@@ -107,13 +114,9 @@ namespace MPF.Controls
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            return finalSize;
-        }
-
-        protected override void OnAfterArrange()
-        {
             var child = TemplateChild as UIElement;
-            child?.InvalidateArrange();
+            child?.Arrange(new Rect(Point.Zero, finalSize));
+            return finalSize;
         }
     }
 }

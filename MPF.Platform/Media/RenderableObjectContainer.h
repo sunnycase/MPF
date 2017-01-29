@@ -23,6 +23,7 @@ public:
 	RenderableObjectRef(std::shared_ptr<IRenderableObjectContainer>&& container, UINT_PTR handle);
 
 	STDMETHOD_(ULONG, Release)();
+	STDMETHODIMP SetParent(IRenderableObject* parent);
 	STDMETHODIMP SetOffset(float x, float y);
 	STDMETHODIMP SetContent(IRenderCommandBuffer* buffer);
 	STDMETHODIMP Render();

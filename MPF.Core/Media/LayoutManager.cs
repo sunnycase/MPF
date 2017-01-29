@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 
@@ -9,14 +11,14 @@ namespace MPF.Media
     {
         public static LayoutManager Current { get; } = new LayoutManager();
 
-        private SortedSet<UIElement> _arrangeSetLast = new SortedSet<UIElement>(VisualLevelComparer.Default);
-        private SortedSet<UIElement> _arrangeSet = new SortedSet<UIElement>(VisualLevelComparer.Default);
-        private SortedSet<UIElement> _measureSetLast = new SortedSet<UIElement>(VisualLevelComparer.Default);
-        private SortedSet<UIElement> _measureSet = new SortedSet<UIElement>(VisualLevelComparer.Default);
-        private SortedSet<UIElement> _renderSetLast = new SortedSet<UIElement>(VisualLevelComparer.Default);
-        private SortedSet<UIElement> _renderSet = new SortedSet<UIElement>(VisualLevelComparer.Default);
-        private SortedSet<FrameworkElement> _initializeSetLast = new SortedSet<FrameworkElement>(VisualLevelComparer.Default);
-        private SortedSet<FrameworkElement> _initializeSet = new SortedSet<FrameworkElement>(VisualLevelComparer.Default);
+        private ConcurrentBag<UIElement> _arrangeSetLast = new ConcurrentBag<UIElement>();
+        private ConcurrentBag<UIElement> _arrangeSet = new ConcurrentBag<UIElement>();
+        private ConcurrentBag<UIElement> _measureSetLast = new ConcurrentBag<UIElement>();
+        private ConcurrentBag<UIElement> _measureSet = new ConcurrentBag<UIElement>();
+        private ConcurrentBag<UIElement> _renderSetLast = new ConcurrentBag<UIElement>();
+        private ConcurrentBag<UIElement> _renderSet = new ConcurrentBag<UIElement>();
+        private ConcurrentBag<FrameworkElement> _initializeSetLast = new ConcurrentBag<FrameworkElement>();
+        private ConcurrentBag<FrameworkElement> _initializeSet = new ConcurrentBag<FrameworkElement>();
 
         public void Update()
         {
@@ -42,9 +44,9 @@ namespace MPF.Media
             //_renderSetLast.Clear();
 
             Swap(ref _initializeSet, ref _initializeSetLast);
-            foreach (var item in _initializeSetLast)
+            foreach (var item in _initializeSetLast.Distinct().OrderBy(o => o.VisualLevel))
                 item.OnInitialize();
-            _initializeSetLast.Clear();
+            _initializeSetLast = new ConcurrentBag<FrameworkElement>();
         }
 
         private Rect GetArrangeRect(UIElement element)

@@ -124,7 +124,8 @@ void D3D11SwapChain::OnResize()
 	RECT viewRect;
 	ThrowWin32IfNot(GetClientRect(_hWnd, &viewRect));
 
-	if (viewRect.right - viewRect.left == 0) return;
+	if (viewRect.right - viewRect.left <= 0 ||
+		viewRect.bottom - viewRect.top <= 0) return;
 
 	_renderTargetView.Reset();
 	ThrowIfFailed(_swapChain->ResizeBuffers(3, 0, 0, DXGI_FORMAT_UNKNOWN, 0));

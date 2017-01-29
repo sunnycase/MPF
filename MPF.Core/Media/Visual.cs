@@ -67,10 +67,12 @@ namespace MPF.Media
                 if(_parent != value)
                 {
                     _parent = value;
-                    ParentChanged?.Invoke(this, EventArgs.Empty);
+                    _renderableObject.SetParent(_parent?._renderableObject);
+                    OnParentChanged(value);
                 }
             }
         }
+
         internal event EventHandler ParentChanged;
 
         private int _visualLevel = 0;
@@ -148,7 +150,10 @@ namespace MPF.Media
                 {
                     foreach (var child in VisualChildren)
                     {
+                        var childPoint = point - child.VisualOffset;
+                        param.SetHitPoint(childPoint);
                         var hitTestResultBehavior = child.HitTestPoint(param, filter, resultCallback);
+                        param.SetHitPoint(hitPoint);
                         if (hitTestResultBehavior == HitTestResultBehavior.Stop)
                             return HitTestResultBehavior.Stop;
                     }
@@ -229,6 +234,11 @@ namespace MPF.Media
             InvalidateBoundingBox();
         }
 
+        protected virtual void OnParentChanged(Visual visual)
+        {
+            ParentChanged?.Invoke(this, EventArgs.Empty);
+        }
+
         protected virtual PointHitTestResult HitTestOverride(PointHitTestParameters param)
         {
             return null;
@@ -241,7 +251,7 @@ namespace MPF.Media
 
         protected virtual Rect GetContentBounds()
         {
-            return new Rect((Point)VisualOffset, Size.Zero);
+            return new Rect(Point.Zero, Size.Zero);
         }
 
         protected virtual Rect GetHitTestBounds()
@@ -300,6 +310,8 @@ namespace MPF.Media
         private void UpdateVisualOffset(Vector2 value)
         {
             _renderableObject.SetOffset(value.X, value.Y);
+            foreach (var child in VisualChildren)
+                child.UpdateVisualOffset(child.VisualOffset);
         }
 
         class VisualDrawingContext : RenderDataDrawingContext

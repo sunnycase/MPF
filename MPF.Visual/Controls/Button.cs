@@ -15,9 +15,15 @@ namespace MPF.Controls
                 new Style(typeof(Button))
                     .SetLocalValue(Button.TemplateProperty, ControlTemplate.Create<Button>(t =>
                     {
+                        var cp = new ContentPresenter();
+                        BindingOperations.SetBinding(cp, ContentPresenter.ContentProperty, new Binding { Path = "Content", Source = t, Mode = BindingMode.OneWay });
+                        BindingOperations.SetBinding(cp, ContentPresenter.ContentTemplateProperty, new Binding { Path = "ContentTemplate", Source = t, Mode = BindingMode.OneWay });
+                        BindingOperations.SetBinding(cp, ContentPresenter.HorizontalAlignmentProperty, new Binding { Path = "HorizontalContentAlignment", Source = t, Mode = BindingMode.OneWay });
+                        BindingOperations.SetBinding(cp, ContentPresenter.VerticalAlignmentProperty, new Binding { Path = "VerticalContentAlignment", Source = t, Mode = BindingMode.OneWay });
+
                         var root = new Border
                         {
-                            Child = new ContentPresenter()
+                            Child = cp
                         };
                         BindingOperations.SetBinding(root, Border.BorderThicknessProperty, new Binding { Path = new PropertyPath("BorderThickness"), Source = t });
                         BindingOperations.SetBinding(root, Border.BackgroundProperty, new Binding { Path = new PropertyPath("Background"), Source = t });
@@ -25,6 +31,8 @@ namespace MPF.Controls
 
                         return root;
                     }))
+                    .SetLocalValue(Button.HorizontalContentAlignmentProperty, HorizontalAlignment.Center)
+                    .SetLocalValue(Button.VerticalContentAlignmentProperty, VerticalAlignment.Center)
                     ));
         }
     }

@@ -7,6 +7,7 @@
 #pragma once
 #include "../../inc/common.h"
 #include "../../inc/NonCopyable.h"
+#include "../../inc/FreeList.h"
 #include <vector>
 #include <list>
 #include <algorithm>
@@ -20,7 +21,7 @@ struct IDrawCallList;
 template<class T>
 class ResourceContainer;
 
-struct ResourceBase
+struct ResourceBase : NonCopyable
 {
 	std::vector<std::weak_ptr<IDrawCallList>>& GetDependentDrawCallLists() noexcept { return _dependentDrawCallLists; }
 	void AddDependentDrawCallList(std::weak_ptr<IDrawCallList>&& dcl) { _dependentDrawCallLists.emplace_back(std::move(dcl)); }
@@ -37,11 +38,6 @@ struct IResourceContainer
 template<class T>
 class ResourceContainer : public IResourceContainer
 {
-	struct FreeListEntry
-	{
-		size_t start;
-		size_t length;
-	};
 protected:
 	struct ObjectStorage : NonCopyable
 	{
@@ -131,19 +127,21 @@ protected:
 	};
 public:
 	ResourceContainer(size_t capacity = 231)
+		:_freeList(capacity)
 	{
-		Enlarge(capacity);
+		_data.resize(capacity);
 	}
 
 	virtual UINT_PTR Allocate() override
 	{
-		if (_freeList.empty()) Enlarge();
-		assert(!_freeList.empty());
-		auto& front = _freeList.front();
-		assert(front.length);
-		auto handle = front.start++;
-		if (!--front.length)
-			_freeList.erase(_freeList.begin());
+		size_t handle;
+		auto ret = _freeList.TryAllocate(1, handle);
+		if (!ret)
+		{
+			Enlarge(231);
+			ret = _freeList.TryAllocate(1, handle);
+		}
+		assert(ret);
 		auto& obj = _data.at(handle);
 		obj.Create();
 		obj.SetUsed();
@@ -156,16 +154,7 @@ public:
 		const auto upCapacity = up ? up : oldCapacity;
 		const auto newCapacity = oldCapacity + upCapacity;
 		_data.resize(newCapacity);
-		if (!_freeList.empty())
-		{
-			auto& back = _freeList.back();
-			if (back.start + back.length == _data.size())
-			{
-				back.length += newCapacity - oldCapacity;
-				return;
-			}
-		}
-		_freeList.emplace_back<FreeListEntry>({ oldCapacity, newCapacity - oldCapacity });
+		_freeList.Enlarge(up);
 	}
 
 	virtual HRESULT RetireResource(UINT_PTR handle) noexcept override
@@ -184,15 +173,7 @@ public:
 	void CleanUp()
 	{
 		for (auto&& handle : _cleanupList)
-		{
-			if (_freeList.empty())
-				_freeList.emplace_front<FreeListEntry>({ handle, 1 });
-			else
-			{
-				auto it = std::find_if(_freeList.begin(), _freeList.end(), [&](const FreeListEntry& entry) {return entry.start > handle; });
-				CombineFreeNode(_freeList.insert(it, { handle, 1 }));
-			}
-		}
+			_freeList.Retire(handle, 1);
 		_cleanupList.clear();
 	}
 
@@ -225,35 +206,9 @@ public:
 	{
 		return _cleanupList;
 	}
-private:
-	void CombineFreeNode(typename std::list<FreeListEntry>::iterator it)
-	{
-		assert(it != _freeList.end());
-		if (it != _freeList.begin())
-		{
-			auto left = std::prev(it);
-			if (left->start + left->length == it->start)
-			{
-				left->length += it->length;
-				auto next = _freeList.erase(it);
-				if (next != _freeList.end())
-					CombineFreeNode(next);
-				return;
-			}
-		}
-		auto right = std::next(it);
-		if (right != _freeList.end())
-		{
-			if (it->start + it->length == right->start)
-			{
-				it->length += right->length;
-				_freeList.erase(right);
-			}
-		}
-	}
 protected:
 	std::vector<ObjectStorage> _data;
-	std::list<FreeListEntry> _freeList;
+	FreeList _freeList;
 	std::vector<UINT_PTR> _cleanupList;
 };
 

@@ -57,20 +57,21 @@ namespace MPF.Media
 
         private Rect GetArrangeRect(UIElement element)
         {
-            if (element != null)
-                return new Rect((Point)element.VisualOffset, element.RenderSize);
-            return new Rect(0, 0, float.NaN, float.NaN);
+            var rect = element.LastFinalRect;
+            if (rect == null)
+                return new Rect(Point.Zero, element.DesiredSize);
+            return rect.Value;
         }
 
         private void OnUpdate(UIElement element, UIElement parent, bool forceArrange)
         {
             var flags = element.UIFlags;
             if (forceArrange || flags.HasFlag(UIElementFlags.MeasureDirty))
-                element.Measure(parent?.RenderSize ?? new Size(float.PositiveInfinity, float.PositiveInfinity));
+                element.Measure(element.LastAvailableSize);
             if (forceArrange || flags.HasFlag(UIElementFlags.ArrangeDirty))
             {
                 forceArrange = true;
-                element.Arrange(GetArrangeRect(parent));
+                element.Arrange(GetArrangeRect(element));
             }
             if (forceArrange || flags.HasFlag(UIElementFlags.RenderDirty))
                 element.Render();

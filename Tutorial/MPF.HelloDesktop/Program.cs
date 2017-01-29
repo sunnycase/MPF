@@ -30,7 +30,8 @@ namespace MPF.HelloDesktop
 
             _window = new Window
             {
-                Size = new Size(1024, 768)
+                Width = 1024,
+                Height = 768
             };
             _window.Content = new Button
             {
@@ -38,23 +39,12 @@ namespace MPF.HelloDesktop
                 BorderBrush = new SolidColorBrush { Color = Color.FromArgb(0xFF888888) },
                 Background = new SolidColorBrush { Color = Color.FromArgb(0x2200FF00) },
                 Margin = new Thickness(5),
-                ContentTemplate = new DataTemplate(t =>
-                {
-                    var tb = new TextBlock
-                    {
-                        Margin = new Thickness(5),
-                        Text = "baka帝球",
-                        Style = new Style(typeof(TextBlock))
-                            .SetLocalValue(TextBlock.FontFamilyProperty, new FontFamily("Microsoft YaHei"))
-                            .SetLocalValue(TextBlock.FontSizeProperty, 25)
-                            .SetLocalValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Center)
-                            .SetLocalValue(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center)
-                    };
-                    tb.PointerPressed += window_PointerPressed;
-                    return tb;
-                }),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
+                Content = "Hello",
+                FontSize = 25,
+                Width = 100,
+                Height = 50,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top
             };
             _window.PointerPressed += window_PointerPressed;
             _window.Show();

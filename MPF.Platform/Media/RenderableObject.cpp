@@ -12,9 +12,15 @@ using namespace NS_PLATFORM;
 using namespace DirectX;
 
 RenderableObject::RenderableObject()
-	:_isDirty(true), _isBufferDirty(true)
+	:_isDirty(true), _isBufferDirty(true), _parent(nullptr), _translation(0, 0, 0), _modelTransform(XMMatrixIdentity())
 {
-	XMStoreFloat4x4(&_modelTransform, XMMatrixTranspose(XMMatrixIdentity()));
+
+}
+
+void RenderableObject::SetParent(RenderableObject* parent)
+{
+	_parent = parent;
+	UpdateTransform();
 }
 
 void RenderableObject::SetContent(IRenderCommandBuffer * buffer)
@@ -29,7 +35,8 @@ void RenderableObject::SetContent(IRenderCommandBuffer * buffer)
 
 void RenderableObject::SetOffset(float x, float y)
 {
-	XMStoreFloat4x4(&_modelTransform, XMMatrixTranspose(XMMatrixIdentity() * XMMatrixTranslation(x, y, 0)));
+	_translation = { x, y, 0 };
+	UpdateTransform();
 }
 
 void RenderableObject::Update()
@@ -50,10 +57,25 @@ void RenderableObject::Update()
 void RenderableObject::Draw()
 {
 	if (auto drawCallList = _drawCallList)
-		drawCallList->Draw(_modelTransform);
+	{
+		XMFLOAT4X4 model;
+		XMStoreFloat4x4(&model, XMMatrixTranspose(_modelTransform));
+		drawCallList->Draw(model);
+	}
 }
 
 void RenderableObject::SetBufferDirty()
 {
 	_isDirty = _isBufferDirty = true;
+}
+
+void RenderableObject::UpdateTransform()
+{
+	const auto x = _translation.x;
+	const auto y = _translation.y;
+
+	if (_parent)
+		_modelTransform = _parent->_modelTransform * XMMatrixTranslation(x, y, 0);
+	else
+		_modelTransform = XMMatrixIdentity() * XMMatrixTranslation(x, y, 0);
 }

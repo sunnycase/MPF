@@ -71,5 +71,11 @@ namespace MPF
                 PropertyChanged = (EventHandler<PropertyChangedEventArgs<T>>)Delegate.Combine(old.PropertyChanged, PropertyChanged);
             MergeOverride(old);
         }
+
+        public virtual bool TryGetNonDefaultValue(DependencyObject d, DependencyProperty<T> property, out T value)
+        {
+            value = default(T);
+            return false;
+        }
     }
 }

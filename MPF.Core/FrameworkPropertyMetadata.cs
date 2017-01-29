@@ -15,7 +15,7 @@ namespace MPF
 
     public class FrameworkPropertyMetadata<T> : UIPropertyMetadata<T>
     {
-        private readonly FrameworkPropertyMetadataOptions _fmkOptions;
+        private FrameworkPropertyMetadataOptions _fmkOptions;
 
         public FrameworkPropertyMetadata(T defaultValue, FrameworkPropertyMetadataOptions fmOptions = FrameworkPropertyMetadataOptions.None, UIPropertyMetadataOptions uiOptions = UIPropertyMetadataOptions.None, EventHandler<PropertyChangedEventArgs<T>> propertyChangedHandler = null)
             : base(defaultValue, uiOptions, propertyChangedHandler)
@@ -29,7 +29,13 @@ namespace MPF
             _fmkOptions = fmOptions;
         }
 
-        protected override bool TryGetDefaultValueOverride(DependencyObject d, DependencyProperty<T> property, out T value)
+        protected override void MergeOverride(PropertyMetadata<T> old)
+        {
+            base.MergeOverride(old);
+            _fmkOptions |= ((FrameworkPropertyMetadata<T>)old)._fmkOptions;
+        }
+
+        public override bool TryGetNonDefaultValue(DependencyObject d, DependencyProperty<T> property, out T value)
         {
             if (_fmkOptions.HasFlag(FrameworkPropertyMetadataOptions.Inherits))
             {
@@ -46,12 +52,17 @@ namespace MPF
                         visual.ParentChanged += Visual_ParentChanged;
                     }
                     storage.TryAddInheritProperty(property);
+                    if (parent != null)
+                    {
+                        value = parent.GetValue(property);
+                        return true;
+                    }
                 }
             }
-            return base.TryGetDefaultValueOverride(d, property, out value);
+            return base.TryGetNonDefaultValue(d, property, out value);
         }
 
-        private void Visual_ParentChanged(object sender, EventArgs e)
+        private static void Visual_ParentChanged(object sender, EventArgs e)
         {
             var visual = (Visual)sender;
             var parent = VisualTreeHelper.GetParent(visual);

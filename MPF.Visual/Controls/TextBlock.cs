@@ -12,13 +12,13 @@ namespace MPF.Controls
     public class TextBlock : FrameworkElement
     {
         public static readonly DependencyProperty<FontFamily> FontFamilyProperty = DependencyProperty.Register(nameof(FontFamily),
-            typeof(TextBlock), new UIPropertyMetadata<FontFamily>(new FontFamily("Arial"), UIPropertyMetadataOptions.AffectMeasure));
+            typeof(TextBlock), new FrameworkPropertyMetadata<FontFamily>(new FontFamily("Arial"), FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.AffectMeasure));
 
         public static readonly DependencyProperty<float> FontSizeProperty = DependencyProperty.Register(nameof(FontSize),
-            typeof(TextBlock), new UIPropertyMetadata<float>(12, UIPropertyMetadataOptions.AffectMeasure));
+            typeof(TextBlock), new FrameworkPropertyMetadata<float>(12, FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.AffectMeasure));
 
         public static readonly DependencyProperty<Brush> ForegroundProperty = DependencyProperty.Register(nameof(Foreground),
-            typeof(TextBlock), new UIPropertyMetadata<Brush>(new SolidColorBrush { Color = Colors.Black }, UIPropertyMetadataOptions.AffectMeasure));
+            typeof(TextBlock), new FrameworkPropertyMetadata<Brush>(new SolidColorBrush { Color = Colors.Black }, FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.AffectMeasure));
 
         public static readonly DependencyProperty<string> TextProperty = DependencyProperty.Register(nameof(Text), typeof(TextBlock),
             new UIPropertyMetadata<string>(DependencyProperty.UnsetValue, UIPropertyMetadataOptions.AffectMeasure));
@@ -74,6 +74,12 @@ namespace MPF.Controls
         {
             _run.Measure(availableSize);
             return _run.DesiredSize;
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            _run.Arrange(new Rect(Point.Zero, finalSize));
+            return finalSize;
         }
 
         public override Visual GetVisualChildAt(int index)

@@ -40,12 +40,8 @@ namespace MPF.Controls
 
         protected override Size ArrangeOverride(Size finalSize)
         {
+            _child?.Arrange(new Rect(Point.Zero, finalSize));
             return finalSize;
-        }
-
-        protected override void OnAfterArrange()
-        {
-            _child?.InvalidateArrange();
         }
 
         protected override Size MeasureOverride(Size availableSize)

@@ -20,6 +20,12 @@ namespace MPF
         public static readonly DependencyProperty<VerticalAlignment> VerticalAlignmentProperty = DependencyProperty.Register(nameof(VerticalAlignment),
             typeof(FrameworkElement), new UIPropertyMetadata<VerticalAlignment>(VerticalAlignment.Stretch, UIPropertyMetadataOptions.AffectArrange));
 
+        public static readonly DependencyProperty<float> WidthProperty = DependencyProperty.Register(nameof(Width),
+            typeof(FrameworkElement), new UIPropertyMetadata<float>(float.NaN, UIPropertyMetadataOptions.AffectMeasure));
+
+        public static readonly DependencyProperty<float> HeightProperty = DependencyProperty.Register(nameof(Height),
+            typeof(FrameworkElement), new UIPropertyMetadata<float>(float.NaN, UIPropertyMetadataOptions.AffectMeasure));
+
         public static readonly DependencyProperty<object> DataContextProperty = DependencyProperty.Register(nameof(DataContext),
             typeof(FrameworkElement), new FrameworkPropertyMetadata<object>(null, FrameworkPropertyMetadataOptions.Inherits, UIPropertyMetadataOptions.None));
 
@@ -42,6 +48,18 @@ namespace MPF
         {
             get { return GetValue(MarginProperty); }
             set { this.SetLocalValue(MarginProperty, value); }
+        }
+
+        public float Width
+        {
+            get { return GetValue(WidthProperty); }
+            set { this.SetLocalValue(WidthProperty, value); }
+        }
+
+        public float Height
+        {
+            get { return GetValue(HeightProperty); }
+            set { this.SetLocalValue(HeightProperty, value); }
         }
 
         public object DataContext
@@ -81,16 +99,12 @@ namespace MPF
             var renderSize = ArrangeOverride(size);
             RenderSize = renderSize;
 
+            size = new Size(Math.Max(finalRect.Width - margin.Left - margin.Right, 0),
+                Math.Max(finalRect.Height - margin.Top - margin.Bottom, 0));
             var offset = ComputeAlignmentOffset(size);
             offset.X += finalRect.Left + margin.Left;
             offset.Y += finalRect.Top + margin.Top;
             VisualOffset = offset;
-            OnAfterArrange();
-        }
-
-        protected virtual void OnAfterArrange()
-        {
-
         }
 
         protected virtual Size ArrangeOverride(Size finalSize)
@@ -101,9 +115,38 @@ namespace MPF
         protected sealed override Size MeasureCore(Size availableSize)
         {
             var margin = Margin;
-            var size = new Size(Math.Max(availableSize.Width - margin.Left - margin.Right, 0), Math.Max(availableSize.Height - margin.Top - margin.Bottom, 0));
+            var size = new Size(Math.Max(availableSize.Width - margin.Left - margin.Right, 0), 
+                Math.Max(availableSize.Height - margin.Top - margin.Bottom, 0));
+            var minMax = GetMinMax();
+            size.Width = Math.Max(minMax.MinWidth, Math.Min(size.Width, minMax.MaxWidth));
+            size.Height = Math.Max(minMax.MinHeight, Math.Min(size.Height, minMax.MaxHeight));
             size = MeasureOverride(size);
-            return size;
+            size = new Size(Math.Max(size.Width, minMax.MinWidth), Math.Max(size.Height, minMax.MinHeight));
+
+            float width = size.Width + margin.Left + margin.Right;
+            float height = size.Height + margin.Top + margin.Bottom;
+            return new Size(Math.Max(0, width), Math.Max(0, height));
+        }
+
+        private MinMax GetMinMax()
+        {
+            var width = Width;
+            var height = Height;
+            return new MinMax
+            {
+                MinWidth = float.IsNaN(width) ? 0 : width,
+                MaxWidth = float.IsNaN(width) ? 0 : float.PositiveInfinity,
+                MinHeight = float.IsNaN(height) ? 0 : height,
+                MaxHeight = float.IsNaN(height) ? 0 : float.PositiveInfinity
+            };
+        }
+
+        struct MinMax
+        {
+            public float MinWidth;
+            public float MaxWidth;
+            public float MinHeight;
+            public float MaxHeight;
         }
 
         protected virtual Size MeasureOverride(Size availableSize)

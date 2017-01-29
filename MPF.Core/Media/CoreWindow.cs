@@ -42,7 +42,11 @@ namespace MPF.Media
         public Size Size
         {
             get { return _nativeWindow.Size; }
-            set { _nativeWindow.Size = value; }
+            set
+            {
+                if (_nativeWindow.Size != value)
+                    _nativeWindow.Size = value;
+            }
         }
 
         public Size ClientSize

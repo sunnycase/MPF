@@ -77,6 +77,8 @@ namespace MPF
 
         private Size _desiredSize;
         public Size DesiredSize => Visibility == Visibility.Collapsed ? default(Size) : _desiredSize;
+        internal Rect? LastFinalRect { get; private set; }
+        internal Size LastAvailableSize { get; private set; }
 
         public UIElement()
         {
@@ -98,8 +100,15 @@ namespace MPF
             LayoutManager.Current.RegisterArrange(this);
         }
 
+        protected override void OnParentChanged(Visual visual)
+        {
+            (visual as UIElement)?.InvalidateArrange();
+            base.OnParentChanged(visual);
+        }
+
         public void Arrange(Rect finalRect)
         {
+            LastFinalRect = finalRect;
             ClearFlags(UIElementFlags.ArrangeDirty);
             ArrangeCore(finalRect);
             InvalidateBoundingBox();
@@ -120,6 +129,7 @@ namespace MPF
 
         public void Measure(Size availableSize)
         {
+            LastAvailableSize = availableSize;
             ClearFlags(UIElementFlags.MeasureDirty);
             _desiredSize = MeasureCore(availableSize);
             InvalidateArrange();

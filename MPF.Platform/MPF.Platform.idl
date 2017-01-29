@@ -87,6 +87,7 @@ interface IRenderCommandBuffer;
 ]
 interface IRenderableObject : IUnknown
 {
+	HRESULT SetParent([in]IRenderableObject* parent);
 	HRESULT SetOffset([in]float x, [in]float y);
 	HRESULT SetContent([in]IRenderCommandBuffer* buffer);
 	HRESULT Render();

@@ -22,18 +22,22 @@ class RenderableObject : public ResourceBase
 public:
 	RenderableObject();
 
+	void SetParent(RenderableObject* parent);
 	void SetOffset(float x, float y);
 	void SetContent(IRenderCommandBuffer* buffer);
 	void Update();
 	void Draw();
 private:
 	void SetBufferDirty();
+	void UpdateTransform();
 private:
 	bool _isDirty;
 	bool _isBufferDirty;
+	RenderableObject* _parent;
 	WRL::ComPtr<RenderCommandBuffer> _buffer;
 	std::shared_ptr<IDrawCallList> _drawCallList;
-	DirectX::XMFLOAT4X4 _modelTransform;
+	DirectX::XMMATRIX _modelTransform;
+	DirectX::XMFLOAT3 _translation;
 };
 
 END_NS_PLATFORM

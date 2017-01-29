@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace MPF
 {
+    [DebuggerDisplay("Location = {Location}, Size = {Size}")]
     public struct Rect
     {
         public float Left { get; set; }

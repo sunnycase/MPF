@@ -192,20 +192,21 @@ namespace MPF
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            if (type != OwnerType)
+            var cntType = type;
+            if (cntType != OwnerType)
             {
                 PropertyMetadata<T> metadata;
-                while (type != null)
+                while (cntType != null)
                 {
-                    if (_metadatas.TryGetValue(type, out metadata))
+                    if (_metadatas.TryGetValue(cntType, out metadata))
                     {
                         metadataIsDervied = true;
                         return metadata;
                     }
-                    type = type.GetTypeInfo().BaseType;
+                    cntType = cntType.GetTypeInfo().BaseType;
                 }
             }
-            metadataIsDervied = false;
+            metadataIsDervied = OwnerType.GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
             return _baseMetadata;
         }
 
@@ -215,6 +216,11 @@ namespace MPF
                 throw new InvalidOperationException("The type of new metadata must be derived from the type of old metadata.");
             newMetadata.Merge(oldMetadata, ownerIsDerived);
             return newMetadata;
+        }
+        
+        public bool TryGetNonDefaultValue(DependencyObject d, Type type, out T value)
+        {
+            return GetMetadata(type).TryGetNonDefaultValue(d, this, out value);
         }
     }
 }

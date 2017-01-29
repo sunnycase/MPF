@@ -13,13 +13,13 @@ namespace MPF.Documents
         private GlyphRun _glyphRun;
 
         public static readonly DependencyProperty<FontFamily> FontFamilyProperty = TextBlock.FontFamilyProperty.AddOwner(typeof(Run),
-            new UIPropertyMetadata<FontFamily>(DependencyProperty.UnsetValue, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender, OnFontFamilyPropertyChanged));
+            new FrameworkPropertyMetadata<FontFamily>(DependencyProperty.UnsetValue, FrameworkPropertyMetadataOptions.None, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender, OnFontFamilyPropertyChanged));
 
         public static readonly DependencyProperty<float> FontSizeProperty = TextBlock.FontSizeProperty.AddOwner(typeof(Run),
-            new UIPropertyMetadata<float>(DependencyProperty.UnsetValue, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender, OnFontSizePropertyChanged));
+            new FrameworkPropertyMetadata<float>(DependencyProperty.UnsetValue, FrameworkPropertyMetadataOptions.None, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender, OnFontSizePropertyChanged));
 
         public static readonly DependencyProperty<Brush> ForegroundProperty = TextBlock.ForegroundProperty.AddOwner(typeof(Run),
-            new UIPropertyMetadata<Brush>(DependencyProperty.UnsetValue, UIPropertyMetadataOptions.AffectRender));
+            new FrameworkPropertyMetadata<Brush>(DependencyProperty.UnsetValue, FrameworkPropertyMetadataOptions.None, UIPropertyMetadataOptions.AffectRender));
 
         public static readonly DependencyProperty<string> TextProperty = DependencyProperty.Register(nameof(Text),
             typeof(Run), new UIPropertyMetadata<string>(string.Empty, UIPropertyMetadataOptions.AffectMeasure | UIPropertyMetadataOptions.AffectRender,

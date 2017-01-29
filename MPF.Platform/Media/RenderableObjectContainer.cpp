@@ -15,6 +15,18 @@ RenderableObjectRef::RenderableObjectRef(std::shared_ptr<IRenderableObjectContai
 
 }
 
+STDMETHODIMP RenderableObjectRef::SetParent(IRenderableObject* parent)
+{
+	try
+	{
+		auto& childObj = _container->FindObject(_handle);
+		auto parentObj = parent ? &_container->FindObject(static_cast<RenderableObjectRef*>(parent)->_handle) : nullptr;
+		childObj.SetParent(parentObj);
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
 STDMETHODIMP_(ULONG) RenderableObjectRef::Release()
 {
 	ULONG ref = InternalRelease();

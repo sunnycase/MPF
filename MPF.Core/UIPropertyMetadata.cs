@@ -16,7 +16,7 @@ namespace MPF
 
     public class UIPropertyMetadata<T> : PropertyMetadata<T>
     {
-        private readonly UIPropertyMetadataOptions _uiOptions;
+        private UIPropertyMetadataOptions _uiOptions;
 
         public UIPropertyMetadata(T defaultValue, UIPropertyMetadataOptions uiOptions = UIPropertyMetadataOptions.None, EventHandler<PropertyChangedEventArgs<T>> propertyChangedHandler = null)
             :base(defaultValue, propertyChangedHandler)
@@ -33,6 +33,7 @@ namespace MPF
         protected override void MergeOverride(PropertyMetadata<T> old)
         {
             base.MergeOverride(old);
+            _uiOptions |= ((UIPropertyMetadata<T>)old)._uiOptions;
         }
 
         protected override void OnPropertyChanged(object sender, PropertyChangedEventArgs<T> e)

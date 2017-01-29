@@ -27,7 +27,8 @@ namespace MPF.HelloWorld
         {
             _window = new Window
             {
-                Size = new Size(300, 180)
+                Width = 1024,
+                Height = 768
             };
 
             _window.Content = new Border

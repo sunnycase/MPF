@@ -75,10 +75,7 @@ namespace MPF.Media
                             Transform = transform
                         });
 
-                        if (_width == 0)
-                            _width = (glyphMetrics.AdvanceWidth * scale) * 2;
-                        else
-                            _width += glyphMetrics.AdvanceWidth * scale;
+                        _width += glyphMetrics.AdvanceWidth * scale;
                         _height = Math.Max(_height, height * scale);
                         continue;
                     }

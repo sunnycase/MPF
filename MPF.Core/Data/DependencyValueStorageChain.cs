@@ -14,6 +14,7 @@ namespace MPF.Data
         private static readonly DependencyValueStorageKey DefaultKey = new DependencyValueStorageKey(1.0f, "Default");
 
         public IDependencyValueStorage Default { get; } = new DependencyValueStorage();
+        private readonly object _locker = new object();
         private readonly SortedDictionary<DependencyValueStorageKey, IDependencyValueStorage> _storages = new SortedDictionary<DependencyValueStorageKey, IDependencyValueStorage>();
 
         public DependencyValueStorageChain()
@@ -26,37 +27,43 @@ namespace MPF.Data
         {
             get
             {
-                IDependencyValueStorage storage;
-                if (_storages.TryGetValue(key, out storage))
-                    return storage;
-                return null;
+                lock(_locker)
+                {
+                    IDependencyValueStorage storage;
+                    if (_storages.TryGetValue(key, out storage))
+                        return storage;
+                    return null;
+                }
             }
             set
             {
                 if (key == DefaultKey)
                     throw new InvalidOperationException("Default storage is readonly.");
 
-                IDependencyValueStorage storage;
-                if (_storages.TryGetValue(key, out storage))
+                lock (_locker)
                 {
-                    if (storage != value)
+                    IDependencyValueStorage storage;
+                    if (_storages.TryGetValue(key, out storage))
                     {
-                        storage.CurrentValueChanged -= Storage_CurrentValueChanged;
+                        if (storage != value)
+                        {
+                            storage.CurrentValueChanged -= Storage_CurrentValueChanged;
+                            if (value != null)
+                            {
+                                UpdateStorage(key, storage, value);
+                                value.CurrentValueChanged += Storage_CurrentValueChanged;
+                            }
+                            else
+                                RemoveStorage(key, storage);
+                        }
+                    }
+                    else
+                    {
                         if (value != null)
                         {
-                            UpdateStorage(key, storage, value);
+                            AddStorage(key, value);
                             value.CurrentValueChanged += Storage_CurrentValueChanged;
                         }
-                        else
-                            RemoveStorage(key, storage);
-                    }
-                }
-                else
-                {
-                    if (value != null)
-                    {
-                        AddStorage(key, value);
-                        value.CurrentValueChanged += Storage_CurrentValueChanged;
                     }
                 }
             }
