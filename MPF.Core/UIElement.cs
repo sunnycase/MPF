@@ -223,6 +223,7 @@ namespace MPF
         private void InvokeEventHandlers<TArgs>(TArgs eventArgs) where TArgs : RoutedEventArgs
         {
             List<Tuple<Delegate, bool>> storage;
+            ((RoutedEvent<TArgs>)eventArgs.RoutedEvent).RaiseClassEventHandlers(_realType, this, eventArgs);
             if (_eventHandlers.TryGetValue(eventArgs.RoutedEvent, out storage))
             {
                 eventArgs.Source = this;
@@ -236,6 +237,7 @@ namespace MPF
 
         #endregion
 
+        #region Hit Test
         protected override Rect GetContentBounds()
         {
             return new Rect((Point)VisualOffset, RenderSize);
@@ -313,5 +315,6 @@ namespace MPF
                 result = HitTestFilterBehavior.Continue;
             return result;
         }
+        #endregion
     }
 }

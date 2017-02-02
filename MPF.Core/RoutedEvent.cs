@@ -115,11 +115,28 @@ namespace MPF
     public sealed class RoutedEvent<TArgs> : RoutedEvent where TArgs : RoutedEventArgs
     {
         public override Type EventArgsType => typeof(TArgs);
+        private readonly ConcurrentDictionary<Type, EventHandler<TArgs>> _classEventHandlers = new ConcurrentDictionary<Type, EventHandler<TArgs>>();
 
         internal RoutedEvent(string name, Type ownerType, RoutingStrategy routingStrategy)
             : base(name, ownerType, routingStrategy)
         {
 
+        }
+
+        public void RegisterClassEventHandler(Type type, EventHandler<TArgs> handler)
+        {
+            _classEventHandlers.AddOrUpdate(type, handler, (k, old) => (EventHandler<TArgs>)Delegate.Combine(old, handler));
+        }
+
+        internal void RaiseClassEventHandlers(Type type, object sender, TArgs e)
+        {
+            while (type != null)
+            {
+                EventHandler<TArgs> handler;
+                if (_classEventHandlers.TryGetValue(type, out handler))
+                    handler(sender, e);
+                type = type.GetTypeInfo().BaseType;
+            }
         }
     }
 }

@@ -4,6 +4,8 @@ using MPF.Media;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using MPF.Input;
+using System.Diagnostics;
 
 namespace MPF.Controls
 {

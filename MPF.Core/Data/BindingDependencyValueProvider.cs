@@ -60,9 +60,9 @@ namespace MPF.Data
                 Binding = binding ?? throw new ArgumentNullException(nameof(binding));
 
                 var exp = Binding.GetExpression();
-                GenerateDependents();
                 _getter = exp.Compile();
                 _oldValue = Value;
+                GenerateDependents();
             }
 
             private void GenerateDependents()

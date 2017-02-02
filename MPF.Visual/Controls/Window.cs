@@ -34,7 +34,6 @@ namespace MPF.Controls
         {
             _coreWindow.HasMaximize = HasMaximize;
             _coreWindow.Title = Title;
-            _coreWindow.Size = new Size(Width, Height);
 
             _coreWindow.SetRootVisual(this);
         }
@@ -47,6 +46,7 @@ namespace MPF.Controls
 
         public void Show()
         {
+            _coreWindow.Size = new Size(Width, Height);
             _coreWindow.Show();
             InvalidateArrange();
         }

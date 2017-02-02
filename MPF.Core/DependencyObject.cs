@@ -10,7 +10,7 @@ namespace MPF
 {
     public class DependencyObject
     {
-        private readonly Type _realType;
+        internal readonly Type _realType;
 
         public DependencyValueStorageChain ValueStorage { get; } = new DependencyValueStorageChain();
 

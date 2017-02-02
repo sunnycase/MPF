@@ -33,7 +33,7 @@ namespace MPF.HelloDesktop
                 Width = 1024,
                 Height = 768
             };
-            _window.Content = new Button
+            var button = new Button
             {
                 BorderThickness = new Thickness(1.0f),
                 BorderBrush = new SolidColorBrush { Color = Color.FromArgb(0xFF888888) },
@@ -46,9 +46,16 @@ namespace MPF.HelloDesktop
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top
             };
+            button.Click += Button_Click;
+            _window.Content = button;
             _window.PointerPressed += window_PointerPressed;
             _window.Show();
             ChangeMaximizeBox();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Console.WriteLine("Button Clicked");
         }
 
         private void window_PointerPressed(object sender, Input.PointerRoutedEventArgs e)
