@@ -11,5 +11,10 @@ namespace MPF.Media
         IResource IResourceProvider.Resource => GetResourceOverride();
 
         internal abstract IResource GetResourceOverride();
+
+        public static implicit operator Brush(Color color)
+        {
+            return (SolidColorBrush)(color);
+        }
     }
 }

@@ -20,23 +20,37 @@ namespace MPF.Media
             set { this.SetLocalValue(ColorProperty, value); }
         }
 
+        private ColorF _color;
+
         public SolidColorBrush()
         {
             _brushResource = this.CreateResource(ResourceType.RT_SolidColorBrush);
-            RegisterUpdateResource();
+            OnColorChanged(Color.ToColorF());
         }
 
         internal override void OnUpdateResource(object sender, EventArgs e)
         {
-            var color = Color.ToColorF();
-            MediaResourceManager.Current.UpdateSolidColorBrush(_brushResource.Value, ref color);
+            base.OnUpdateResource(sender, EventArgs.Empty);
+            MediaResourceManager.Current.UpdateSolidColorBrush(_brushResource.Value, ref _color);
+        }
+
+        private void OnColorChanged(ColorF color)
+        {
+            _color = color;
+            RegisterUpdateResource();
         }
 
         internal override IResource GetResourceOverride() => _brushResource.Value;
 
         private static void OnColorPropertyChanged(object sender, PropertyChangedEventArgs<Color> e)
         {
-            ((SolidColorBrush)sender).RegisterUpdateResource();
+            var brush = (SolidColorBrush)sender;
+            brush.OnColorChanged(e.NewValue.ToColorF());
+        }
+
+        public static implicit operator SolidColorBrush(Color color)
+        {
+            return new SolidColorBrush { Color = color };
         }
     }
 }

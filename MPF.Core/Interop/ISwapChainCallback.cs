@@ -11,7 +11,6 @@ namespace MPF.Interop
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface ISwapChainCallback
     {
-        void OnUpdate();
         void OnDraw();
     }
 }

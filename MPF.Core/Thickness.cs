@@ -30,5 +30,15 @@ namespace MPF
             Right = right;
             Bottom = bottom;
         }
+
+        public static implicit operator Thickness(float uniform)
+        {
+            return new Thickness(uniform);
+        }
+
+        public static implicit operator Thickness((float horizontal, float vertical) hv)
+        {
+            return new Thickness(hv.horizontal, hv.vertical);
+        }
     }
 }

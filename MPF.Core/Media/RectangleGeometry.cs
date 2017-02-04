@@ -27,12 +27,15 @@ namespace MPF.Media
             set { this.SetLocalValue(RigthBottomProperty, value); }
         }
 
+        private RectangleGeometryData _data;
+
         private readonly Lazy<IResource> _geometryRes;
 
         public RectangleGeometry()
         {
             _geometryRes = this.CreateResource(ResourceType.RT_RectangleGeometry);
-            RegisterUpdateResource();
+            OnLeftTopChanged(LeftTop);
+            OnRightBottomChanged(RigthBottom);
         }
 
         internal override IResource GetResourceOverride()
@@ -43,22 +46,29 @@ namespace MPF.Media
         internal override void OnUpdateResource(object sender, EventArgs e)
         {
             base.OnUpdateResource(sender, e);
-            var data = new RectangleGeometryData
-            {
-                LeftTop = LeftTop,
-                RightBottom = RigthBottom
-            };
-            MediaResourceManager.Current.UpdateRectangleGeometry(_geometryRes.Value, ref data);
+            MediaResourceManager.Current.UpdateRectangleGeometry(_geometryRes.Value, ref _data);
+        }
+
+        private void OnRightBottomChanged(Point rigthBottom)
+        {
+            _data.RightBottom = rigthBottom;
+            RegisterUpdateResource();
+        }
+
+        private void OnLeftTopChanged(Point leftTop)
+        {
+            _data.LeftTop = leftTop;
+            RegisterUpdateResource();
         }
 
         private static void OnLeftTopPropertyChanged(object sender, PropertyChangedEventArgs<Point> e)
         {
-            ((RectangleGeometry)sender).RegisterUpdateResource();
+            ((RectangleGeometry)sender).OnLeftTopChanged(e.NewValue);
         }
 
         private static void OnRigthBottomPropertyChanged(object sender, PropertyChangedEventArgs<Point> e)
         {
-            ((RectangleGeometry)sender).RegisterUpdateResource();
+            ((RectangleGeometry)sender).OnRightBottomChanged(e.NewValue);
         }
     }
 }

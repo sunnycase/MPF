@@ -10,6 +10,9 @@ namespace MPF
         private bool _defaultValueSet;
         private T _defaultValue;
 
+        public bool HasDefaultValue => _defaultValueSet;
+        public T DefaultValue => _defaultValue;
+
         public event EventHandler<PropertyChangedEventArgs<T>> PropertyChanged;
 
         public PropertyMetadata(T defaultValue, EventHandler<PropertyChangedEventArgs<T>> propertyChangedHandler = null)

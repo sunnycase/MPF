@@ -5,17 +5,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Reflection;
+using MPF.Threading;
 
 namespace MPF
 {
-    public class DependencyObject
+    public class DependencyObject : DispatcherObject
     {
         internal readonly Type _realType;
 
-        public DependencyValueStorageChain ValueStorage { get; } = new DependencyValueStorageChain();
+        private readonly DependencyValueStorageChain _valueStorage = new DependencyValueStorageChain();
+        public DependencyValueStorageChain ValueStorage
+        {
+            get
+            {
+                VerifyAccess();
+                return _valueStorage;
+            }
+        }
 
-        public readonly ConcurrentDictionary<DependencyProperty, Delegate> _propertyChangedHandlers = new ConcurrentDictionary<DependencyProperty, Delegate>();
-        public readonly ConcurrentDictionary<DependencyProperty, Delegate> _propertyChangedHandlersGen = new ConcurrentDictionary<DependencyProperty, Delegate>();
+        private readonly ConcurrentDictionary<DependencyProperty, Delegate> _propertyChangedHandlers = new ConcurrentDictionary<DependencyProperty, Delegate>();
+        private readonly ConcurrentDictionary<DependencyProperty, Delegate> _propertyChangedHandlersGen = new ConcurrentDictionary<DependencyProperty, Delegate>();
         private Delegate _anyPropertyChangedHandler;
 
         public DependencyObject()
@@ -26,6 +35,8 @@ namespace MPF
 
         public T GetValue<T>(DependencyProperty<T> property)
         {
+            VerifyAccess();
+
             T value;
             if (!(ValueStorage.TryGetCurrentValue(property, out value) ||
                 property.TryGetNonDefaultValue(this, _realType, out value)))
@@ -35,6 +46,8 @@ namespace MPF
 
         public void SetCurrentValue<T>(DependencyProperty<T> property, T value)
         {
+            VerifyAccess();
+
             IEffectiveValue<T> eValue;
             if (ValueStorage.TryGetCurrentEffectiveValue(property, out eValue) && eValue.CanSetValue)
                 eValue.Value = value;
@@ -86,6 +99,7 @@ namespace MPF
 
         internal void RaisePropertyChangedHelper<T>(DependencyProperty<T> property, CurrentValueChangedEventArgs e)
         {
+            CheckAccess();
             var oldValue = e.HasOldValue ? (T)e.OldValue : GetDefaultValue(property);
             var newValue = e.HasNewValue ? (T)e.NewValue : GetDefaultValue(property);
 

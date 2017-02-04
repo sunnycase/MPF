@@ -325,17 +325,6 @@ bool D3D11DeviceContext::IsActive() const noexcept
 
 void D3D11DeviceContext::DoFrame()
 {
-	std::vector<ComPtr<D3D11SwapChain>> swapChains;
-	{
-		auto locker = _swapChainLock.Lock();
-		for (auto&& weakRef : _swapChains)
-			if (auto swapChain = weakRef.Resolve())
-				swapChains.emplace_back(swapChain);
-	}
-	
-	for (auto&& swapChain : swapChains)
-		swapChain->Update();
-
 	ID3D11Buffer* buffers[] = { _swapChainUpdateContext.WVP.Get(), _swapChainUpdateContext.Model.Get(),
 		_swapChainUpdateContext.Geometry.Get() };
 	_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -346,6 +335,13 @@ void D3D11DeviceContext::DoFrame()
 	UpdateResourceManagers();
 	UpdateRenderObjects();
 
+	std::vector<ComPtr<D3D11SwapChain>> swapChains;
+	{
+		auto locker = _swapChainLock.Lock();
+		for (auto&& weakRef : _swapChains)
+			if (auto swapChain = weakRef.Resolve())
+				swapChains.emplace_back(swapChain);
+	}
 	for (auto&& swapChain : swapChains)
 		swapChain->DoFrame(_swapChainUpdateContext);
 }

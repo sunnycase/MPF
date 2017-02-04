@@ -7,7 +7,7 @@ namespace MPF.Data
 {
     internal class DependencyValueStorage : IDependencyValueStorage
     {
-        private readonly ConcurrentDictionary<DependencyProperty, SortedList<float, IEffectiveValue>> _dict = new ConcurrentDictionary<DependencyProperty, SortedList<float, IEffectiveValue>>();
+        private readonly Dictionary<DependencyProperty, SortedList<float, IEffectiveValue>> _dict = new Dictionary<DependencyProperty, SortedList<float, IEffectiveValue>>();
 
         public IEnumerable<DependencyProperty> Keys
         {
@@ -160,7 +160,10 @@ namespace MPF.Data
 
         private SortedList<float, IEffectiveValue> GetStorage(IDependencyValueProvider provider, DependencyProperty key)
         {
-            return _dict.GetOrAdd(key, k => new SortedList<float, IEffectiveValue>());
+            SortedList<float, IEffectiveValue> lst;
+            if (!_dict.TryGetValue(key, out lst))
+                _dict.Add(key, lst = new SortedList<float, IEffectiveValue>());
+            return lst;
         }
     }
 

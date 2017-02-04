@@ -216,7 +216,7 @@ namespace MPF.Media
             bboxSubgraph = _bboxSubgraph;
         }
 
-        protected void AddVisualChild(Visual visual)
+        internal protected void AddVisualChild(Visual visual)
         {
             if (visual.Parent != null)
                 throw new InvalidOperationException("Visual already has a parent.");
@@ -225,7 +225,7 @@ namespace MPF.Media
             InvalidateBoundingBox();
         }
 
-        protected void RemoveVisualChild(Visual visual)
+        internal protected void RemoveVisualChild(Visual visual)
         {
             if (visual.Parent != this)
                 throw new InvalidOperationException("Visual's parent is not this.");

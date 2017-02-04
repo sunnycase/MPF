@@ -12,6 +12,7 @@ namespace MPF.Interop
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface INativeApplication
     {
+        void SetUpdateCallback([MarshalAs(UnmanagedType.FunctionPtr)]Action callback);
         void Run();
     }
 }

@@ -23,7 +23,6 @@ public:
 	// Í¨¹ý WeakReferenceBase ¼Ì³Ð
 	STDMETHODIMP SetCallback(ISwapChainCallback * callback) override;
 	void DoFrame(SwapChainUpdateContext& context);
-	void Update();
 private:
 	void CreateWindowSizeDependentResources();
 	void UpdateShaderConstants(SwapChainUpdateContext& context);

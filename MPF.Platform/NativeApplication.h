@@ -21,6 +21,7 @@ public:
 
 	// Í¨¹ý WeakReferenceBase ¼Ì³Ð
 	STDMETHODIMP Run(void) override;
+	STDMETHODIMP SetUpdateCallback(INT_PTR callback) override;
 
 	static void AddEventToWait(HANDLE handle);
 	static void RemoveEventToWait(HANDLE handle);
@@ -28,6 +29,8 @@ public:
 private:
 	void DispatchHIDInputMessage(const MSG& msg);
 private:
+	void(__stdcall *_updateCallback)();
+
 	static WRL::Wrappers::CriticalSection _eventsToWaitCS;
 	static std::vector<HANDLE> _eventsToWait;
 	static std::vector<std::function<void()>> _atExits;

@@ -49,7 +49,7 @@ namespace MPF.Controls
         {
             get
             {
-                if (!_templateChildLoaded)
+                if (!_templateChildLoaded && CheckAccess())
                 {
                     _templateChildLoaded = true;
                     var templateChild = _templateChild;

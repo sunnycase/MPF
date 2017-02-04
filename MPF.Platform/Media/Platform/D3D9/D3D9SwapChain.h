@@ -20,7 +20,6 @@ public:
 
 	STDMETHODIMP SetCallback(ISwapChainCallback* callback) override;
 	virtual void DoFrame() = 0;
-	void Update();
 
 protected:
 	void CreateWindowSizeDependentResources();

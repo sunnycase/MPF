@@ -27,6 +27,9 @@ namespace MPF.Media
             set { this.SetLocalValue(BrushProperty, value); }
         }
 
+        private float _thickness;
+        private Brush _brush;
+
         private readonly Lazy<IResource> _penResource;
 
         IResource IResourceProvider.Resource => _penResource.Value;
@@ -34,24 +37,37 @@ namespace MPF.Media
         public Pen()
         {
             _penResource = this.CreateResource(ResourceType.RT_Pen);
-            RegisterUpdateResource();
+            OnThicknessChanged(Thickness);
+            OnBrushChanged(Brush);
         }
 
         internal override void OnUpdateResource(object sender, EventArgs e)
         {
             base.OnUpdateResource(sender, e);
-            MediaResourceManager.Current.UpdatePen(_penResource.Value, Thickness, Brush);
+            MediaResourceManager.Current.UpdatePen(_penResource.Value, _thickness, _brush);
+        }
+
+        private void OnBrushChanged(Brush brush)
+        {
+            _brush = brush;
+            RegisterUpdateResource();
+        }
+
+        private void OnThicknessChanged(float thickness)
+        {
+            _thickness = thickness;
+            RegisterUpdateResource();
         }
 
         private static void OnThicknessPropertyChanged(object sender, PropertyChangedEventArgs<float> e)
         {
-            ((Pen)sender).RegisterUpdateResource();
+            ((Pen)sender).OnThicknessChanged(e.NewValue);
         }
 
         private static void OnBrushPropertyChanged(object sender, PropertyChangedEventArgs<Brush> e)
         {
             ((Pen)sender).UpdateOnBrushUpdateResource(e.OldValue, e.NewValue);
-            ((Pen)sender).RegisterUpdateResource();
+            ((Pen)sender).OnBrushChanged(e.NewValue);
         }
 
         private void UpdateOnBrushUpdateResource(Brush oldValue, Brush newValue)

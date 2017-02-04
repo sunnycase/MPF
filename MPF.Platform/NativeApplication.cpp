@@ -27,6 +27,7 @@ std::vector<std::function<void()>> NativeApplication::_atExits;
 
 
 NativeApplication::NativeApplication()
+	:_updateCallback(nullptr)
 {
 	
 }
@@ -40,15 +41,31 @@ HRESULT NativeApplication::Run(void)
 	try
 	{
 		MSG msg;
-		while (GetMessage(&msg, NULL, 0, 0))
+		bool active = true;
+		while (active)
 		{
 			try
 			{
-				TranslateMessage(&msg);
-				if (msg.message == WM_INPUT && !msg.hwnd)
-					DispatchHIDInputMessage(msg);
+				if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+				{
+					if (msg.message == WM_QUIT)
+						active = false;
+					else
+					{
+						TranslateMessage(&msg);
+						if (msg.message == WM_INPUT && !msg.hwnd)
+							DispatchHIDInputMessage(msg);
+						else
+							DispatchMessage(&msg);
+					}
+				}
 				else
-					DispatchMessage(&msg);
+				{
+					auto updateCallback = _updateCallback;
+					if (updateCallback)
+						updateCallback();
+					Sleep(100);
+				}
 			}
 			catch (...) {}
 		}
@@ -71,6 +88,12 @@ HRESULT NativeApplication::Run(void)
 		return S_OK;
 	}
 	CATCH_ALL();
+}
+
+HRESULT NativeApplication::SetUpdateCallback(INT_PTR callback)
+{
+	_updateCallback = reinterpret_cast<void(__stdcall*)()>(callback);
+	return S_OK;
 }
 
 void NativeApplication::AddEventToWait(HANDLE handle)

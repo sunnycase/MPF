@@ -96,6 +96,12 @@ namespace MPF
             size.Width -= margin.Left + margin.Right;
             size.Height -= margin.Top + margin.Bottom;
 
+            var minMax = GetMinMax();
+            float maxWidth = Math.Max(DesiredSize.Width, minMax.MaxWidth);
+            size.Width = Math.Min(size.Width, maxWidth);
+            float maxHeight = Math.Max(DesiredSize.Height, minMax.MaxHeight);
+            size.Height = Math.Min(size.Height, maxHeight);
+
             var renderSize = ArrangeOverride(size);
             RenderSize = renderSize;
 
@@ -135,9 +141,9 @@ namespace MPF
             return new MinMax
             {
                 MinWidth = float.IsNaN(width) ? 0 : width,
-                MaxWidth = float.IsNaN(width) ? 0 : float.PositiveInfinity,
+                MaxWidth = float.IsNaN(width) ? float.PositiveInfinity : width,
                 MinHeight = float.IsNaN(height) ? 0 : height,
-                MaxHeight = float.IsNaN(height) ? 0 : float.PositiveInfinity
+                MaxHeight = float.IsNaN(height) ? float.PositiveInfinity : height
             };
         }
 

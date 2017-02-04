@@ -10,6 +10,14 @@ using System.Threading.Tasks;
 
 namespace MPF
 {
+    [Flags]
+    internal enum DependencyPropertyFlags
+    {
+        None = 0,
+        Attached = 1,
+        ReadOnly = 2
+    }
+
     public abstract class DependencyProperty : IEquatable<DependencyProperty>
     {
         private static int _nextAvailableGlobalId = 0;
@@ -18,14 +26,18 @@ namespace MPF
         public string Name { get; }
         public Type OwnerType { get; }
         public abstract Type PropertyType { get; }
+        public bool IsAttached => Flags.HasFlag(DependencyPropertyFlags.Attached);
+        public bool IsReadOnly => Flags.HasFlag(DependencyPropertyFlags.ReadOnly);
+        internal DependencyPropertyFlags Flags { get; }
         internal abstract IDependencyPropertyHelper Helper { get; }
 
         private readonly int _globalId;
 
-        internal DependencyProperty(string name, Type ownerType)
+        internal DependencyProperty(string name, Type ownerType, DependencyPropertyFlags flags)
         {
             Name = name;
             OwnerType = ownerType;
+            Flags = flags;
             AddFromeNameKey(name, ownerType);
             _globalId = Interlocked.Increment(ref _nextAvailableGlobalId);
         }
@@ -50,12 +62,22 @@ namespace MPF
 
         public static DependencyProperty<T> Register<T>(string name, Type ownerType, PropertyMetadata<T> metadata = null)
         {
+            return RegisterIntern(name, ownerType, DependencyPropertyFlags.None, metadata ?? new PropertyMetadata<T>(UnsetValue));
+        }
+
+        public static DependencyProperty<T> RegisterAttached<T>(string name, Type ownerType, PropertyMetadata<T> metadata = null)
+        {
+            return RegisterIntern(name, ownerType, DependencyPropertyFlags.Attached, metadata ?? new PropertyMetadata<T>(UnsetValue));
+        }
+
+        private static DependencyProperty<T> RegisterIntern<T>(string name, Type ownerType, DependencyPropertyFlags flag, PropertyMetadata<T> metadata)
+        {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
             if (ownerType == null)
                 throw new ArgumentNullException(nameof(ownerType));
 
-            return new DependencyProperty<T>(name, ownerType, metadata ?? new PropertyMetadata<T>(UnsetValue));
+            return new DependencyProperty<T>(name, ownerType, flag, metadata ?? new PropertyMetadata<T>(UnsetValue));
         }
 
         public static DependencyProperty FromName(string name, Type ownerType)
@@ -129,8 +151,8 @@ namespace MPF
         public override Type PropertyType => typeof(T);
         internal override IDependencyPropertyHelper Helper => _helper;
 
-        internal DependencyProperty(string name, Type ownerType, PropertyMetadata<T> metadata)
-            : base(name, ownerType)
+        internal DependencyProperty(string name, Type ownerType, DependencyPropertyFlags flags, PropertyMetadata<T> metadata)
+            : base(name, ownerType, flags)
         {
             Contract.Assert(metadata != null);
             
@@ -181,7 +203,7 @@ namespace MPF
             GetMetadata(type).RaisePropertyChanged(sender, e);
         }
 
-        private PropertyMetadata<T> GetMetadata(Type type)
+        public PropertyMetadata<T> GetMetadata(Type type)
         {
             bool metadataIsDervied;
             return GetMetadata(type, out metadataIsDervied);

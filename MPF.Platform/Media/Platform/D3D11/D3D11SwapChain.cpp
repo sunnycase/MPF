@@ -139,19 +139,14 @@ void D3D11SwapChain::UpdateShaderConstants(SwapChainUpdateContext& context)
 	wvp->Projection = _wvp.Projection;
 }
 
-void D3D11SwapChain::Update()
+void D3D11SwapChain::DoFrame(SwapChainUpdateContext& context)
 {
 	if (_needResize)
 	{
 		OnResize();
 		_needResize = false;
 	}
-	if (auto callback = _callback)
-		callback->OnUpdate();
-}
 
-void D3D11SwapChain::DoFrame(SwapChainUpdateContext& context)
-{
 	UpdateShaderConstants(context);
 
 	ID3D11RenderTargetView* const renderTargetViews[] = { _renderTargetView.Get() };

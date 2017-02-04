@@ -138,6 +138,10 @@ bool D3D9DeviceContext::IsActive() const noexcept
 
 void D3D9DeviceContext::DoFrame()
 {
+	_callback->OnRender();
+	UpdateResourceManagers();
+	UpdateRenderObjects();
+
 	std::vector<ComPtr<D3D9SwapChainBase>> swapChains;
 	{
 		auto locker = _rootSwapChainLock.Lock();
@@ -145,14 +149,6 @@ void D3D9DeviceContext::DoFrame()
 			if (auto swapChain = weakRef.Resolve())
 				swapChains.emplace_back(swapChain);
 	}
-
-	for (auto&& swapChain : swapChains)
-		swapChain->Update();
-
-	_callback->OnRender();
-	UpdateResourceManagers();
-	UpdateRenderObjects();
-
 	for (auto&& swapChain : swapChains)
 		swapChain->DoFrame();
 }

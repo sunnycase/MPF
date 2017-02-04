@@ -20,6 +20,7 @@ namespace MPF.Media
                 throw new ArgumentNullException(nameof(swapChain));
             _swapChain = swapChain;
             swapChain.SetCallback(new Callback(this));
+            Application.Current.Update += OnUpdate;
         }
 
         private void OnDraw()
@@ -46,7 +47,7 @@ namespace MPF.Media
             }
         }
 
-        private void OnUpdate()
+        private void OnUpdate(object sender, EventArgs e)
         {
             LayoutManager.Current.Update();
 
@@ -87,11 +88,6 @@ namespace MPF.Media
             public Callback(SwapChain swapChain)
             {
                 _swapChain = new WeakReference<SwapChain>(swapChain);
-            }
-
-            public void OnUpdate()
-            {
-                GetTarget()?.OnUpdate();
             }
 
             public void OnDraw()

@@ -33,21 +33,22 @@ namespace MPF.HelloDesktop
                 Width = 1024,
                 Height = 768
             };
-            var button = new Button
-            {
-                BorderThickness = new Thickness(1.0f),
-                BorderBrush = new SolidColorBrush { Color = Color.FromArgb(0xFF888888) },
-                Background = new SolidColorBrush { Color = Color.FromArgb(0x2200FF00) },
-                Margin = new Thickness(5),
-                Content = "Hello",
-                FontSize = 25,
-                Width = 100,
-                Height = 50,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top
-            };
+
+            var button = new Button { Content = "Hello" };
+            var buttonStyle = new Style(typeof(Button), Button.StyleProperty.GetMetadata(typeof(Button)).DefaultValue)
+                .SetLocalValue(Button.BorderThicknessProperty, 1)
+                .SetLocalValue(Button.BorderBrushProperty, Color.FromArgb(0xFF888888))
+                .SetLocalValue(Button.BackgroundProperty, Color.FromArgb(0x2200FF00))
+                .SetLocalValue(Button.FontSizeProperty, 25)
+                .SetLocalValue(Button.HeightProperty, 40)
+                .SetLocalValue(Button.MarginProperty, (0, 5))
+                .SetLocalValue(Button.VerticalAlignmentProperty, VerticalAlignment.Top);
+            button.Style = buttonStyle;
             button.Click += Button_Click;
-            _window.Content = button;
+            var sp = new StackPanel { Width = 200, Margin = 5 };
+            sp.Children.Add(button);
+            sp.Children.Add(new Button { Style = buttonStyle, Content = "Baka" });
+            _window.Content = sp;
             _window.PointerPressed += window_PointerPressed;
             _window.Show();
             ChangeMaximizeBox();

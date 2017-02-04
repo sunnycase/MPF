@@ -74,6 +74,7 @@ interface INativeWindow : IUnknown
 ]
 interface INativeApplication : IUnknown
 {
+	HRESULT SetUpdateCallback([in]INT_PTR callback);
 	HRESULT Run();
 };
 
@@ -100,7 +101,6 @@ interface IRenderableObject : IUnknown
 ]
 interface ISwapChainCallback : IUnknown
 {
-	HRESULT OnUpdate();
 	HRESULT OnDraw();
 };
 

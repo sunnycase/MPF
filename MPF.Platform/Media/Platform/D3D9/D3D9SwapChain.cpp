@@ -201,17 +201,6 @@ HRESULT D3D9SwapChainBase::SetCallback(ISwapChainCallback * callback)
 	CATCH_ALL();
 }
 
-void D3D9SwapChainBase::Update()
-{
-	if (_needResize)
-	{
-		OnReset();
-		_needResize = false;
-	}
-	if (auto callback = _callback)
-		callback->OnUpdate();
-}
-
 void D3D9SwapChainBase::CreateWindowSizeDependentResources()
 {
 	RECT viewRect;
@@ -232,6 +221,12 @@ void D3D9SwapChainBase::UpdateShaderConstants()
 
 void D3D9SwapChainBase::Draw(IDirect3DSurface9 * surface)
 {
+	if (_needResize)
+	{
+		OnReset();
+		_needResize = false;
+	}
+
 	UpdateShaderConstants();
 	ThrowIfFailed(_device->SetViewport(&_viewport));
 	ThrowIfFailed(_device->SetRenderTarget(0, surface));

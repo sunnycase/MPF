@@ -10,13 +10,15 @@ namespace MPF
     public class Style
     {
         public Type TargetType { get; }
+        public Style BasedOn { get; }
 
         private bool _isSealed = false;
         private readonly Dictionary<DependencyProperty, IEffectiveValueProvider> _values = new Dictionary<DependencyProperty, IEffectiveValueProvider>();
 
-        public Style(Type targetType)
+        public Style(Type targetType, Style basedOn = null)
         {
             TargetType = targetType;
+            BasedOn = basedOn;
         }
 
         public void SetValue<T>(DependencyProperty<T> property, IEffectiveValueProvider<T> value)
@@ -41,6 +43,15 @@ namespace MPF
 
         private void Seal()
         {
+            if(BasedOn != null)
+            {
+                BasedOn.Seal();
+                foreach (var value in BasedOn._values)
+                {
+                    if (!_values.ContainsKey(value.Key))
+                        _values.Add(value.Key, value.Value);
+                }
+            }
             _isSealed = true;
         }
 
@@ -67,7 +78,7 @@ namespace MPF
 
             private readonly Style _style;
             private readonly DependencyObject _d;
-            private readonly ConcurrentDictionary<DependencyProperty, IEffectiveValue> _values = new ConcurrentDictionary<DependencyProperty, IEffectiveValue>();
+            private readonly Dictionary<DependencyProperty, IEffectiveValue> _values = new Dictionary<DependencyProperty, IEffectiveValue>();
 
             public StyleDependencyValueStorage(Style style, DependencyObject d)
             {
@@ -84,12 +95,12 @@ namespace MPF
                 IEffectiveValueProvider provider;
                 if (_style._values.TryGetValue(key, out provider))
                 {
-                    value = _values.GetOrAdd(key, k =>
+                    if(!_values.TryGetValue(key, out value))
                     {
                         var effectiveValue = provider.ProviderValue(_d);
                         effectiveValue.ValueChanged = (s, e) => OnEffectiveValueChanged(key, e.OldValue, e.NewValue);
-                        return effectiveValue;
-                    });
+                        value = effectiveValue;
+                    }
                     return true;
                 }
                 value = null;
