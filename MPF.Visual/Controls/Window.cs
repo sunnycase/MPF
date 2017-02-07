@@ -34,13 +34,18 @@ namespace MPF.Controls
         {
             _coreWindow.HasMaximize = HasMaximize;
             _coreWindow.Title = Title;
+            _coreWindow.SizeChanged += coreWindow_SizeChanged;
 
             _coreWindow.SetRootVisual(this);
         }
 
+        private void coreWindow_SizeChanged(object sender, EventArgs e)
+        {
+            InvalidateArrange();
+        }
+
         protected override Size ArrangeOverride(Size finalSize)
         {
-            _coreWindow.Size = finalSize;
             return base.ArrangeOverride(_coreWindow.ClientSize);
         }
 

@@ -17,6 +17,7 @@ namespace MPF
         public GridUnitType UnitType { get; }
 
         public static readonly GridLength Auto = new GridLength(1.0f, GridUnitType.Auto);
+        public static readonly GridLength Star = new GridLength(1.0f, GridUnitType.Star);
 
         public GridLength(float value, GridUnitType unitType = GridUnitType.Pixel)
         {

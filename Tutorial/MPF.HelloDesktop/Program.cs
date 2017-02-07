@@ -40,15 +40,23 @@ namespace MPF.HelloDesktop
                 .SetLocalValue(Button.BorderBrushProperty, Color.FromArgb(0xFF888888))
                 .SetLocalValue(Button.BackgroundProperty, Color.FromArgb(0x2200FF00))
                 .SetLocalValue(Button.FontSizeProperty, 25)
-                .SetLocalValue(Button.HeightProperty, 40)
-                .SetLocalValue(Button.MarginProperty, (0, 5))
-                .SetLocalValue(Button.VerticalAlignmentProperty, VerticalAlignment.Top);
+                .SetLocalValue(Button.MarginProperty, 5);
             button.Style = buttonStyle;
             button.Click += Button_Click;
-            var sp = new StackPanel { Width = 200, Margin = 5 };
-            sp.Children.Add(button);
-            sp.Children.Add(new Button { Style = buttonStyle, Content = "Baka" });
-            _window.Content = sp;
+            var grid = new Grid();
+            grid.RowDefinitions.Add(new RowDefinition());
+            grid.RowDefinitions.Add(new RowDefinition());
+            grid.ColumnDefinitions.Add(new ColumnDefinition());
+            grid.ColumnDefinitions.Add(new ColumnDefinition());
+            grid.Children.Add(button);
+            button = new Button { Style = buttonStyle, Content = "Baka" };
+            Grid.SetRow(button, 1);
+            grid.Children.Add(button);
+            button = new Button { Style = buttonStyle, Content = "Xiahuan" };
+            Grid.SetColumn(button, 1);
+            Grid.SetRowSpan(button, 2);
+            grid.Children.Add(button);
+            _window.Content = grid;
             _window.PointerPressed += window_PointerPressed;
             _window.Show();
             ChangeMaximizeBox();

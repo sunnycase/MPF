@@ -29,7 +29,7 @@ std::vector<std::function<void()>> NativeApplication::_atExits;
 NativeApplication::NativeApplication()
 	:_updateCallback(nullptr)
 {
-	
+
 }
 
 NativeApplication::~NativeApplication()
@@ -60,12 +60,11 @@ HRESULT NativeApplication::Run(void)
 					}
 				}
 				else
-				{
-					auto updateCallback = _updateCallback;
-					if (updateCallback)
-						updateCallback();
 					Sleep(100);
-				}
+
+				auto updateCallback = _updateCallback;
+				if (updateCallback)
+					updateCallback();
 			}
 			catch (...) {}
 		}
