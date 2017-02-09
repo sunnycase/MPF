@@ -101,6 +101,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -124,6 +125,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -148,6 +150,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MPFPLATFORM_EXPORTS;%(PreprocessorDefinitions);MPF_PLATFORM_EXPORTS;__WRL_CLASSIC_COM__;__WRL_CLASSIC_COM_STRICT__</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -174,6 +177,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;MPFPLATFORM_EXPORTS;%(PreprocessorDefinitions);MPF_PLATFORM_EXPORTS;__WRL_CLASSIC_COM__;__WRL_CLASSIC_COM_STRICT__</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -203,6 +207,7 @@
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Media\Brush.h" />
     <ClInclude Include="Media\BufferManager.h" />
+    <ClInclude Include="Media\Camera.h" />
     <ClInclude Include="Media\DeviceContext.h" />
     <ClInclude Include="Media\DrawCallList.h" />
     <ClInclude Include="Media\FontFamily.h" />

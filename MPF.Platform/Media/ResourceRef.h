@@ -22,6 +22,7 @@ public:
 
 	ResourceType GetType() const noexcept { return _resType; }
 	UINT_PTR GetHandle() const noexcept { return _handle; }
+	const WeakRef<ResourceManagerBase>& GetResourceManagerWeak() const noexcept { return _resMgr; }
 private:
 	WeakRef<ResourceManagerBase> _resMgr;
 	ResourceType _resType;

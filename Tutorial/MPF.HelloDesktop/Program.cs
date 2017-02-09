@@ -2,9 +2,11 @@
 using MPF.Documents;
 using MPF.Input;
 using MPF.Media;
+using MPF.Media3D;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -49,17 +51,52 @@ namespace MPF.HelloDesktop
             grid.ColumnDefinitions.Add(new ColumnDefinition());
             grid.ColumnDefinitions.Add(new ColumnDefinition());
             grid.Children.Add(button);
-            button = new Button { Style = buttonStyle, Content = "Baka" };
+            button = new Button
+            {
+                Style = buttonStyle,
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                VerticalContentAlignment = VerticalAlignment.Stretch
+            };
             Grid.SetRow(button, 1);
             grid.Children.Add(button);
-            button = new Button { Style = buttonStyle, Content = "Xiahuan" };
-            Grid.SetColumn(button, 1);
-            Grid.SetRowSpan(button, 2);
-            grid.Children.Add(button);
+            var scene = new Scene
+                {
+                    new Visual3D()
+                };
+            var viewport = new Viewport3D
+            {
+                Camera = new MatrixCamera
+                {
+                    ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(150, 150, 250), new Vector3(50, 50, 0), Vector3.UnitY)
+                },
+                Scene = scene
+            };
+            viewport.SizeChanged += Viewport_SizeChanged;
+            button.Content = viewport;
+            viewport = new Viewport3D
+            {
+                Camera = new MatrixCamera
+                {
+                    ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(-150, 150, 250), new Vector3(50, 50, 0), Vector3.UnitY)
+                },
+                Scene = scene
+            };
+            viewport.SizeChanged += Viewport_SizeChanged;
+            Grid.SetColumn(viewport, 1);
+            Grid.SetRowSpan(viewport, 2);
+            grid.Children.Add(viewport);
             _window.Content = grid;
             _window.PointerPressed += window_PointerPressed;
             _window.Show();
+            //ShowWindow2(scene);
             ChangeMaximizeBox();
+        }
+
+        private void Viewport_SizeChanged(object sender, EventArgs e)
+        {
+            var viewport = (Viewport3D)sender;
+            var camera = (MatrixCamera)viewport.Camera;
+            camera.ProjectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView((float)Math.PI / 2.0f, viewport.RenderSize.Width / viewport.RenderSize.Height, 0.3f, 1000.0f);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -73,10 +110,24 @@ namespace MPF.HelloDesktop
             e.Handled = true;
         }
 
-        private void ShowWindow2()
+        private void ShowWindow2(Scene scene)
         {
-            _window2 = new Window();
+            _window2 = new Window
+            {
+                Width = 300,
+                Height = 200
+            };
             _window2.Title = "Hello MPF Multi Window";
+            var viewport = new Viewport3D
+            {
+                Camera = new MatrixCamera
+                {
+                    ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(-150, -150, 250), new Vector3(50, 50, 0), Vector3.UnitY)
+                },
+                Scene = scene
+            };
+            viewport.SizeChanged += Viewport_SizeChanged;
+            _window2.Content = viewport;
             _window2.Show();
         }
 

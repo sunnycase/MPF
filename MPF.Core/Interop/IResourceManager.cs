@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MPF.Media3D;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -13,7 +14,9 @@ namespace MPF.Interop
         RT_RectangleGeometry,
         RT_PathGeometry,
         RT_SolidColorBrush,
-        RT_Pen
+        RT_Pen,
+        RT_Camera,
+        RT_BoxGeometry3D
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -62,6 +65,15 @@ namespace MPF.Interop
         }
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    struct BoxGeometry3DData
+    {
+        public Point3D Position;
+        public float Width;
+        public float Height;
+        public float Depth;
+    }
+
     [Guid("C8E784D3-3EBD-40D0-A421-55B3B52EF590")]
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -75,5 +87,7 @@ namespace MPF.Interop
         void UpdatePathGeometry([In]IResource resource, [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] data, [In] uint length);
         void UpdateSolidColorBrush([In]IResource resource, [In] ref ColorF color);
         void UpdatePen([In]IResource resource, [In] float thickness, [In]IResource brush);
+        void UpdateCamera([In]IResource resource, [In]ref Matrix4x4 viewMatrix, [In]ref Matrix4x4 projectionMatrix);
+        void UpdateBoxGeometry3D([In]IResource resource, [In] ref BoxGeometry3DData data);
     }
 }

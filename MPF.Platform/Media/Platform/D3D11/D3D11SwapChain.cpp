@@ -6,7 +6,11 @@
 //
 #include "stdafx.h"
 #include "D3D11SwapChain.h"
+#include "../../ResourceRef.h"
+#include "../../ResourceManagerBase.h"
 #include <DirectXMath.h>
+#include <stack>
+#include <array>
 using namespace WRL;
 using namespace NS_PLATFORM;
 using namespace NS_PLATFORM_D3D11;
@@ -132,12 +136,110 @@ void D3D11SwapChain::OnResize()
 	CreateWindowSizeDependentResources();
 }
 
-void D3D11SwapChain::UpdateShaderConstants(SwapChainUpdateContext& context)
+struct SwapChainDrawingContext : public RuntimeClass<RuntimeClassFlags<ClassicCom>, ISwapChainDrawingContext>
 {
-	auto wvp = context.WVP.Map(_deviceContext.Get());
-	wvp->WorldView = _wvp.WorldView;
-	wvp->Projection = _wvp.Projection;
-}
+	SwapChainDrawingContext(SwapChainUpdateContext& context, ID3D11DeviceContext* deviceContext)
+		:_context(context), _deviceContext(deviceContext)
+	{
+
+	}
+
+	// Í¨¹ý RuntimeClass ¼Ì³Ð
+	STDMETHODIMP PushCamera(MPF::Platform::IResource *camera)
+	{
+		ARGUMENT_NOTNULL_HR(camera);
+		try
+		{
+			auto& cameraRef = *static_cast<ResourceRef*>(camera);
+			auto resMgr = cameraRef.GetResourceManagerWeak().Resolve();
+			if (resMgr)
+			{
+				auto& cameraObj = resMgr->GetCamera(cameraRef.GetHandle());
+				PushAndApply({ cameraObj.View, cameraObj.Projection });
+				return S_OK;
+			}
+			return E_NOT_VALID_STATE;
+		}
+		CATCH_ALL();
+	}
+
+	STDMETHODIMP PopCamera()
+	{
+		try
+		{
+			if (!_cameras.empty())
+			{
+				_cameras.pop();
+				if (!_cameras.empty())
+				{
+					Apply(_cameras.top());
+					return S_OK;
+				}
+			}
+			return E_NOT_VALID_STATE;
+		}
+		CATCH_ALL();
+	}
+
+	STDMETHODIMP PushViewport(Rect *viewport)
+	{
+		ARGUMENT_NOTNULL_HR(viewport);
+		try
+		{
+			PushAndApply({ viewport->Left, viewport->Top, viewport->Width, viewport->Height, 0.f, 1.f });
+			return S_OK;
+		}
+		CATCH_ALL();
+	}
+
+	STDMETHODIMP PopViewport()
+	{
+		try
+		{
+			if (!_viewports.empty())
+			{
+				_viewports.pop();
+				if (!_viewports.empty())
+				{
+					Apply(_viewports.top());
+					return S_OK;
+				}
+			}
+			return E_NOT_VALID_STATE;
+		}
+		CATCH_ALL();
+	}
+
+	void PushAndApply(const std::array<DirectX::XMFLOAT4X4, 2>& camera)
+	{
+		_cameras.push(camera);
+		Apply(camera);
+	}
+
+	void PushAndApply(const D3D11_VIEWPORT& viewport)
+	{
+		_viewports.push(viewport);
+		Apply(viewport);
+	}
+
+	std::stack<std::array<DirectX::XMFLOAT4X4, 2>> _cameras;
+	std::stack<D3D11_VIEWPORT> _viewports;
+private:
+	void Apply(const std::array<DirectX::XMFLOAT4X4, 2>& camera)
+	{
+		auto wvp = _context.WVP.Map(_deviceContext.Get());
+		wvp->WorldView = camera[0];
+		wvp->Projection = camera[1];
+	}
+
+	void Apply(const D3D11_VIEWPORT& viewport)
+	{
+		_deviceContext->RSSetViewports(1, &viewport);
+	}
+
+	SwapChainUpdateContext& _context;
+	ComPtr<ID3D11DeviceContext> _deviceContext;
+};
 
 void D3D11SwapChain::DoFrame(SwapChainUpdateContext& context)
 {
@@ -147,17 +249,18 @@ void D3D11SwapChain::DoFrame(SwapChainUpdateContext& context)
 		_needResize = false;
 	}
 
-	UpdateShaderConstants(context);
+	auto drawingContext = Make<SwapChainDrawingContext>(context, _deviceContext.Get());
+	drawingContext->PushAndApply({ _wvp.WorldView, _wvp.Projection });
 
 	ID3D11RenderTargetView* const renderTargetViews[] = { _renderTargetView.Get() };
 	XMVECTORF32 color = { 1.f, 1.f, 1.f, 1.f };
 
-	_deviceContext->RSSetViewports(1, &_viewport);
+	drawingContext->PushAndApply(_viewport);
 	_deviceContext->OMSetRenderTargets(1, renderTargetViews, nullptr);
 	_deviceContext->ClearRenderTargetView(_renderTargetView.Get(), color.f);
 
 	if (auto callback = _callback)
-		callback->OnDraw();
+		callback->OnDraw(drawingContext.Get());
 
 	ThrowIfFailed(_swapChain->Present(1, 0));
 }

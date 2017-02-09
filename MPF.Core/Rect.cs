@@ -41,6 +41,12 @@ namespace MPF
             return Left <= point.X && Top <= point.Y && Right >= point.X && Bottom >= point.Y;
         }
 
+        public void Offset(Point offset)
+        {
+            Left += offset.X;
+            Top += offset.Y;
+        }
+
         public static readonly Rect Zero = new Rect();
 
         public static Rect Union(Rect a, Rect b)

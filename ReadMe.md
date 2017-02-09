@@ -6,6 +6,7 @@ A WPF-alike GUI Framework for .Net Core.
 
 ## Features
 ### Rendering
+- 2D / 3D Object Rendering
 - Vector Geometry Rendering (Line, Arc, Bezier)
 - Vector Font Rendering
 
@@ -29,6 +30,7 @@ A WPF-alike GUI Framework for .Net Core.
 
 ## 特性
 ### 渲染
+- 2D / 3D 对象渲染
 - 矢量图形渲染 (Line, Arc, Bezier)
 - 矢量字体渲染
 

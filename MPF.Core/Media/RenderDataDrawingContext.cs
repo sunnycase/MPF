@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MPF.Media3D;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MPF.Media
 {
-    internal class RenderDataDrawingContext : IDrawingContext
+    internal class RenderDataDrawingContext : IDrawingContext, IDrawingContext3D
     {
         private readonly RenderData _renderData = new RenderData();
         private Matrix4x4 _identityMat4x4 = Matrix4x4.Identity;
@@ -25,6 +26,16 @@ namespace MPF.Media
         public void DrawGeometry(Geometry geometry, Pen pen, Brush brush)
         {
             _renderData.DrawGeometry(geometry, pen, brush, ref _identityMat4x4);
+        }
+
+        public void DrawGeometry3D(Geometry3D geometry, Pen pen, Brush brush, ref Matrix4x4 transform)
+        {
+            _renderData.DrawGeometry3D(geometry, pen, brush, ref transform);
+        }
+
+        public void DrawGeometry3D(Geometry3D geometry, Pen pen, Brush brush)
+        {
+            _renderData.DrawGeometry3D(geometry, pen, brush, ref _identityMat4x4);
         }
 
         #region IDisposable Support

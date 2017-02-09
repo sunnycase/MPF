@@ -183,10 +183,12 @@ struct PlatformProvider<PlatformId::D3D11>
 	void Transform(std::vector<StrokeVertex>& vertices, const LineGeometry& geometry);
 	void Transform(std::vector<StrokeVertex>& vertices, const RectangleGeometry& geometry);
 	void Transform(std::vector<StrokeVertex>& vertices, const PathGeometry& geometry);
+	void Transform(std::vector<StrokeVertex>& vertices, const BoxGeometry3D& geometry);
 
 	void Transform(std::vector<FillVertex>& vertices, const LineGeometry& geometry);
 	void Transform(std::vector<FillVertex>& vertices, const RectangleGeometry& geometry);
 	void Transform(std::vector<FillVertex>& vertices, const PathGeometry& geometry);
+	void Transform(std::vector<FillVertex>& vertices, const BoxGeometry3D& geometry);
 };
 
 END_NS_PLATFORM

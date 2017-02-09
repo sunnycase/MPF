@@ -228,3 +228,28 @@ void PlatformProvider<PlatformId::D3D9>::Transform(std::vector<StrokeVertex>& ve
 		}
 	}
 }
+
+// 3D Geometry
+
+void PlatformProvider<PlatformId::D3D9>::Transform(std::vector<StrokeVertex>& vertices, const BoxGeometry3D& geometry)
+{
+	//auto position = geometry.Data.Position;
+	//auto rightBottomPoint = geometry.Data.RightBottom;
+	//SwapIfGeater(leftTopPoint.X, rightBottomPoint.X);
+	//SwapIfGeater(leftTopPoint.Y, rightBottomPoint.Y);
+
+	//XMFLOAT2 leftTop{ leftTopPoint.X, leftTopPoint.Y };
+	//XMFLOAT2 rightTop{ rightBottomPoint.X, leftTopPoint.Y };
+	//XMFLOAT2 rightBottom{ rightBottomPoint.X, rightBottomPoint.Y };
+	//XMFLOAT2 leftBottom{ leftTopPoint.X, rightBottomPoint.Y };
+
+	//const auto ltDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, -1.f });
+	//const auto rtDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, -1.f });
+	//const auto lbDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, 1.f });
+	//const auto rbDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, 1.f });
+
+	//EmplaceLine(vertices, leftTop, rightTop, ltDirVec, rtDirVec);
+	//EmplaceLine(vertices, rightTop, rightBottom, rtDirVec, rbDirVec);
+	//EmplaceLine(vertices, rightBottom, leftBottom, rbDirVec, lbDirVec);
+	//EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
+}

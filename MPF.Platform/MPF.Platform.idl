@@ -16,6 +16,16 @@ typedef struct
 	float X, Y;
 } Point;
 
+typedef struct
+{
+	float X, Y, Z;
+} Point3D;
+
+typedef struct
+{
+	float Left, Top, Width, Height;
+} Rect;
+
 [
 	uuid(12DCA941-A675-4A79-81E0-2378753D6DAF),
 	helpstring("Native Window Callback Interface"),
@@ -90,8 +100,23 @@ interface IRenderableObject : IUnknown
 {
 	HRESULT SetParent([in]IRenderableObject* parent);
 	HRESULT SetOffset([in]float x, [in]float y);
+	[propget]
+	HRESULT FinalOffset([out]Point* value);
 	HRESULT SetContent([in]IRenderCommandBuffer* buffer);
 	HRESULT Render();
+};
+
+[
+	uuid(790E0449-4EFC-4A99-8083-446D1DB91FAB),
+	helpstring("SwapChain Drawing Context Interface"),
+	version(1.0)
+]
+interface ISwapChainDrawingContext : IUnknown
+{
+	HRESULT PushCamera([in]IResource* camera);
+	HRESULT PopCamera();
+	HRESULT PushViewport([in]Rect* viewport);
+	HRESULT PopViewport();
 };
 
 [
@@ -101,7 +126,7 @@ interface IRenderableObject : IUnknown
 ]
 interface ISwapChainCallback : IUnknown
 {
-	HRESULT OnDraw();
+	HRESULT OnDraw([in]ISwapChainDrawingContext* context);
 };
 
 [
@@ -130,7 +155,9 @@ typedef enum
 	RT_RectangleGeometry,
 	RT_PathGeometry,
 	RT_SolidColorBrush,
-	RT_Pen
+	RT_Pen,
+	RT_Camera,
+	RT_BoxGeometry3D
 } ResourceType;
 
 typedef struct
@@ -149,6 +176,14 @@ typedef struct
 	Point LeftTop;
 	Point RightBottom;
 } RectangleGeometryData;
+
+typedef struct
+{
+	Point3D Position;
+	float Width;
+	float Height;
+	float Depth;
+} BoxGeometry3DData;
 
 interface IResourceManager;
 
@@ -211,6 +246,8 @@ interface IResourceManager : IUnknown
 	HRESULT UpdatePathGeometry([in]IResource* res, [in, size_is(length)]byte* data, [in]UINT32 length);
 	HRESULT UpdateSolidColorBrush([in]IResource* res, [in]ColorF* color);
 	HRESULT UpdatePen([in]IResource* res, [in]float thickness, [in]IResource* brush);
+	HRESULT UpdateCamera([in]IResource* res, [in]float* viewMatrix, [in]float* projectionMatrix);
+	HRESULT UpdateBoxGeometry3D([in]IResource* res, [in]BoxGeometry3DData* data);
 };
 
 [

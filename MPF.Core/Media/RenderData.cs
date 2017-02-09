@@ -1,4 +1,5 @@
 ﻿using MPF.Interop;
+using MPF.Media3D;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,11 @@ namespace MPF.Media
             _buffer.DrawGeometry(((IResourceProvider)geometry).Resource, ((IResourceProvider)pen)?.Resource, ((IResourceProvider)brush)?.Resource, ref transform);
         }
 
+        public void DrawGeometry3D(Geometry3D geometry, Pen pen, Brush brush, ref Matrix4x4 transform)
+        {
+            _buffer.DrawGeometry(((IResourceProvider)geometry).Resource, ((IResourceProvider)pen)?.Resource, ((IResourceProvider)brush)?.Resource, ref transform);
+        }
+
         public IRenderCommandBuffer Close()
         {
             return _buffer;
@@ -35,7 +41,6 @@ namespace MPF.Media
         {
             if (!disposedValue)
             {
-                Marshal.ReleaseComObject(_buffer);
                 GC.RemoveMemoryPressure(512);
                 disposedValue = true;
             }

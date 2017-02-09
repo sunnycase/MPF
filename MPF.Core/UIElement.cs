@@ -16,8 +16,7 @@ namespace MPF
     {
         None = 0x0,
         MeasureDirty = 0x1,
-        RenderDirty = 0x2,
-        ArrangeDirty = 0x4
+        ArrangeDirty = 0x2
     }
 
     public class UIElement : Visual, IInputElement
@@ -29,7 +28,14 @@ namespace MPF
         public Size RenderSize
         {
             get { return _renderSize; }
-            set { _renderSize = value; }
+            set
+            {
+                if (_renderSize != value)
+                {
+                    _renderSize = value;
+                    OnSizeChanged();
+                }
+            }
         }
 
         public static readonly DependencyProperty<Visibility> VisibilityProperty = DependencyProperty.Register(nameof(Visibility), typeof(UIElement),
@@ -75,6 +81,8 @@ namespace MPF
             remove { RemoveHandler(PointerReleasedEvent, value); }
         }
 
+        public event EventHandler SizeChanged;
+
         private Size _desiredSize;
         public Size DesiredSize => Visibility == Visibility.Collapsed ? default(Size) : _desiredSize;
         internal Rect? LastFinalRect { get; private set; }
@@ -84,14 +92,6 @@ namespace MPF
         {
             UpdateVisualVisibility(Visibility);
             InvalidateArrange();
-            InvalidateRender();
-            InvalidateBoundingBox();
-        }
-
-        internal new void Render()
-        {
-            ClearFlags(UIElementFlags.RenderDirty);
-            base.Render();
         }
 
         public void InvalidateArrange()
@@ -150,18 +150,17 @@ namespace MPF
             _uiFlags &= ~flags;
         }
 
-        internal void InvalidateRender()
-        {
-            SetUIFlags(UIElementFlags.RenderDirty);
-            LayoutManager.Current.RegisterRender(this);
-        }
-
         private void UpdateVisualVisibility(Visibility value)
         {
             if (value == Visibility.Visible)
                 IsVisualVisible = true;
             else
                 IsVisualVisible = false;
+        }
+
+        protected virtual void OnSizeChanged()
+        {
+            SizeChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private static void OnVisibilityPropertyChanged(object sender, PropertyChangedEventArgs<Visibility> e)

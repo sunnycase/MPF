@@ -39,7 +39,8 @@ public:
 	ResourceManager(DeviceContext& deviceContext)
 		:_deviceContext(deviceContext), _strokeVBMgr(deviceContext, sizeof(StrokeVertex)),
 		_fillVBMgr(deviceContext, sizeof(FillVertex)),
-		RM_CTOR_IMPL1(LineGeometry), RM_CTOR_IMPL1(RectangleGeometry), RM_CTOR_IMPL1(PathGeometry)
+		RM_CTOR_IMPL1(LineGeometry), RM_CTOR_IMPL1(RectangleGeometry), RM_CTOR_IMPL1(PathGeometry),
+		RM_CTOR_IMPL1(BoxGeometry3D)
 	{
 
 	}
@@ -56,6 +57,7 @@ public:
 			RM_TRYGET_IMPL1(LineGeometry);
 			RM_TRYGET_IMPL1(RectangleGeometry);
 			RM_TRYGET_IMPL1(PathGeometry);
+			RM_TRYGET_IMPL1(BoxGeometry3D);
 		default:
 			break;
 		}
@@ -70,6 +72,7 @@ public:
 			RM_TRYGET_IMPL1(LineGeometry);
 			RM_TRYGET_IMPL1(RectangleGeometry);
 			RM_TRYGET_IMPL1(PathGeometry);
+			RM_TRYGET_IMPL1(BoxGeometry3D);
 		default:
 			break;
 		}
@@ -97,6 +100,7 @@ protected:
 	RM_DECL_GET_TRC(LineGeometry);
 	RM_DECL_GET_TRC(RectangleGeometry);
 	RM_DECL_GET_TRC(PathGeometry);
+	RM_DECL_GET_TRC(BoxGeometry3D);
 
 	virtual void UpdateOverride() override
 	{
@@ -112,6 +116,7 @@ private:
 	RM_DECL_TRC_MEMBER(LineGeometry);
 	RM_DECL_TRC_MEMBER(RectangleGeometry);
 	RM_DECL_TRC_MEMBER(PathGeometry);
+	RM_DECL_TRC_MEMBER(BoxGeometry3D);
 };
 
 END_NS_PLATFORM

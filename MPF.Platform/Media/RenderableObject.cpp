@@ -79,3 +79,11 @@ void RenderableObject::UpdateTransform()
 	else
 		_modelTransform = XMMatrixIdentity() * XMMatrixTranslation(x, y, 0);
 }
+
+Point RenderableObject::GetFinalOffset() const noexcept
+{
+	XMFLOAT4X4 model;
+	XMStoreFloat4x4(&model, XMMatrixTranspose(_modelTransform));
+	
+	return { model._14, model._24 };
+}

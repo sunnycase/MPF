@@ -12,8 +12,9 @@ namespace MPF.Interop
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     internal interface IRenderableObject
     {
-        void SetParent(IRenderableObject parent);
+        void SetParent([In]IRenderableObject parent);
         void SetOffset(float x, float y);
+        Point FinalOffset { get; }
         void SetContent([MarshalAs(UnmanagedType.Interface), In]IRenderCommandBuffer buffer);
         void Render();
     }

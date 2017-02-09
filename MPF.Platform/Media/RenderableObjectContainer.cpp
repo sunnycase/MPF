@@ -77,3 +77,13 @@ STDMETHODIMP RenderableObjectRef::SetOffset(float x, float y)
 	}
 	CATCH_ALL();
 }
+
+STDMETHODIMP RenderableObjectRef::get_FinalOffset(Point* value)
+{
+	try
+	{
+		*value = _container->FindObject(_handle).GetFinalOffset();
+		return S_OK;
+	}
+	CATCH_ALL();
+}

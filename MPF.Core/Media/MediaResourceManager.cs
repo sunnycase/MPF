@@ -56,6 +56,16 @@ namespace MPF.Media
             _resourceManager.UpdatePen(res, thickness, ((IResourceProvider)brush)?.Resource);
         }
 
+        public void UpdateCamera(IResource res, ref Matrix4x4 viewMatrix, ref Matrix4x4 projectionMatrix)
+        {
+            _resourceManager.UpdateCamera(res, ref viewMatrix, ref projectionMatrix);
+        }
+
+        public void UpdateBoxGeometry3D(IResource res, ref BoxGeometry3DData data)
+        {
+            _resourceManager.UpdateBoxGeometry3D(res, ref data);
+        }
+
         public IFontFace CreateFontFaceFromMemory(IntPtr buffer, ulong size, uint faceIndex)
         {
             return _resourceManager.CreateFontFaceFromMemory(buffer, size, faceIndex);

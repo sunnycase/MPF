@@ -86,6 +86,7 @@ struct PlatformProvider
 	void Transform(std::vector<StrokeVertex>& vertices, const LineGeometry& geometry) {}
 	void Transform(std::vector<StrokeVertex>& vertices, const RectangleGeometry& geometry) {}
 	void Transform(std::vector<StrokeVertex>& vertices, const PathGeometry& geometry) {}
+	void Transform(std::vector<StrokeVertex>& vertices, const BoxGeometry3D& geometry) {}
 };
 
 template<class T>

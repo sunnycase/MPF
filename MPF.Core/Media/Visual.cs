@@ -12,7 +12,8 @@ namespace MPF.Media
     internal enum VisualFlags : uint
     {
         None = 0x0,
-        BBoxDirty = 0x1
+        BBoxDirty = 0x1,
+        RenderDirty = 0x2
     }
 
     public abstract class Visual : DependencyObject
@@ -95,6 +96,8 @@ namespace MPF.Media
         internal Visual()
         {
             _renderableObject = DeviceContext.Current.CreateRenderableObject();
+            InvalidateRender();
+            InvalidateBoundingBox();
         }
 
         internal void HitTest(PointHitTestParameters param, HitTestFilterCallback<Visual> filter, HitTestResultCallback<PointHitTestResult> resultCallback)
@@ -281,10 +284,27 @@ namespace MPF.Media
 
         internal void Render()
         {
+            ClearFlags(VisualFlags.RenderDirty);
             using (var drawingContext = RenderOpen())
             {
                 OnRender(drawingContext);
             }
+        }
+
+        internal void InvalidateRender()
+        {
+            SetUIFlags(VisualFlags.RenderDirty);
+            LayoutManager.Current.RegisterRender(this);
+        }
+
+        private void SetUIFlags(VisualFlags flags)
+        {
+            VisualFlags |= flags;
+        }
+
+        private void ClearFlags(VisualFlags flags)
+        {
+            VisualFlags &= ~flags;
         }
 
         private IDrawingContext RenderOpen()
@@ -302,7 +322,7 @@ namespace MPF.Media
         {
         }
 
-        internal void RenderContent()
+        internal virtual void RenderContent(ref SwapChainDrawingContext context)
         {
             _renderableObject.Render();
         }

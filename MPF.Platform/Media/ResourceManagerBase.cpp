@@ -16,7 +16,9 @@ using namespace NS_PLATFORM;
 _container##T(std::make_shared<ResourceContainer<T>>())
 
 ResourceManagerBase::ResourceManagerBase()
-	:CTOR_IMPL1(LineGeometry), CTOR_IMPL1(RectangleGeometry), CTOR_IMPL1(PathGeometry), CTOR_IMPL1(SolidColorBrush), CTOR_IMPL1(Pen),
+	:CTOR_IMPL1(LineGeometry), CTOR_IMPL1(RectangleGeometry), CTOR_IMPL1(PathGeometry),
+	CTOR_IMPL1(SolidColorBrush), CTOR_IMPL1(Pen), CTOR_IMPL1(Camera),
+	CTOR_IMPL1(BoxGeometry3D),
 	_containerCS(1000), _fontManager(std::make_shared<FontManager>())
 {
 }
@@ -43,6 +45,8 @@ HRESULT ResourceManagerBase::CreateResource(ResourceType resType, IResource ** r
 			CREATERESOURCE_IMPL1(PathGeometry);
 			CREATERESOURCE_IMPL1(SolidColorBrush);
 			CREATERESOURCE_IMPL1(Pen);
+			CREATERESOURCE_IMPL1(Camera);
+			CREATERESOURCE_IMPL1(BoxGeometry3D);
 		default:
 			break;
 		}
@@ -160,6 +164,22 @@ HRESULT ResourceManagerBase::UpdatePen(IResource * res, float thickness, IResour
 	UPDATE_RES_IMPL1_AFT(Pen);
 }
 
+STDMETHODIMP ResourceManagerBase::UpdateCamera(IResource * res, float * viewMatrix, float * projectionMatrix)
+{
+	UPDATE_RES_IMPL1_PRE(Camera)
+		using namespace DirectX;
+	XMStoreFloat4x4(&resObj.View, XMMatrixTranspose(DirectX::XMMATRIX(viewMatrix)));
+	XMStoreFloat4x4(&resObj.Projection, XMMatrixTranspose(DirectX::XMMATRIX(projectionMatrix)));
+	UPDATE_RES_IMPL1_AFT(Pen);
+}
+
+HRESULT ResourceManagerBase::UpdateBoxGeometry3D(IResource * res, BoxGeometry3DData* data)
+{
+	UPDATE_RES_IMPL1_PRE(BoxGeometry3D)
+		resObj.Data = *data;
+	UPDATE_RES_IMPL1_AFT(BoxGeometry3D);
+}
+
 Brush & ResourceManagerBase::GetBrush(UINT_PTR handle)
 {
 	return _containerSolidColorBrush->FindResource(handle);
@@ -207,10 +227,17 @@ void ResourceManagerBase::Update()
 		UPDATE_IMPL1(PathGeometry);
 	}
 	{
+		UPDATE_IMPL2(BoxGeometry3D);
+		UPDATE_IMPL1(BoxGeometry3D);
+	}
+	{
 		UPDATE_IMPL1(SolidColorBrush);
 	}
 	{
 		UPDATE_IMPL1(Pen);
+	}
+	{
+		UPDATE_IMPL1(Camera);
 	}
 	{
 		for (auto&& dcl : _updatedDrawCallList)
@@ -236,6 +263,8 @@ void ResourceManagerBase::AddDependentDrawCallList(std::weak_ptr<IDrawCallList>&
 		ADDCL_IMPL1(RectangleGeometry);
 		ADDCL_IMPL1(PathGeometry);
 		ADDCL_IMPL1(Pen);
+		ADDCL_IMPL1(Camera);
+		ADDCL_IMPL1(BoxGeometry3D);
 	default:
 		break;
 	}
@@ -257,6 +286,8 @@ void ResourceManagerBase::RetireResource(IResource * res)
 		RETIRERES_IMPL1(RectangleGeometry);
 		RETIRERES_IMPL1(PathGeometry);
 		RETIRERES_IMPL1(Pen);
+		RETIRERES_IMPL1(Camera);
+		RETIRERES_IMPL1(BoxGeometry3D);
 	default:
 		break;
 	}

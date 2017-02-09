@@ -506,3 +506,82 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVerte
 		}
 	}
 }
+
+// 3D Geometry
+
+namespace
+{
+	void EmplaceTriangle(std::vector<D3D11::FillVertex>& vertices, XMFLOAT3 a, XMFLOAT3 b, XMFLOAT3 c)
+	{
+		vertices.emplace_back(D3D11::FillVertex
+		{
+			{ a.x, a.y, a.z }
+		});
+		vertices.emplace_back(D3D11::FillVertex
+		{
+			{ b.x, b.y, b.z }
+		});
+		vertices.emplace_back(D3D11::FillVertex
+		{
+			{ c.x, c.y, c.z }
+		});
+	}
+}
+
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, const BoxGeometry3D& geometry)
+{
+	//auto leftTopPoint = geometry.Data.LeftTop;
+	//auto rightBottomPoint = geometry.Data.RightBottom;
+	//SwapIfGeater(leftTopPoint.X, rightBottomPoint.X);
+	//SwapIfGeater(leftTopPoint.Y, rightBottomPoint.Y);
+
+	//XMFLOAT2 leftTop{ leftTopPoint.X, leftTopPoint.Y };
+	//XMFLOAT2 rightTop{ rightBottomPoint.X, leftTopPoint.Y };
+	//XMFLOAT2 rightBottom{ rightBottomPoint.X, rightBottomPoint.Y };
+	//XMFLOAT2 leftBottom{ leftTopPoint.X, rightBottomPoint.Y };
+
+	//const auto ltDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, -1.f });
+	//const auto rtDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, -1.f });
+	//const auto lbDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, 1.f });
+	//const auto rbDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, 1.f });
+
+	//EmplaceLine(vertices, leftTop, rightTop, ltDirVec, rtDirVec);
+	//EmplaceLine(vertices, rightTop, rightBottom, rtDirVec, rbDirVec);
+	//EmplaceLine(vertices, rightBottom, leftBottom, rbDirVec, lbDirVec);
+	//EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
+}
+
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, const BoxGeometry3D& geometry)
+{
+	const auto position = geometry.Data.Position;
+	const auto width = geometry.Data.Width;
+	const auto height = geometry.Data.Height;
+	const auto depth = geometry.Data.Depth;
+
+	XMFLOAT3 pt1{ position.X, position.Y, position.Z };
+	XMFLOAT3 pt2{ position.X + width, position.Y, position.Z };
+	XMFLOAT3 pt3{ position.X + width, position.Y + height, position.Z };
+	XMFLOAT3 pt4{ position.X, position.Y + height, position.Z };
+	XMFLOAT3 pt5{ position.X, position.Y, position.Z + depth };
+	XMFLOAT3 pt6{ position.X + width, position.Y, position.Z + depth };
+	XMFLOAT3 pt7{ position.X + width, position.Y + height, position.Z + depth };
+	XMFLOAT3 pt8{ position.X, position.Y + height, position.Z + depth };
+
+	EmplaceTriangle(vertices, pt1, pt2, pt3);
+	EmplaceTriangle(vertices, pt1, pt3, pt4);
+
+	EmplaceTriangle(vertices, pt5, pt1, pt4);
+	EmplaceTriangle(vertices, pt4, pt8, pt5);
+
+	EmplaceTriangle(vertices, pt5, pt6, pt2);
+	EmplaceTriangle(vertices, pt2, pt1, pt5);
+
+	EmplaceTriangle(vertices, pt6, pt5, pt8);
+	EmplaceTriangle(vertices, pt8, pt7, pt6);
+
+	EmplaceTriangle(vertices, pt2, pt6, pt7);
+	EmplaceTriangle(vertices, pt7, pt3, pt2);
+
+	EmplaceTriangle(vertices, pt3, pt7, pt8);
+	EmplaceTriangle(vertices, pt8, pt4, pt3);
+}

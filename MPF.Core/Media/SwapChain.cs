@@ -23,27 +23,27 @@ namespace MPF.Media
             Application.Current.Update += OnUpdate;
         }
 
-        private void OnDraw()
+        private void OnDraw(ref SwapChainDrawingContext context)
         {
             Draw?.Invoke(this, EventArgs.Empty);
-            RenderContent();
+            RenderContent(ref context);
         }
 
-        private void RenderContent()
+        private void RenderContent(ref SwapChainDrawingContext context)
         {
             var rootVisual = RootVisual;
             if (rootVisual != null)
-                RenderContent(rootVisual);
+                RenderContent(rootVisual, ref context);
         }
 
-        private void RenderContent(Visual visual)
+        private void RenderContent(Visual visual, ref SwapChainDrawingContext context)
         {
-            if(visual.IsVisualVisible)
+            if (visual.IsVisualVisible)
             {
-                visual.RenderContent();
+                visual.RenderContent(ref context);
 
                 foreach (var child in visual.VisualChildren)
-                    RenderContent(child);
+                    RenderContent(child, ref context);
             }
         }
 
@@ -64,21 +64,25 @@ namespace MPF.Media
             return rect.Value;
         }
 
-        private void OnUpdate(UIElement element, UIElement parent, bool forceArrange)
+        private void OnUpdate(Visual visual, Visual parent, bool forceArrange)
         {
-            var flags = element.UIFlags;
-            if (forceArrange || flags.HasFlag(UIElementFlags.MeasureDirty))
-                element.Measure(element.LastAvailableSize);
-            if (forceArrange || flags.HasFlag(UIElementFlags.ArrangeDirty))
+            var element = visual as UIElement;
+            if (element != null)
             {
-                forceArrange = true;
-                element.Arrange(GetArrangeRect(element));
+                var flags = element.UIFlags;
+                if (forceArrange || flags.HasFlag(UIElementFlags.MeasureDirty))
+                    element.Measure(element.LastAvailableSize);
+                if (forceArrange || flags.HasFlag(UIElementFlags.ArrangeDirty))
+                {
+                    forceArrange = true;
+                    element.Arrange(GetArrangeRect(element));
+                }
             }
-            if (forceArrange || flags.HasFlag(UIElementFlags.RenderDirty))
-                element.Render();
+            if (forceArrange || visual.VisualFlags.HasFlag(VisualFlags.RenderDirty))
+                visual.Render();
 
-            foreach (UIElement child in element.VisualChildren)
-                OnUpdate(child, element, forceArrange);
+            foreach (var child in visual.VisualChildren)
+                OnUpdate(child, visual, forceArrange);
         }
 
         private class Callback : ISwapChainCallback
@@ -90,9 +94,10 @@ namespace MPF.Media
                 _swapChain = new WeakReference<SwapChain>(swapChain);
             }
 
-            public void OnDraw()
+            public void OnDraw(ISwapChainDrawingContext context)
             {
-                GetTarget()?.OnDraw();
+                var ctx = new SwapChainDrawingContext(context);
+                GetTarget()?.OnDraw(ref ctx);
             }
 
             private SwapChain GetTarget()

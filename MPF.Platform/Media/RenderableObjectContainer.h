@@ -25,6 +25,7 @@ public:
 	STDMETHOD_(ULONG, Release)();
 	STDMETHODIMP SetParent(IRenderableObject* parent);
 	STDMETHODIMP SetOffset(float x, float y);
+	STDMETHODIMP get_FinalOffset(Point* value);
 	STDMETHODIMP SetContent(IRenderCommandBuffer* buffer);
 	STDMETHODIMP Render();
 private:

@@ -10,6 +10,7 @@
 #include "ResourceRef.h"
 #include "RenderCommandBuffer.h"
 #include "DirectXMath.h"
+#include <optional>
 
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
@@ -23,7 +24,9 @@ public:
 	RenderableObject();
 
 	void SetParent(RenderableObject* parent);
+
 	void SetOffset(float x, float y);
+	Point GetFinalOffset() const noexcept;
 	void SetContent(IRenderCommandBuffer* buffer);
 	void Update();
 	void Draw();

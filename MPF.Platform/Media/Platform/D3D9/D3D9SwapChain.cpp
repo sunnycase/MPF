@@ -234,7 +234,7 @@ void D3D9SwapChainBase::Draw(IDirect3DSurface9 * surface)
 	ThrowIfFailed(_device->Clear(0, nullptr, D3DCLEAR_TARGET, 0xFFFFFF, 1.f, 0));
 
 	if (auto callback = _callback)
-		callback->OnDraw();
+		callback->OnDraw(nullptr);
 
 	ThrowIfFailed(_device->EndScene());
 }

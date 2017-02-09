@@ -89,7 +89,7 @@ private:
 				}
 				else
 				{
-					assert(false && "Geometry not found.");
+					//assert(false && "Geometry not found.");
 				}
 			}
 		}
@@ -116,7 +116,7 @@ private:
 			}
 			else
 			{
-				assert(false && "Geometry not found.");
+				//assert(false && "Geometry not found.");
 			}
 		}
 	}

@@ -10,6 +10,7 @@
 #include "Geometry.h"
 #include "Brush.h"
 #include "Pen.h"
+#include "Camera.h"
 #include "../../inc/WeakReferenceBase.h"
 #include "RenderCommandBuffer.h"
 #include "Platform/PlatformProvider.h"
@@ -27,7 +28,10 @@ std::vector<UINT_PTR> _updated##T;
 
 #define DECL_RESOURCEMGR_IMPL1(T)		  \
 T& Get##T##(UINT_PTR handle);			  \
-const T& Get##T##(UINT_PTR handle) const;
+const T& Get##T##(UINT_PTR handle) const;		 
+
+#define DECL_RESOURCEMGR_TRC_GETTER(T)		  \
+virtual ITransformedResourceContainer<T>& Get##T##TRC() noexcept = 0
 
 #define DEFINE_RESOURCEMGR_IMPL1(T)															  \
 T& Get##T##(UINT_PTR handle) { return _container##T##->FindResource(handle); }				  \
@@ -48,6 +52,8 @@ public:
 	STDMETHODIMP UpdatePathGeometry(IResource * res, byte* data, UINT32 length) override;
 	STDMETHODIMP UpdateSolidColorBrush(IResource * res, ColorF * color) override;
 	STDMETHODIMP UpdatePen(IResource * res, float thickness, IResource* brush) override;
+	STDMETHODIMP UpdateCamera(IResource * res, float* viewMatrix, float* projectionMatrix) override;
+	STDMETHODIMP UpdateBoxGeometry3D(IResource * res, BoxGeometry3DData * data) override;
 
 	void RetireResource(IResource * res);
 
@@ -56,6 +62,8 @@ public:
 	DEFINE_RESOURCEMGR_IMPL1(PathGeometry);
 	DECL_RESOURCEMGR_IMPL1(Brush);
 	DEFINE_RESOURCEMGR_IMPL1(Pen);
+	DEFINE_RESOURCEMGR_IMPL1(Camera);
+	DEFINE_RESOURCEMGR_IMPL1(BoxGeometry3D);
 
 	void Update();
 	virtual std::shared_ptr<IDrawCallList> CreateDrawCallList(RenderCommandBuffer* rcb) = 0;
@@ -64,9 +72,10 @@ public:
 	virtual void BeginResetDevice() {}
 	virtual void EndResetDevice() {}
 protected:
-	virtual ITransformedResourceContainer<LineGeometry>& GetLineGeometryTRC() noexcept = 0;
-	virtual ITransformedResourceContainer<RectangleGeometry>& GetRectangleGeometryTRC() noexcept = 0;
-	virtual ITransformedResourceContainer<PathGeometry>& GetPathGeometryTRC() noexcept = 0;
+	DECL_RESOURCEMGR_TRC_GETTER(LineGeometry);
+	DECL_RESOURCEMGR_TRC_GETTER(RectangleGeometry);
+	DECL_RESOURCEMGR_TRC_GETTER(PathGeometry);
+	DECL_RESOURCEMGR_TRC_GETTER(BoxGeometry3D);
 	virtual void UpdateOverride() {};
 private:
 	DECL_RESCONTAINERAWARE(LineGeometry);
@@ -74,6 +83,8 @@ private:
 	DECL_RESCONTAINERAWARE(PathGeometry);
 	DECL_RESCONTAINERAWARE(SolidColorBrush);
 	DECL_RESCONTAINERAWARE(Pen);
+	DECL_RESCONTAINERAWARE(Camera);
+	DECL_RESCONTAINERAWARE(BoxGeometry3D);
 	std::vector<std::shared_ptr<IDrawCallList>> _updatedDrawCallList;
 	WRL::Wrappers::CriticalSection _containerCS;
 	std::shared_ptr<FontManager> _fontManager;

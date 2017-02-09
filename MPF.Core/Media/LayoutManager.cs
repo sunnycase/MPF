@@ -15,8 +15,8 @@ namespace MPF.Media
         private ConcurrentBag<UIElement> _arrangeSet = new ConcurrentBag<UIElement>();
         private ConcurrentBag<UIElement> _measureSetLast = new ConcurrentBag<UIElement>();
         private ConcurrentBag<UIElement> _measureSet = new ConcurrentBag<UIElement>();
-        private ConcurrentBag<UIElement> _renderSetLast = new ConcurrentBag<UIElement>();
-        private ConcurrentBag<UIElement> _renderSet = new ConcurrentBag<UIElement>();
+        private ConcurrentBag<DependencyObject> _renderSetLast = new ConcurrentBag<DependencyObject>();
+        private ConcurrentBag<DependencyObject> _renderSet = new ConcurrentBag<DependencyObject>();
         private ConcurrentBag<FrameworkElement> _initializeSetLast = new ConcurrentBag<FrameworkElement>();
         private ConcurrentBag<FrameworkElement> _initializeSet = new ConcurrentBag<FrameworkElement>();
 
@@ -66,7 +66,7 @@ namespace MPF.Media
                 forceArrange = true;
                 element.Arrange(GetArrangeRect(parent));
             }
-            if (forceArrange || flags.HasFlag(UIElementFlags.RenderDirty))
+            if (forceArrange || element.VisualFlags.HasFlag(VisualFlags.RenderDirty))
                 element.Render();
 
             foreach (UIElement child in element.VisualChildren)
@@ -83,9 +83,9 @@ namespace MPF.Media
             _measureSet.Add(element);
         }
 
-        public void RegisterRender(UIElement element)
+        public void RegisterRender(DependencyObject visual)
         {
-            _renderSet.Add(element);
+            _renderSet.Add(visual);
         }
 
         public void RegisterInitialize(FrameworkElement element)

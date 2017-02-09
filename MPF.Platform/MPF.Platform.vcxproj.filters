@@ -195,6 +195,9 @@
     <ClInclude Include="Input\InputDevice.h">
       <Filter>头文件\Input</Filter>
     </ClInclude>
+    <ClInclude Include="Media\Camera.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

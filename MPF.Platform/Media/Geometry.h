@@ -78,4 +78,9 @@ public:
 	std::vector<Segment> Segments;
 };
 
+struct BoxGeometry3D : public ResourceBase
+{
+	BoxGeometry3DData Data;
+};
+
 END_NS_PLATFORM

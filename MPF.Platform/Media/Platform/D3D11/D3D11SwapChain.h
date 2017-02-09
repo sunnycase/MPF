@@ -25,7 +25,6 @@ public:
 	void DoFrame(SwapChainUpdateContext& context);
 private:
 	void CreateWindowSizeDependentResources();
-	void UpdateShaderConstants(SwapChainUpdateContext& context);
 	void OnNativeWindowMessage(NativeWindowMessages message);
 	void OnResize();
 private:
