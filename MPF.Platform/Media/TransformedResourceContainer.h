@@ -21,6 +21,7 @@ class TransformedResourceContainer : public ITransformedResourceContainer<T>
 public:
 	using PlatformProvider_t = PlatformProvider<PId>;
 	using VertexBufferManager = typename PlatformProviderTraits<PId>::VertexBufferManager;
+	using IndexBufferManager = typename PlatformProviderTraits<PId>::IndexBufferManager;
 	using RenderCall = typename PlatformProvider_t::RenderCall;
 	using StrokeVertex = typename PlatformProvider_t::StrokeVertex;
 	using FillVertex = typename PlatformProvider_t::FillVertex;
@@ -28,8 +29,8 @@ public:
 	using StrokeRenderCall_t = StrokeRenderCall<RenderCall>;
 	using FillRenderCall_t = FillRenderCall<RenderCall>;
 
-	TransformedResourceContainer(VertexBufferManager& strokeVBMgr, VertexBufferManager& fillVBMgr)
-		:_strokeVBMgr(strokeVBMgr), _fillVBMgr(fillVBMgr)
+	TransformedResourceContainer(VertexBufferManager& strokeVBMgr, IndexBufferManager& strokeIBMgr, VertexBufferManager& fillVBMgr, IndexBufferManager& fillIBMgr)
+		:_strokeVBMgr(strokeVBMgr), _strokeIBMgr(strokeIBMgr), _fillVBMgr(fillVBMgr), _fillIBMgr(fillIBMgr)
 	{
 
 	}
@@ -37,7 +38,9 @@ public:
 	virtual void Add(const std::vector<UINT_PTR>& handles, const ResourceContainer<T>& container) override
 	{
 		static std::vector<StrokeVertex> strokeVertices;
+		static std::vector<size_t> strokeIndices;
 		static std::vector<FillVertex> fillVertices;
+		static std::vector<size_t> fillIndices;
 		for (auto&& handle : handles)
 		{
 			T const* refer;
@@ -45,23 +48,31 @@ public:
 			const auto& source = *refer;
 
 			strokeVertices.clear();
-			_platformProvider.Transform(strokeVertices, source);
-			auto strokeRent = _strokeVBMgr.Allocate(strokeVertices.size());
-			_strokeRentInfos.emplace(handle, strokeRent);
-			_strokeVBMgr.Update(strokeRent, 0, strokeVertices.data(), strokeVertices.size());
+			strokeIndices.clear();
+			_platformProvider.Transform(strokeVertices, strokeIndices, source);
+			auto strokeVBRent = _strokeVBMgr.Allocate(strokeVertices.size());
+			auto strokeIBRent = _strokeIBMgr.Allocate(strokeIndices.size());
+			_strokeRentInfos.emplace(handle, GeometryRentInfo{ strokeVBRent, strokeIBRent });
+			_strokeVBMgr.Update(strokeVBRent, 0, strokeVertices.data(), strokeVertices.size());
+			_strokeIBMgr.Update(strokeIBRent, 0, strokeIndices.data(), strokeIndices.size());
 
 			fillVertices.clear();
-			_platformProvider.Transform(fillVertices, source);
-			auto fillRent = _fillVBMgr.Allocate(fillVertices.size());
-			_fillRentInfos.emplace(handle, fillRent);
-			_fillVBMgr.Update(fillRent, 0, fillVertices.data(), fillVertices.size());
+			fillIndices.clear();
+			_platformProvider.Transform(fillVertices, fillIndices, source);
+			auto fillVBRent = _fillVBMgr.Allocate(fillVertices.size());
+			auto fillIBRent = _fillIBMgr.Allocate(fillIndices.size());
+			_fillRentInfos.emplace(handle, GeometryRentInfo{ fillVBRent, fillIBRent });
+			_fillVBMgr.Update(fillVBRent, 0, fillVertices.data(), fillVertices.size());
+			_fillIBMgr.Update(fillIBRent, 0, fillIndices.data(), fillIndices.size());
 		}
 	}
 
 	virtual void Update(const std::vector<UINT_PTR>& handles, const ResourceContainer<T>& container) override
 	{
 		static std::vector<StrokeVertex> strokeVertices;
+		static std::vector<size_t> strokeIndices;
 		static std::vector<FillVertex> fillVertices;
+		static std::vector<size_t> fillIndices;
 		for (auto&& handle : handles)
 		{
 			T const* refer;
@@ -69,24 +80,38 @@ public:
 			const auto& source = *refer;
 
 			strokeVertices.clear();
-			_platformProvider.Transform(strokeVertices, source);
+			strokeIndices.clear();
+			_platformProvider.Transform(strokeVertices, strokeIndices, source);
 			auto& strokeRent = _strokeRentInfos.find(handle)->second;
-			if (strokeRent.length != strokeVertices.size())
+			if (strokeRent.Vertices.length != strokeVertices.size())
 			{
-				_strokeVBMgr.Retire(strokeRent);
-				strokeRent = _strokeVBMgr.Allocate(strokeVertices.size());
+				_strokeVBMgr.Retire(strokeRent.Vertices);
+				strokeRent.Vertices = _strokeVBMgr.Allocate(strokeVertices.size());
 			}
-			_strokeVBMgr.Update(strokeRent, 0, strokeVertices.data(), strokeVertices.size());
+			_strokeVBMgr.Update(strokeRent.Vertices, 0, strokeVertices.data(), strokeVertices.size());
+			if (strokeRent.Indices.length != strokeIndices.size())
+			{
+				_strokeIBMgr.Retire(strokeRent.Indices);
+				strokeRent.Indices = _strokeIBMgr.Allocate(strokeIndices.size());
+			}
+			_strokeIBMgr.Update(strokeRent.Indices, 0, strokeIndices.data(), strokeIndices.size());
 
 			fillVertices.clear();
-			_platformProvider.Transform(fillVertices, source);
+			fillIndices.clear();
+			_platformProvider.Transform(fillVertices, fillIndices, source);
 			auto& fillRent = _fillRentInfos.find(handle)->second;
-			if (fillRent.length != fillVertices.size())
+			if (fillRent.Vertices.length != fillVertices.size())
 			{
-				_fillVBMgr.Retire(fillRent);
-				fillRent = _fillVBMgr.Allocate(fillVertices.size());
+				_fillVBMgr.Retire(fillRent.Vertices);
+				fillRent.Vertices = _fillVBMgr.Allocate(fillVertices.size());
 			}
-			_fillVBMgr.Update(fillRent, 0, fillVertices.data(), fillVertices.size());
+			_fillVBMgr.Update(fillRent.Vertices, 0, fillVertices.data(), fillVertices.size());
+			if (fillRent.Indices.length != fillIndices.size())
+			{
+				_fillIBMgr.Retire(fillRent.Indices);
+				fillRent.Indices = _fillIBMgr.Allocate(fillIndices.size());
+			}
+			_fillIBMgr.Update(fillRent.Indices, 0, fillIndices.data(), fillIndices.size());
 		}
 	}
 
@@ -97,14 +122,16 @@ public:
 			auto strokeRent = _strokeRentInfos.find(handle);
 			if (strokeRent != _strokeRentInfos.end())
 			{
-				_strokeVBMgr.Retire(strokeRent->second);
+				_strokeVBMgr.Retire(strokeRent->second.Vertices);
+				_strokeIBMgr.Retire(strokeRent->second.Indices);
 				_strokeRentInfos.erase(strokeRent);
 			}
 
 			auto fillRent = _fillRentInfos.find(handle);
 			if (fillRent != _fillRentInfos.end())
 			{
-				_fillVBMgr.Retire(fillRent->second);
+				_fillVBMgr.Retire(fillRent->second.Vertices);
+				_fillIBMgr.Retire(fillRent->second.Indices);
 				_fillRentInfos.erase(fillRent);
 			}
 		}
@@ -115,7 +142,8 @@ public:
 		auto it = _strokeRentInfos.find(handle);
 		if (it != _strokeRentInfos.end())
 		{
-			static_cast<RenderCall&>(rc) = _strokeVBMgr.GetRenderCall(it->second);
+			_strokeVBMgr.GetRenderCall(it->second.Vertices, rc);
+			_strokeIBMgr.GetRenderCall(it->second.Indices, rc);
 			return true;
 		}
 		return false;
@@ -126,7 +154,8 @@ public:
 		auto it = _fillRentInfos.find(handle);
 		if (it != _fillRentInfos.end())
 		{
-			static_cast<RenderCall&>(rc) = _fillVBMgr.GetRenderCall(it->second);
+			_fillVBMgr.GetRenderCall(it->second.Vertices, rc);
+			_fillIBMgr.GetRenderCall(it->second.Indices, rc);
 			return true;
 		}
 		return false;
@@ -134,9 +163,11 @@ public:
 private:
 	PlatformProvider<PId> _platformProvider;
 	VertexBufferManager& _strokeVBMgr;
+	IndexBufferManager& _strokeIBMgr;
 	VertexBufferManager& _fillVBMgr;
-	std::unordered_map<UINT_PTR, RentInfo> _strokeRentInfos;
-	std::unordered_map<UINT_PTR, RentInfo> _fillRentInfos;
+	IndexBufferManager& _fillIBMgr;
+	std::unordered_map<UINT_PTR, GeometryRentInfo> _strokeRentInfos;
+	std::unordered_map<UINT_PTR, GeometryRentInfo> _fillRentInfos;
 };
 
 END_NS_PLATFORM

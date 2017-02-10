@@ -18,7 +18,7 @@ virtual ITransformedResourceContainer<T>& Get##T##TRC() noexcept override { retu
 #define RM_DECL_TRC_MEMBER(T) \
 TransformedResourceContainer<PId, T> _trc##T
 
-#define RM_CTOR_IMPL1(T) _trc##T##(_strokeVBMgr, _fillVBMgr)
+#define RM_CTOR_IMPL1(T) _trc##T##(_strokeVBMgr, _strokeIBMgr, _fillVBMgr, _fillIBMgr)
 
 template<PlatformId PId>
 class ResourceManager : public ResourceManagerBase
@@ -32,13 +32,15 @@ public:
 	using DrawCallList = typename PlatformProviderTraits<PId>::DrawCallList;
 
 	using VertexBufferManager = typename PlatformProviderTraits<PId>::VertexBufferManager;
+	using IndexBufferManager = typename PlatformProviderTraits<PId>::IndexBufferManager;
 
 	using StrokeRenderCall_t = StrokeRenderCall<RenderCall>;
 	using FillRenderCall_t = FillRenderCall<RenderCall>;
 
 	ResourceManager(DeviceContext& deviceContext)
-		:_deviceContext(deviceContext), _strokeVBMgr(deviceContext, sizeof(StrokeVertex)),
-		_fillVBMgr(deviceContext, sizeof(FillVertex)),
+		:_deviceContext(deviceContext),
+		_strokeVBMgr(deviceContext, sizeof(StrokeVertex)), _fillVBMgr(deviceContext, sizeof(FillVertex)),
+		_strokeIBMgr(deviceContext), _fillIBMgr(deviceContext),
 		RM_CTOR_IMPL1(LineGeometry), RM_CTOR_IMPL1(RectangleGeometry), RM_CTOR_IMPL1(PathGeometry),
 		RM_CTOR_IMPL1(BoxGeometry3D)
 	{
@@ -81,12 +83,22 @@ public:
 
 	decltype(auto) GetVertexBuffer(const StrokeRenderCall_t& renderCall) const noexcept
 	{
-		return _strokeVBMgr.GetBuffer(renderCall);
+		return _strokeVBMgr.GetBuffer(renderCall.VB);
 	}
 
 	decltype(auto) GetVertexBuffer(const FillRenderCall_t& renderCall) const noexcept
 	{
-		return _fillVBMgr.GetBuffer(renderCall);
+		return _fillVBMgr.GetBuffer(renderCall.VB);
+	}
+
+	decltype(auto) GetIndexBuffer(const StrokeRenderCall_t& renderCall) const noexcept
+	{
+		return _strokeIBMgr.GetBuffer(renderCall.IB);
+	}
+
+	decltype(auto) GetIndexBuffer(const FillRenderCall_t& renderCall) const noexcept
+	{
+		return _fillIBMgr.GetBuffer(renderCall.IB);
 	}
 
 	virtual std::shared_ptr<IDrawCallList> CreateDrawCallList(RenderCommandBuffer* rcb) override
@@ -105,13 +117,17 @@ protected:
 	virtual void UpdateOverride() override
 	{
 		_strokeVBMgr.Upload();
+		_strokeIBMgr.Upload();
 		_fillVBMgr.Upload();
+		_fillIBMgr.Upload();
 	}
 
 	DeviceContext _deviceContext;
 private:
 	VertexBufferManager _strokeVBMgr;
 	VertexBufferManager _fillVBMgr;
+	IndexBufferManager _strokeIBMgr;
+	IndexBufferManager _fillIBMgr;
 
 	RM_DECL_TRC_MEMBER(LineGeometry);
 	RM_DECL_TRC_MEMBER(RectangleGeometry);

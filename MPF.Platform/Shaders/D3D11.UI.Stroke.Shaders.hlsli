@@ -2,18 +2,15 @@
 struct VertexShaderInput
 {
 	float3 Position : SV_Position;
-	float2 Data1 : NORMAL;
-	float2 Data2 : TEXCOORD0;
+	float3 Normal : NORMAL;
+	float2 ParamFormValue : TEXCOORD0;
 	float SegmentType : TEXCOORD1;
-	float2 Data3 : TEXCOORD2;
-	float2 Data4 : TEXCOORD3;
-	float2 Data5 : TEXCOORD4;
 };
 
 struct PixelShaderInput
 {
 	float4 Position : SV_Position;
-	nointerpolation float3 NormalAndThickness : TEXCOORD0;
+	nointerpolation float Thickness : TEXCOORD0;
 	float4 Color : COLOR;
 	float2 ParamFormValue : TEXCOORD1;
 	int SegmentType : TEXCOORD2;

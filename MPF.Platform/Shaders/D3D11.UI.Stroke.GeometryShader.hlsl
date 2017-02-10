@@ -48,7 +48,7 @@ void main(
 		for (uint i = 0; i < 3; i++)
 		{
 			PixelShaderInput element = input[i];
-			element.Position.xy += Thickness / 2.f * element.NormalAndThickness.xy;
+			element.Position.xy += Thickness / 2.f * element.ParamFormValue;
 			element.Position = mul(element.Position, Projection);
 			output.Append(element);
 		}

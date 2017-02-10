@@ -27,12 +27,14 @@ namespace MPF.Media
             set { this.SetLocalValue(EndPointProperty, value); }
         }
 
+        private LineGeometryData _data;
         private readonly Lazy<IResource> _geometryRes;
 
         public LineGeometry()
         {
             _geometryRes = this.CreateResource(ResourceType.RT_LineGeometry);
-            RegisterUpdateResource();
+            OnStartPointChanged(StartPoint);
+            OnEndPointChanged(EndPoint);
         }
 
         internal override IResource GetResourceOverride()
@@ -40,25 +42,32 @@ namespace MPF.Media
             return _geometryRes.Value;
         }
 
+        private void OnStartPointChanged(Point startPoint)
+        {
+            _data.StartPoint = startPoint;
+            RegisterUpdateResource();
+        }
+
+        private void OnEndPointChanged(Point endPoint)
+        {
+            _data.EndPoint = endPoint;
+            RegisterUpdateResource();
+        }
+
         internal override void OnUpdateResource(object sender, EventArgs e)
         {
             base.OnUpdateResource(sender, e);
-            var data = new LineGeometryData
-            {
-                StartPoint = StartPoint,
-                EndPoint = EndPoint
-            };
-            MediaResourceManager.Current.UpdateLineGeometry(_geometryRes.Value, ref data);
+            MediaResourceManager.Current.UpdateLineGeometry(_geometryRes.Value, ref _data);
         }
 
         private static void OnEndPointPropertyChanged(object sender, PropertyChangedEventArgs<Point> e)
         {
-            ((LineGeometry)sender).RegisterUpdateResource();
+            ((LineGeometry)sender).OnEndPointChanged(e.NewValue);
         }
 
         private static void OnStartPointPropertyChanged(object sender, PropertyChangedEventArgs<Point> e)
         {
-            ((LineGeometry)sender).RegisterUpdateResource();
+            ((LineGeometry)sender).OnStartPointChanged(e.NewValue);
         }
     }
 }

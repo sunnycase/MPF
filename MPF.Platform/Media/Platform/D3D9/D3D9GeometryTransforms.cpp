@@ -140,98 +140,98 @@ namespace
 	}
 }
 
-void PlatformProvider<PlatformId::D3D9>::Transform(std::vector<StrokeVertex>& vertices, const LineGeometry& geometry)
+void PlatformProvider<PlatformId::D3D9>::Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const LineGeometry& geometry)
 {
-	const auto dirVec = XMLoadFloat2(&XMFLOAT2{ geometry.Data.EndPoint.X - geometry.Data.StartPoint.X, geometry.Data.EndPoint.Y - geometry.Data.StartPoint.Y });
-	const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
+	//const auto dirVec = XMLoadFloat2(&XMFLOAT2{ geometry.Data.EndPoint.X - geometry.Data.StartPoint.X, geometry.Data.EndPoint.Y - geometry.Data.StartPoint.Y });
+	//const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
 
-	EmplaceLine(vertices, { geometry.Data.StartPoint.X, geometry.Data.StartPoint.Y }, { geometry.Data.EndPoint.X, geometry.Data.EndPoint.Y },
-		normalVec, normalVec);
+	//EmplaceLine(vertices, { geometry.Data.StartPoint.X, geometry.Data.StartPoint.Y }, { geometry.Data.EndPoint.X, geometry.Data.EndPoint.Y },
+	//	normalVec, normalVec);
 }
 
-void PlatformProvider<PlatformId::D3D9>::Transform(std::vector<StrokeVertex>& vertices, const RectangleGeometry& geometry)
+void PlatformProvider<PlatformId::D3D9>::Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const RectangleGeometry& geometry)
 {
-	auto leftTopPoint = geometry.Data.LeftTop;
-	auto rightBottomPoint = geometry.Data.RightBottom;
-	SwapIfGeater(leftTopPoint.X, rightBottomPoint.X);
-	SwapIfGeater(leftTopPoint.Y, rightBottomPoint.Y);
+	//auto leftTopPoint = geometry.Data.LeftTop;
+	//auto rightBottomPoint = geometry.Data.RightBottom;
+	//SwapIfGeater(leftTopPoint.X, rightBottomPoint.X);
+	//SwapIfGeater(leftTopPoint.Y, rightBottomPoint.Y);
 
-	XMFLOAT2 leftTop{ leftTopPoint.X, leftTopPoint.Y };
-	XMFLOAT2 rightTop{ rightBottomPoint.X, leftTopPoint.Y };
-	XMFLOAT2 rightBottom{ rightBottomPoint.X, rightBottomPoint.Y };
-	XMFLOAT2 leftBottom{ leftTopPoint.X, rightBottomPoint.Y };
+	//XMFLOAT2 leftTop{ leftTopPoint.X, leftTopPoint.Y };
+	//XMFLOAT2 rightTop{ rightBottomPoint.X, leftTopPoint.Y };
+	//XMFLOAT2 rightBottom{ rightBottomPoint.X, rightBottomPoint.Y };
+	//XMFLOAT2 leftBottom{ leftTopPoint.X, rightBottomPoint.Y };
 
-	const auto ltDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, -1.f });
-	const auto rtDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, -1.f });
-	const auto lbDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, 1.f });
-	const auto rbDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, 1.f });
+	//const auto ltDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, -1.f });
+	//const auto rtDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, -1.f });
+	//const auto lbDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, 1.f });
+	//const auto rbDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, 1.f });
 
-	EmplaceLine(vertices, leftTop, rightTop, ltDirVec, rtDirVec);
-	EmplaceLine(vertices, rightTop, rightBottom, rtDirVec, rbDirVec);
-	EmplaceLine(vertices, rightBottom, leftBottom, rbDirVec, lbDirVec);
-	EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
+	//EmplaceLine(vertices, leftTop, rightTop, ltDirVec, rtDirVec);
+	//EmplaceLine(vertices, rightTop, rightBottom, rtDirVec, rbDirVec);
+	//EmplaceLine(vertices, rightBottom, leftBottom, rbDirVec, lbDirVec);
+	//EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
 }
 
-void PlatformProvider<PlatformId::D3D9>::Transform(std::vector<StrokeVertex>& vertices, const PathGeometry& geometry)
+void PlatformProvider<PlatformId::D3D9>::Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const PathGeometry& geometry)
 {
-	using namespace PathGeometrySegments;
+	//using namespace PathGeometrySegments;
 
-	XMFLOAT2 lastPoint{ 0,0 };
-	for (auto&& seg : geometry.Segments)
-	{
-		switch (seg.Operation)
-		{
-		case MoveTo:
-		{
-			const auto& data = seg.Data.MoveTo;
-			lastPoint = { data.Point.X, data.Point.Y };
-		}
-		break;
-		case LineTo:
-		{
-			const auto& data = seg.Data.LineTo;
-			XMFLOAT2 endPoint(data.Point.X, data.Point.Y);
+	//XMFLOAT2 lastPoint{ 0,0 };
+	//for (auto&& seg : geometry.Segments)
+	//{
+	//	switch (seg.Operation)
+	//	{
+	//	case MoveTo:
+	//	{
+	//		const auto& data = seg.Data.MoveTo;
+	//		lastPoint = { data.Point.X, data.Point.Y };
+	//	}
+	//	break;
+	//	case LineTo:
+	//	{
+	//		const auto& data = seg.Data.LineTo;
+	//		XMFLOAT2 endPoint(data.Point.X, data.Point.Y);
 
-			const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
-			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
+	//		const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
+	//		const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
 
-			EmplaceLine(vertices, lastPoint, endPoint, normalVec, normalVec);
-			lastPoint = endPoint;
-		}
-		break;
-		case ArcTo:
-		{
-			const auto& data = seg.Data.ArcTo;
-			XMFLOAT2 endPoint(data.Point.X, data.Point.Y);
+	//		EmplaceLine(vertices, lastPoint, endPoint, normalVec, normalVec);
+	//		lastPoint = endPoint;
+	//	}
+	//	break;
+	//	case ArcTo:
+	//	{
+	//		const auto& data = seg.Data.ArcTo;
+	//		XMFLOAT2 endPoint(data.Point.X, data.Point.Y);
 
-			const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
-			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
+	//		const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
+	//		const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
 
-			EmplaceArc(vertices, lastPoint, endPoint, data.Angle, normalVec, normalVec);
-			lastPoint = endPoint;
-		}
-		break;
-		case QuadraticBezierTo:
-		{
-			const auto& data = seg.Data.QuadraticBezierTo;
-			XMFLOAT2 endPoint(data.Point.X, data.Point.Y);
+	//		EmplaceArc(vertices, lastPoint, endPoint, data.Angle, normalVec, normalVec);
+	//		lastPoint = endPoint;
+	//	}
+	//	break;
+	//	case QuadraticBezierTo:
+	//	{
+	//		const auto& data = seg.Data.QuadraticBezierTo;
+	//		XMFLOAT2 endPoint(data.Point.X, data.Point.Y);
 
-			const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
-			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
+	//		const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
+	//		const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
 
-			EmplaceQudraticBezier(vertices, lastPoint, endPoint, { data.Control.X, data.Control.Y }, normalVec, normalVec);
-			lastPoint = endPoint;
-		}
-		break;
-		default:
-			break;
-		}
-	}
+	//		EmplaceQudraticBezier(vertices, lastPoint, endPoint, { data.Control.X, data.Control.Y }, normalVec, normalVec);
+	//		lastPoint = endPoint;
+	//	}
+	//	break;
+	//	default:
+	//		break;
+	//	}
+	//}
 }
 
 // 3D Geometry
 
-void PlatformProvider<PlatformId::D3D9>::Transform(std::vector<StrokeVertex>& vertices, const BoxGeometry3D& geometry)
+void PlatformProvider<PlatformId::D3D9>::Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry)
 {
 	//auto position = geometry.Data.Position;
 	//auto rightBottomPoint = geometry.Data.RightBottom;

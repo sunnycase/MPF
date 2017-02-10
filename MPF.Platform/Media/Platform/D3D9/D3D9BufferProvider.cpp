@@ -23,9 +23,13 @@ WRL::ComPtr<IDirect3DVertexBuffer9> BufferProvider<BufferTypes::VertexBuffer>::C
 	return buffer;
 }
 
-RenderCall PlatformProvider<PlatformId::D3D9>::GetRenderCall(VertexBufferManager<PlatformId::D3D9>& vbMgr, size_t stride, const RentInfo& rent)
+void PlatformProvider<PlatformId::D3D9>::GetRenderCall(RenderCall& rc, VertexBufferManager<PlatformId::D3D9>& vbMgr, size_t stride, const BufferRentInfo& rent)
 {
-	return{ &vbMgr, rent.entryIdx, stride, UINT(rent.offset), UINT(rent.length / 3) };
+	rc.VB.Mgr = &vbMgr;
+	rc.VB.BufferIdx = rent.entryIdx;
+	rc.VB.Stride = stride;
+	rc.VB.Start = rent.offset;
+	rc.VB.Count = rent.length;
 }
 
 void BufferProvider<BufferTypes::VertexBuffer>::Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer)
@@ -35,4 +39,45 @@ void BufferProvider<BufferTypes::VertexBuffer>::Upload(DeviceContext& deviceCont
 	ThrowIfFailed(buffer->Lock(0, size, &pData, D3DLOCK_DISCARD));
 	auto fin = make_finalizer([&] {buffer->Unlock(); });
 	ThrowIfNot(memcpy_s(pData, size, data.data(), size) == 0, L"Cannot upload vertices.");
+}
+
+namespace
+{
+	D3DFORMAT StrideToIndexFormat(size_t stride)
+	{
+		switch (stride)
+		{
+		case 2:
+			return D3DFMT_INDEX16;
+		case 4:
+			return D3DFMT_INDEX32;
+		default:
+			ThrowIfFailed(E_INVALIDARG);
+		}
+	}
+}
+
+
+WRL::ComPtr<IDirect3DIndexBuffer9> BufferProvider<BufferTypes::IndexBuffer>::CreateBuffer(DeviceContext& deviceContext, size_t stride, size_t count)
+{
+	WRL::ComPtr<IDirect3DIndexBuffer9> buffer;
+	ThrowIfFailed(deviceContext->Device->CreateIndexBuffer(stride * count, D3DUSAGE_WRITEONLY, StrideToIndexFormat(stride), D3DPOOL_DEFAULT, &buffer, nullptr));
+	return buffer;
+}
+
+void PlatformProvider<PlatformId::D3D9>::GetRenderCall(RenderCall& rc, IndexBufferManager<PlatformId::D3D9>& ibMgr, size_t stride, const BufferRentInfo& rent)
+{
+	rc.IB.Mgr = &ibMgr;
+	rc.IB.BufferIdx = rent.entryIdx;
+	rc.IB.Start = rent.offset;
+	rc.PrimitiveCount = rent.length / 3;
+}
+
+void BufferProvider<BufferTypes::IndexBuffer>::Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer)
+{
+	void* pData = nullptr;
+	const auto size = data.size();
+	ThrowIfFailed(buffer->Lock(0, size, &pData, D3DLOCK_DISCARD));
+	auto fin = make_finalizer([&] {buffer->Unlock(); });
+	ThrowIfNot(memcpy_s(pData, size, data.data(), size) == 0, L"Cannot upload indices.");
 }

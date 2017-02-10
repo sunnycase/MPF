@@ -24,7 +24,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 	{
 		if (input.Position.x < input.LeftTopRightBottom.x || input.Position.x > input.LeftTopRightBottom.z) clip(-1);
 		if (input.Position.y < input.LeftTopRightBottom.y || input.Position.y > input.LeftTopRightBottom.w) clip(-1);
-		float thickness = input.NormalAndThickness.z;
+		float thickness = input.Thickness;
 		float2 px = ddx(input.ParamFormValue);
 		float2 py = ddy(input.ParamFormValue);
 		float sd;

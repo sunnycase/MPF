@@ -13,11 +13,16 @@
 
 DEFINE_NS_PLATFORM
 
-struct RentInfo
+struct BufferRentInfo
 {
 	size_t entryIdx;
 	size_t offset;
 	size_t length;
+};
+
+struct GeometryRentInfo
+{
+	BufferRentInfo Vertices, Indices;
 };
 
 template<class TRenderCall>
@@ -44,7 +49,8 @@ enum class PlatformId
 
 enum class BufferTypes
 {
-	VertexBuffer
+	VertexBuffer,
+	IndexBuffer
 };
 
 enum class PiplineStateTypes
@@ -59,6 +65,9 @@ class BufferManager;
 
 template<PlatformId PId>
 using VertexBufferManager = BufferManager<PId, BufferTypes::VertexBuffer>;
+
+template<PlatformId PId>
+using IndexBufferManager = BufferManager<PId, BufferTypes::IndexBuffer>;
 
 template<PlatformId PId>
 struct PlayRenderCallArgs;
@@ -80,13 +89,14 @@ struct PlatformProvider
 		NativeType CreateBuffer(DeviceContext& deviceContext, size_t stride, size_t count);
 		void Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer);
 	};
-	RenderCall GetRenderCall(VertexBufferManager<PId>& vbMgr, size_t stride, const RentInfo& rent);
+	void GetRenderCall(RenderCall& rc, VertexBufferManager<PId>& vbMgr, size_t stride, const BufferRentInfo& rent);
+	void GetRenderCall(RenderCall& rc, IndexBufferManager<PId>& ibMgr, size_t stride, const BufferRentInfo& rent);
 	void PlayRenderCall(const PlayRenderCallArgs<PId>& args);
 	bool IsNopRenderCall(const RenderCall& rc) noexcept { return true; }
-	void Transform(std::vector<StrokeVertex>& vertices, const LineGeometry& geometry) {}
-	void Transform(std::vector<StrokeVertex>& vertices, const RectangleGeometry& geometry) {}
-	void Transform(std::vector<StrokeVertex>& vertices, const PathGeometry& geometry) {}
-	void Transform(std::vector<StrokeVertex>& vertices, const BoxGeometry3D& geometry) {}
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const LineGeometry& geometry) {}
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const RectangleGeometry& geometry) {}
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const PathGeometry& geometry) {}
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry) {}
 };
 
 template<class T>

@@ -21,12 +21,9 @@ DEFINE_NS_PLATFORM_D3D11
 struct StrokeVertex
 {
 	DirectX::XMFLOAT3 Position;
-	DirectX::XMFLOAT2 Data1;		// ST_Linear: Normal, ST_QuadraticBezier: 
-	DirectX::XMFLOAT2 Data2;
+	DirectX::XMFLOAT3 Normal;
+	DirectX::XMFLOAT2 ParamFormValue;
 	float SegmentType;
-	DirectX::XMFLOAT2 Data3;
-	DirectX::XMFLOAT2 Data4;
-	DirectX::XMFLOAT2 Data5;
 
 	static constexpr float ST_Linear = 0;
 	static constexpr float ST_QuadraticBezier = 1;
@@ -39,6 +36,7 @@ struct FillVertex
 	DirectX::XMFLOAT3 Position;
 	DirectX::XMFLOAT3 ParamFormValue;
 	float SegmentType;
+	DirectX::XMFLOAT2 TexCoord;
 
 	static constexpr float ST_Linear = 0;
 	static constexpr float ST_QuadraticBezier = 1;
@@ -142,11 +140,23 @@ struct SwapChainUpdateContext
 
 struct RenderCall
 {
-	VertexBufferManager<PlatformId::D3D11>* VBMgr;
-	size_t BufferIdx;
-	UINT Stride;
-	UINT StartVertex;
-	UINT VertexCount;
+	struct
+	{
+		VertexBufferManager<PlatformId::D3D11>* Mgr;
+		size_t BufferIdx;
+		UINT Stride;
+		UINT Start;
+		UINT Count;
+	} VB;
+
+	struct
+	{
+		IndexBufferManager<PlatformId::D3D11>* Mgr;
+		DXGI_FORMAT Format;
+		size_t BufferIdx;
+		UINT Start;
+		UINT Count;
+	} IB;
 };
 
 class D3D11DeviceContext;
@@ -176,19 +186,30 @@ struct PlatformProvider<PlatformId::D3D11>
 		NativeType CreateBuffer(DeviceContext& deviceContext, size_t stride, size_t count);
 		void Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer);
 	};
-	RenderCall GetRenderCall(VertexBufferManager<PlatformId::D3D11>& vbMgr, size_t stride, const RentInfo& rent);
+
+	template<>
+	struct BufferProvider<BufferTypes::IndexBuffer>
+	{
+		using NativeType = WRL::ComPtr<ID3D11Buffer>;
+
+		NativeType CreateBuffer(DeviceContext& deviceContext, size_t stride, size_t count);
+		void Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer);
+	};
+
+	void GetRenderCall(RenderCall& rc, VertexBufferManager<PlatformId::D3D11>& vbMgr, size_t stride, const BufferRentInfo& rent);
+	void GetRenderCall(RenderCall& rc, IndexBufferManager<PlatformId::D3D11>& ibMgr, size_t stride, const BufferRentInfo& rent);
 	void PlayRenderCall(const PlayRenderCallArgs<PlatformId::D3D11>& args);
-	bool IsNopRenderCall(const RenderCall& rc) noexcept { return rc.VertexCount == 0; }
+	bool IsNopRenderCall(const RenderCall& rc) noexcept { return rc.IB.Count == 0; }
 
-	void Transform(std::vector<StrokeVertex>& vertices, const LineGeometry& geometry);
-	void Transform(std::vector<StrokeVertex>& vertices, const RectangleGeometry& geometry);
-	void Transform(std::vector<StrokeVertex>& vertices, const PathGeometry& geometry);
-	void Transform(std::vector<StrokeVertex>& vertices, const BoxGeometry3D& geometry);
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const LineGeometry& geometry);
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const RectangleGeometry& geometry);
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const PathGeometry& geometry);
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry);
 
-	void Transform(std::vector<FillVertex>& vertices, const LineGeometry& geometry);
-	void Transform(std::vector<FillVertex>& vertices, const RectangleGeometry& geometry);
-	void Transform(std::vector<FillVertex>& vertices, const PathGeometry& geometry);
-	void Transform(std::vector<FillVertex>& vertices, const BoxGeometry3D& geometry);
+	void Transform(std::vector<FillVertex>& vertices, std::vector<size_t>& indices, const LineGeometry& geometry);
+	void Transform(std::vector<FillVertex>& vertices, std::vector<size_t>& indices, const RectangleGeometry& geometry);
+	void Transform(std::vector<FillVertex>& vertices, std::vector<size_t>& indices, const PathGeometry& geometry);
+	void Transform(std::vector<FillVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry);
 };
 
 END_NS_PLATFORM

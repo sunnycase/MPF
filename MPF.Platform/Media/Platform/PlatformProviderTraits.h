@@ -20,6 +20,7 @@ template<PlatformId PId>
 struct PlatformProviderTraits
 {
 	using VertexBufferManager = NS_PLATFORM::VertexBufferManager<PId>;
+	using IndexBufferManager = NS_PLATFORM::IndexBufferManager<PId>;
 	using ResourceManager = WRL::ComPtr<NS_PLATFORM::ResourceManager<PId>>;
 	using DrawCallList = NS_PLATFORM::DrawCallList<PId>;
 };

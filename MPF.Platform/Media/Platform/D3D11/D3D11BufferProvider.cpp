@@ -23,12 +23,54 @@ WRL::ComPtr<ID3D11Buffer> BufferProvider<BufferTypes::VertexBuffer>::CreateBuffe
 	return buffer;
 }
 
-RenderCall PlatformProvider<PlatformId::D3D11>::GetRenderCall(VertexBufferManager<PlatformId::D3D11>& vbMgr, size_t stride, const RentInfo& rent)
+void PlatformProvider<PlatformId::D3D11>::GetRenderCall(RenderCall& rc, VertexBufferManager<PlatformId::D3D11>& vbMgr, size_t stride, const BufferRentInfo& rent)
 {
-	return{ &vbMgr, rent.entryIdx, stride, UINT(rent.offset), UINT(rent.length) };
+	rc.VB.Mgr = &vbMgr;
+	rc.VB.BufferIdx = rent.entryIdx;
+	rc.VB.Stride = stride;
+	rc.VB.Start = rent.offset;
+	rc.VB.Count = rent.length;
 }
 
 void BufferProvider<BufferTypes::VertexBuffer>::Upload(DeviceContext& deviceContext, const std::vector<byte>& data, WRL::ComPtr<ID3D11Buffer>& buffer)
+{
+	deviceContext->DeviceContext->UpdateSubresource(buffer.Get(), 0, nullptr, data.data(), data.size(), 0);
+}
+
+
+WRL::ComPtr<ID3D11Buffer> BufferProvider<BufferTypes::IndexBuffer>::CreateBuffer(DeviceContext& deviceContext, size_t stride, size_t count)
+{
+	WRL::ComPtr<ID3D11Buffer> buffer;
+	ThrowIfFailed(deviceContext->Device->CreateBuffer(&CD3D11_BUFFER_DESC(count * stride, D3D11_BIND_INDEX_BUFFER), nullptr, &buffer));
+	return buffer;
+}
+
+namespace
+{
+	DXGI_FORMAT StrideToIndexFormat(size_t stride)
+	{
+		switch (stride)
+		{
+		case 2:
+			return DXGI_FORMAT_R16_UINT;
+		case 4:
+			return DXGI_FORMAT_R32_UINT;
+		default:
+			ThrowIfFailed(E_INVALIDARG);
+		}
+	}
+}
+
+void PlatformProvider<PlatformId::D3D11>::GetRenderCall(RenderCall& rc, IndexBufferManager<PlatformId::D3D11>& ibMgr, size_t stride, const BufferRentInfo& rent)
+{
+	rc.IB.Mgr = &ibMgr;
+	rc.IB.BufferIdx = rent.entryIdx;
+	rc.IB.Start = rent.offset;
+	rc.IB.Format = StrideToIndexFormat(stride);
+	rc.IB.Count = rent.length;
+}
+
+void BufferProvider<BufferTypes::IndexBuffer>::Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer)
 {
 	deviceContext->DeviceContext->UpdateSubresource(buffer.Get(), 0, nullptr, data.data(), data.size(), 0);
 }

@@ -30,20 +30,18 @@ PixelShaderInput main(VertexShaderInput input)
 	int segmentType = input.SegmentType;
 	if (segmentType == ST_Linear)
 	{
-		float2 normal = input.Data1;
+		float2 normal = input.ParamFormValue;
 		normal = mul(normal, (float2x2)GeometryTransform);
 		normal = mul(normal, (float2x2)Model);
 		normal = mul(normal, (float2x2)WorldView);
-		normal = normalize(normal) * length(input.Data1);
-		output.NormalAndThickness = float3(normal, Thickness);
+		normal = normalize(normal) * length(input.ParamFormValue);
+
+		output.ParamFormValue = normal;
 	}
 	else
-	{
-		output.NormalAndThickness = float3(0, 0, Thickness);
-		output.ParamFormValue = input.Data2;
-	}
+		output.ParamFormValue = input.ParamFormValue;
 
-	//pos = mul(pos, Projection);
+	output.Thickness = Thickness;
 	output.Position = pos;
 	output.Color = Color;
 	output.SegmentType = segmentType;

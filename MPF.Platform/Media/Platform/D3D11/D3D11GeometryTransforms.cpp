@@ -14,183 +14,6 @@ using namespace NS_PLATFORM_D3D11;
 
 namespace
 {
-	void EmplaceLine(std::vector<D3D11::StrokeVertex>& vertices, XMFLOAT2 startPoint, XMFLOAT2 endPoint, const XMVECTOR& normalStartVec, const XMVECTOR& normalEndVec)
-	{
-		XMFLOAT2 normalStart, normalStartOpp;
-		XMFLOAT2 normalEnd, normalEndOpp;
-		XMStoreFloat2(&normalStart, normalStartVec);
-		XMStoreFloat2(&normalStartOpp, XMVectorScale(normalStartVec, -1.f));
-		XMStoreFloat2(&normalEnd, normalEndVec);
-		XMStoreFloat2(&normalEndOpp, XMVectorScale(normalEndVec, -1.f));
-
-		// 1
-		vertices.emplace_back(D3D11::StrokeVertex
-		{
-			{ startPoint.x, startPoint.y, 0.f },
-			normalStart,{ 0, 0 }, D3D11::StrokeVertex::ST_Linear
-		});
-		vertices.emplace_back(D3D11::StrokeVertex
-		{
-			{ endPoint.x, endPoint.y, 0.f },
-			normalEnd,{ 1.f, 1.f }, D3D11::StrokeVertex::ST_Linear
-		});
-		vertices.emplace_back(D3D11::StrokeVertex
-		{
-			{ endPoint.x, endPoint.y, 0.f },
-			normalEndOpp,{ 1.f, 1.f }, D3D11::StrokeVertex::ST_Linear
-		});
-
-		// 2
-		vertices.emplace_back(D3D11::StrokeVertex
-		{
-			{ endPoint.x, endPoint.y, 0.f },
-			normalEndOpp,{ 1.f, 1.f }, D3D11::StrokeVertex::ST_Linear
-		});
-		vertices.emplace_back(D3D11::StrokeVertex
-		{
-			{ startPoint.x, startPoint.y, 0.f },
-			normalStartOpp,{ 0, 0 }, D3D11::StrokeVertex::ST_Linear
-		});
-		vertices.emplace_back(D3D11::StrokeVertex
-		{
-			{ startPoint.x, startPoint.y, 0.f },
-			normalStart,{ 0, 0 }, D3D11::StrokeVertex::ST_Linear
-		});
-	}
-
-	void EmplaceArc(std::vector<D3D11::StrokeVertex>& vertices, XMFLOAT2 startPoint, XMFLOAT2 endPoint, float angle, const XMVECTOR& normalStartVec, const XMVECTOR& normalEndVec)
-	{
-		XMFLOAT2 normalStart, normalStartOpp;
-		XMFLOAT2 normalEnd, normalEndOpp;
-		XMStoreFloat2(&normalStart, normalStartVec);
-		XMStoreFloat2(&normalStartOpp, XMVectorScale(normalStartVec, -1.f));
-		XMStoreFloat2(&normalEnd, normalEndVec);
-		XMStoreFloat2(&normalEndOpp, XMVectorScale(normalEndVec, -1.f));
-
-		const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - startPoint.x, endPoint.y - startPoint.y });
-		const auto halfVec = XMVectorScale(dirVec, 0.5f);
-		const auto centerDir = XMVector2Normalize(XMVector3Orthogonal(dirVec));
-		const auto radian = XMConvertToRadians(angle);
-		const auto radius = XMVector2Length(halfVec).m128_f32[0] / std::sin(radian / 2.f);
-		const auto centerVec = XMLoadFloat2(&startPoint) + halfVec + centerDir * (radius * std::cos(radian / 2.f));
-		const auto slopeLength = radius / std::cos(radian / 2.f) * 1.1f;
-		const auto point2Vec = XMVector2Normalize(XMLoadFloat2(&startPoint) - centerVec) * slopeLength + centerVec;
-		const auto point3Vec = XMVector2Normalize(XMLoadFloat2(&endPoint) - centerVec) * slopeLength + centerVec;
-		XMFLOAT2 centerPoint, point2, point3;
-		XMStoreFloat2(&centerPoint, centerVec);
-		XMStoreFloat2(&point2, point2Vec);
-		XMStoreFloat2(&point3, point3Vec);
-
-		vertices.emplace_back(D3D11::StrokeVertex
-		{
-			{ centerPoint.x, centerPoint.y, 0.f },
-			{ 0 ,1 },{ 0, 0 }, D3D11::StrokeVertex::ST_Arc
-		});
-		vertices.emplace_back(D3D11::StrokeVertex
-		{
-			{ point2.x, point2.y, 0.f },
-			{ 0 ,1 },{ slopeLength / radius, 0 }, D3D11::StrokeVertex::ST_Arc
-		});
-		vertices.emplace_back(D3D11::StrokeVertex
-		{
-			{ point3.x, point3.y, 0.f },
-			{ 3.f ,1 },{ slopeLength * std::cos(radian) / radius, slopeLength * std::sin(radian) / radius }, D3D11::StrokeVertex::ST_Arc
-		});
-	}
-
-	void EmplaceQudraticBezier(std::vector<D3D11::StrokeVertex>& vertices, XMFLOAT2 startPoint, XMFLOAT2 endPoint, XMFLOAT2 control, const XMVECTOR& normalStartVec, const XMVECTOR& normalEndVec)
-	{
-		XMFLOAT2 normalStart, normalStartOpp;
-		XMFLOAT2 normalEnd, normalEndOpp;
-		XMStoreFloat2(&normalStart, normalStartVec);
-		XMStoreFloat2(&normalStartOpp, XMVectorScale(normalStartVec, -1.f));
-		XMStoreFloat2(&normalEnd, normalEndVec);
-		XMStoreFloat2(&normalEndOpp, XMVectorScale(normalEndVec, -1.f));
-
-		XMVECTOR aVec = XMLoadFloat2(&startPoint);
-		XMVECTOR bVec = XMLoadFloat2(&endPoint);
-		XMVECTOR cVec = XMLoadFloat2(&control);
-		auto mVec = (aVec + bVec + cVec) / 3.f;
-		auto minLen = std::min(XMVector2Length(aVec - mVec).m128_f32[0], XMVector2Length(bVec - mVec).m128_f32[0]);
-		minLen = std::min(minLen, XMVector2Length(cVec - mVec).m128_f32[0]);
-
-		XMFLOAT2 mPoint;
-		XMStoreFloat2(&mPoint, mVec);
-
-		vertices.emplace_back(D3D11::StrokeVertex
-		{
-			{ startPoint.x, startPoint.y, 0.f },
-			mPoint,{ 0, 0 }, D3D11::StrokeVertex::ST_QuadraticBezier,{ minLen, 0 }
-		});
-		vertices.emplace_back(D3D11::StrokeVertex
-		{
-			{ control.x, control.y, 0.f },
-			mPoint,{ 0.5f, 0 }, D3D11::StrokeVertex::ST_QuadraticBezier,{ minLen, 0 }
-		});
-		vertices.emplace_back(D3D11::StrokeVertex
-		{
-			{ endPoint.x, endPoint.y, 0.f },
-			mPoint,{ 1, 1 }, D3D11::StrokeVertex::ST_QuadraticBezier,{ minLen, 0 }
-		});
-	}
-
-	void EmplaceTriangle(std::vector<D3D11::FillVertex>& vertices, XMFLOAT2 a, XMFLOAT2 b, XMFLOAT2 c)
-	{
-		vertices.emplace_back(D3D11::FillVertex
-		{
-			{ a.x, a.y, 0.f }
-		});
-		vertices.emplace_back(D3D11::FillVertex
-		{
-			{ b.x, b.y, 0.f }
-		});
-		vertices.emplace_back(D3D11::FillVertex
-		{
-			{ c.x, c.y, 0.f }
-		});
-	}
-
-
-	void EmplaceArc(std::vector<D3D11::FillVertex>& vertices, XMFLOAT2 startPoint, XMFLOAT2 endPoint, float angle, const XMVECTOR& normalStartVec, const XMVECTOR& normalEndVec)
-	{
-		XMFLOAT2 normalStart, normalStartOpp;
-		XMFLOAT2 normalEnd, normalEndOpp;
-		XMStoreFloat2(&normalStart, normalStartVec);
-		XMStoreFloat2(&normalStartOpp, XMVectorScale(normalStartVec, -1.f));
-		XMStoreFloat2(&normalEnd, normalEndVec);
-		XMStoreFloat2(&normalEndOpp, XMVectorScale(normalEndVec, -1.f));
-
-		const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - startPoint.x, endPoint.y - startPoint.y });
-		const auto halfVec = XMVectorScale(dirVec, 0.5f);
-		const auto centerDir = XMVector2Normalize(XMVector3Orthogonal(dirVec));
-		const auto radian = XMConvertToRadians(angle);
-		const auto radius = XMVector2Length(halfVec).m128_f32[0] / std::sin(radian / 2.f);
-		const auto centerVec = XMLoadFloat2(&startPoint) + halfVec + centerDir * (radius * std::cos(radian / 2.f));
-		const auto slopeLength = radius / std::cos(radian / 2.f) * 1.1f;
-		const auto point2Vec = XMVector2Normalize(XMLoadFloat2(&startPoint) - centerVec) * slopeLength + centerVec;
-		const auto point3Vec = XMVector2Normalize(XMLoadFloat2(&endPoint) - centerVec) * slopeLength + centerVec;
-		XMFLOAT2 centerPoint, point2, point3;
-		XMStoreFloat2(&centerPoint, centerVec);
-		XMStoreFloat2(&point2, point2Vec);
-		XMStoreFloat2(&point3, point3Vec);
-
-		vertices.emplace_back(D3D11::FillVertex
-		{
-			{ centerPoint.x, centerPoint.y, 0.f },
-			{ 0, 0, 1 }, D3D11::FillVertex::ST_Arc
-		});
-		vertices.emplace_back(D3D11::FillVertex
-		{
-			{ point2.x, point2.y, 0.f },
-			{ slopeLength / radius, 0, 1 }, D3D11::FillVertex::ST_Arc
-		});
-		vertices.emplace_back(D3D11::FillVertex
-		{
-			{ point3.x, point3.y, 0.f },
-			{ slopeLength * std::cos(radian) / radius, slopeLength * std::sin(radian) / radius, 1 }, D3D11::StrokeVertex::ST_Arc
-		});
-	}
-
 	bool IsControlPointOutter(XMFLOAT2 startPoint, XMFLOAT2 endPoint, XMFLOAT2 control)
 	{
 		auto startEndVec = XMLoadFloat2(&endPoint) - XMLoadFloat2(&startPoint);
@@ -200,7 +23,7 @@ namespace
 		return cross.m128_f32[2] < 0;
 	}
 
-	void EmplaceQudraticBezier(std::vector<D3D11::FillVertex>& vertices, XMFLOAT2 startPoint, XMFLOAT2 endPoint, XMFLOAT2 control, const XMVECTOR& normalStartVec, const XMVECTOR& normalEndVec)
+	void EmplaceQudraticBezier(std::vector<D3D11::FillVertex>& vertices, std::vector<size_t>& indices, XMFLOAT2 startPoint, XMFLOAT2 endPoint, XMFLOAT2 control, const XMVECTOR& normalStartVec, const XMVECTOR& normalEndVec)
 	{
 		XMFLOAT2 normalStart, normalStartOpp;
 		XMFLOAT2 normalEnd, normalEndOpp;
@@ -211,6 +34,7 @@ namespace
 
 		float swit = IsControlPointOutter(startPoint, endPoint, control) ? 1 : -1;
 
+		const auto count = vertices.size();
 		vertices.emplace_back(D3D11::FillVertex
 		{
 			{ startPoint.x, startPoint.y, 0.f },
@@ -226,6 +50,9 @@ namespace
 			{ endPoint.x, endPoint.y, 0.f },
 			{ 1, 1, swit }, D3D11::FillVertex::ST_QuadraticBezier
 		});
+
+		for (auto&& i : { 0, 1, 2 })
+			indices.emplace_back(count + i);
 	}
 
 	void SwapIfGeater(float& a, float& b)
@@ -235,43 +62,101 @@ namespace
 	}
 }
 
-void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, const LineGeometry& geometry)
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, std::vector<size_t>& indices, const LineGeometry& geometry)
 {
-	const auto dirVec = XMLoadFloat2(&XMFLOAT2{ geometry.Data.EndPoint.X - geometry.Data.StartPoint.X, geometry.Data.EndPoint.Y - geometry.Data.StartPoint.Y });
-	const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
+	XMFLOAT2 startPoint{ geometry.Data.StartPoint.X, geometry.Data.StartPoint.Y };
+	XMFLOAT2 endPoint{ geometry.Data.EndPoint.X, geometry.Data.EndPoint.Y };
 
-	EmplaceLine(vertices, { geometry.Data.StartPoint.X, geometry.Data.StartPoint.Y }, { geometry.Data.EndPoint.X, geometry.Data.EndPoint.Y },
-		normalVec, normalVec);
+	XMFLOAT2 normal, normalOpp;
+	const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(XMLoadFloat2(&endPoint) - XMLoadFloat2(&startPoint)));
+	XMStoreFloat2(&normal, normalVec);
+	XMStoreFloat2(&normalOpp, XMVectorScale(normalVec, -1.f));
+
+	vertices.emplace_back(D3D11::StrokeVertex
+	{
+		{ startPoint.x, startPoint.y, 0.f },
+		{ normal.x, normal.y, 0.f },
+		normal, D3D11::StrokeVertex::ST_Linear
+	});
+	vertices.emplace_back(D3D11::StrokeVertex
+	{
+		{ endPoint.x, endPoint.y, 0.f },
+		{ normal.x, normal.y, 0.f },
+		normal, D3D11::StrokeVertex::ST_Linear
+	});
+	vertices.emplace_back(D3D11::StrokeVertex
+	{
+		{ endPoint.x, endPoint.y, 0.f },
+		{ normalOpp.x, normalOpp.y, 0.f },
+		normalOpp, D3D11::StrokeVertex::ST_Linear
+	});
+	vertices.emplace_back(D3D11::StrokeVertex
+	{
+		{ startPoint.x, startPoint.y, 0.f },
+		{ normalOpp.x, normalOpp.y, 0.f },
+		normalOpp, D3D11::StrokeVertex::ST_Linear
+	});
+
+	// triangle 1
+	indices.emplace_back(0);
+	indices.emplace_back(1);
+	indices.emplace_back(2);
+
+	// triangle 2
+	indices.emplace_back(2);
+	indices.emplace_back(3);
+	indices.emplace_back(0);
 }
 
-void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, const RectangleGeometry& geometry)
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, std::vector<size_t>& indices, const RectangleGeometry& geometry)
 {
 	auto leftTopPoint = geometry.Data.LeftTop;
 	auto rightBottomPoint = geometry.Data.RightBottom;
 	SwapIfGeater(leftTopPoint.X, rightBottomPoint.X);
 	SwapIfGeater(leftTopPoint.Y, rightBottomPoint.Y);
 
-	XMFLOAT2 leftTop{ leftTopPoint.X, leftTopPoint.Y };
-	XMFLOAT2 rightTop{ rightBottomPoint.X, leftTopPoint.Y };
-	XMFLOAT2 rightBottom{ rightBottomPoint.X, rightBottomPoint.Y };
-	XMFLOAT2 leftBottom{ leftTopPoint.X, rightBottomPoint.Y };
+	XMFLOAT2 pt[4]{
+		{ leftTopPoint.X, leftTopPoint.Y },
+		{ rightBottomPoint.X, leftTopPoint.Y },
+		{ rightBottomPoint.X, rightBottomPoint.Y },
+		{ leftTopPoint.X, rightBottomPoint.Y }
+	};
 
-	const auto ltDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, -1.f });
-	const auto rtDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, -1.f });
-	const auto lbDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, 1.f });
-	const auto rbDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, 1.f });
+	const XMFLOAT2 normal[4] = {
+		{ -1, -1 },
+		{ 1, -1 },
+		{ 1, 1 },
+		{ -1, 1 }
+	};
 
-	EmplaceLine(vertices, leftTop, rightTop, ltDirVec, rtDirVec);
-	EmplaceLine(vertices, rightTop, rightBottom, rtDirVec, rbDirVec);
-	EmplaceLine(vertices, rightBottom, leftBottom, rbDirVec, lbDirVec);
-	EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
+	for (size_t i = 0; i < 8; i++)
+	{
+		const auto pIdx = i % 4;
+		const auto nIdx = i > 3 ? (i % 2 ? 8 - i : 6 - i) : i;
+		vertices.emplace_back(D3D11::StrokeVertex
+		{
+			{ pt[pIdx].x, pt[pIdx].y, 0.f },
+			{ normal[nIdx].x, normal[nIdx].y, 0.f },
+			normal[nIdx], D3D11::StrokeVertex::ST_Linear
+		});
+	}
+
+	for (auto&& i : {
+		0, 1, 5, 5, 4, 0,
+		1, 2, 6, 6, 5, 1,
+		2, 3, 7, 7, 6, 2,
+		3, 0, 4, 4, 7, 3
+	})
+		indices.emplace_back(i);
 }
 
-void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, const PathGeometry& geometry)
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, std::vector<size_t>& indices, const PathGeometry& geometry)
 {
 	using namespace PathGeometrySegments;
 
+	bool lastOpIsLineTo = false;
 	XMFLOAT2 lastPoint{ 0,0 };
+	size_t count = 0;
 	for (auto&& seg : geometry.Segments)
 	{
 		switch (seg.Operation)
@@ -280,57 +165,153 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVer
 		{
 			const auto& data = seg.Data.MoveTo;
 			lastPoint = { data.Point.X, data.Point.Y };
+			lastOpIsLineTo = false;
 		}
 		break;
 		case LineTo:
 		{
 			const auto& data = seg.Data.LineTo;
-			XMFLOAT2 endPoint(data.Point.X, data.Point.Y);
+			XMFLOAT2 startPoint = lastPoint;
+			XMFLOAT2 endPoint{ data.Point.X, data.Point.Y };
 
-			const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
-			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
+			XMFLOAT2 normal, normalOpp;
+			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(XMLoadFloat2(&endPoint) - XMLoadFloat2(&startPoint)));
+			XMStoreFloat2(&normal, normalVec);
+			XMStoreFloat2(&normalOpp, XMVectorScale(normalVec, -1.f));
 
-			EmplaceLine(vertices, lastPoint, endPoint, normalVec, normalVec);
+			size_t last3Idx, last2Idx;
+
+			if (!lastOpIsLineTo)
+			{
+				vertices.emplace_back(D3D11::StrokeVertex
+				{
+					{ startPoint.x, startPoint.y, 0.f },
+					{ normal.x, normal.y, 0.f },
+					normal, D3D11::StrokeVertex::ST_Linear
+				});
+			}
+			else
+			{
+				last3Idx = *(indices.end() - 5);
+				auto& vertex = vertices[last3Idx];
+				vertex.Normal = { normal.x, normal.y, 0.f };
+				vertex.ParamFormValue.x += normal.x;
+				vertex.ParamFormValue.y += normal.y;
+			}
+			vertices.emplace_back(D3D11::StrokeVertex
+			{
+				{ endPoint.x, endPoint.y, 0.f },
+				{ normal.x, normal.y, 0.f },
+				normal, D3D11::StrokeVertex::ST_Linear
+			});
+			vertices.emplace_back(D3D11::StrokeVertex
+			{
+				{ endPoint.x, endPoint.y, 0.f },
+				{ normalOpp.x, normalOpp.y, 0.f },
+				normalOpp, D3D11::StrokeVertex::ST_Linear
+			});
+			if (!lastOpIsLineTo)
+			{
+				vertices.emplace_back(D3D11::StrokeVertex
+				{
+					{ startPoint.x, startPoint.y, 0.f },
+					{ normalOpp.x, normalOpp.y, 0.f },
+					normalOpp, D3D11::StrokeVertex::ST_Linear
+				});
+			}
+			else
+			{
+				last2Idx = *(indices.end() - 3);
+				auto& vertex = vertices[last2Idx];
+				vertex.Normal = { normalOpp.x, normalOpp.y, 0.f };
+				vertex.ParamFormValue.x += normalOpp.x;
+				vertex.ParamFormValue.y += normalOpp.y;
+			}
+
+			if (lastOpIsLineTo)
+			{
+				indices.emplace_back(last3Idx);
+				indices.emplace_back(0 + count);
+				indices.emplace_back(1 + count);
+				indices.emplace_back(1 + count);
+				indices.emplace_back(last2Idx);
+				indices.emplace_back(last3Idx);
+				count += 2;
+			}
+			else
+			{
+				for (auto&& i : {
+					0, 1, 2,
+					2, 3, 0 })
+					indices.emplace_back(count + i);
+				count += 4;
+			}
+
 			lastPoint = endPoint;
+			lastOpIsLineTo = true;
 		}
 		break;
 		case ArcTo:
 		{
 			const auto& data = seg.Data.ArcTo;
+			XMFLOAT2 startPoint = lastPoint;
 			XMFLOAT2 endPoint(data.Point.X, data.Point.Y);
 
-			const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
-			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
+			//const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
+			//const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
 
-			EmplaceArc(vertices, lastPoint, endPoint, data.Angle, normalVec, normalVec);
+			//EmplaceArc(vertices, lastPoint, endPoint, data.Angle, normalVec, normalVec);
 			lastPoint = endPoint;
+			lastOpIsLineTo = false;
 		}
 		break;
 		case QuadraticBezierTo:
 		{
 			const auto& data = seg.Data.QuadraticBezierTo;
+			XMFLOAT2 startPoint = lastPoint;
 			XMFLOAT2 endPoint(data.Point.X, data.Point.Y);
+			XMFLOAT2 control(data.Control.X, data.Control.Y);
 
-			const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
-			const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
+			vertices.emplace_back(D3D11::StrokeVertex
+			{
+				{ startPoint.x, startPoint.y, 0.f },
+				{ 0, 0, 0 },
+				{ 0, 0 }, D3D11::StrokeVertex::ST_QuadraticBezier
+			});
+			vertices.emplace_back(D3D11::StrokeVertex
+			{
+				{ control.x, control.y, 0.f },
+				{ 0, 0, 0 },
+				{ 0.5f, 0 }, D3D11::StrokeVertex::ST_QuadraticBezier
+			});
+			vertices.emplace_back(D3D11::StrokeVertex
+			{
+				{ endPoint.x, endPoint.y, 0.f },
+				{ 0, 0, 0 },
+				{ 1, 1 }, D3D11::StrokeVertex::ST_QuadraticBezier
+			});
 
-			EmplaceQudraticBezier(vertices, lastPoint, endPoint, { data.Control.X, data.Control.Y }, normalVec, normalVec);
+			for (auto&& i : { 0, 1, 2 })
+				indices.emplace_back(count + i);
+			count += 3;
+
 			lastPoint = endPoint;
+			lastOpIsLineTo = false;
 		}
 		break;
 		default:
-			break;
+			ThrowAlways(L"Invalid path segment.");
 		}
 	}
 }
 
 
-void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, const LineGeometry& geometry)
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, std::vector<size_t>& indices, const LineGeometry& geometry)
 {
 
 }
 
-void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, const RectangleGeometry& geometry)
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, std::vector<size_t>& indices, const RectangleGeometry& geometry)
 {
 	auto leftTopPoint = geometry.Data.LeftTop;
 	auto rightBottomPoint = geometry.Data.RightBottom;
@@ -342,8 +323,32 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVerte
 	XMFLOAT2 rightBottom{ rightBottomPoint.X, rightBottomPoint.Y };
 	XMFLOAT2 leftBottom{ leftTopPoint.X, rightBottomPoint.Y };
 
-	EmplaceTriangle(vertices, leftTop, rightTop, rightBottom);
-	EmplaceTriangle(vertices, leftBottom, leftTop, rightBottom);
+	vertices.emplace_back(D3D11::FillVertex
+	{
+		{ leftTop.x, leftTop.y, 0.f }
+	});
+	vertices.emplace_back(D3D11::FillVertex
+	{
+		{ rightTop.x, rightTop.y, 0.f }
+	});
+	vertices.emplace_back(D3D11::FillVertex
+	{
+		{ rightBottom.x, rightBottom.y, 0.f }
+	});
+	vertices.emplace_back(D3D11::FillVertex
+	{
+		{ leftBottom.x, leftBottom.y, 0.f }
+	});
+
+	// triangle 1
+	indices.emplace_back(0);
+	indices.emplace_back(1);
+	indices.emplace_back(2);
+
+	// triangle 2
+	indices.emplace_back(2);
+	indices.emplace_back(3);
+	indices.emplace_back(0);
 }
 
 namespace
@@ -354,7 +359,7 @@ namespace
 	}
 }
 
-void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, const PathGeometry& geometry)
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, std::vector<size_t>& indices, const PathGeometry& geometry)
 {
 	using namespace PathGeometrySegments;
 	{
@@ -449,8 +454,15 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVerte
 		if (points.size() > 2 && std::all_of(contours.begin(), contours.end(), [](auto& segments) {return segments.front().first == segments.back().second; }))
 		{
 			Triangulator triangulator(points, contours);
-			triangulator.Triangulate([&](const std::array<DirectX::XMFLOAT2, 3>& t) {
-				EmplaceTriangle(vertices, t[0], t[1], t[2]);
+			triangulator.Triangulate([&](XMFLOAT2 pt) {
+				vertices.emplace_back(D3D11::FillVertex
+				{
+					{ pt.x, pt.y, 0.f }
+				});
+			},
+				[&](const std::array<size_t, 3>& t) {
+				for (auto&& i : t)
+					indices.emplace_back(i);
 			});
 		}
 		else
@@ -484,7 +496,7 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVerte
 				const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
 				const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
 
-				EmplaceArc(vertices, lastPoint, endPoint, data.Angle, normalVec, normalVec);
+				//EmplaceArc(vertices, lastPoint, endPoint, data.Angle, normalVec, normalVec);
 				lastPoint = endPoint;
 			}
 			break;
@@ -496,7 +508,7 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVerte
 				const auto dirVec = XMLoadFloat2(&XMFLOAT2{ endPoint.x - lastPoint.x, endPoint.y - lastPoint.y });
 				const auto normalVec = XMVector2Normalize(XMVector2Orthogonal(dirVec));
 
-				EmplaceQudraticBezier(vertices, lastPoint, endPoint, { data.Control.X, data.Control.Y }, normalVec, normalVec);
+				EmplaceQudraticBezier(vertices, indices, lastPoint, endPoint, { data.Control.X, data.Control.Y }, normalVec, normalVec);
 				lastPoint = endPoint;
 			}
 			break;
@@ -509,26 +521,7 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVerte
 
 // 3D Geometry
 
-namespace
-{
-	void EmplaceTriangle(std::vector<D3D11::FillVertex>& vertices, XMFLOAT3 a, XMFLOAT3 b, XMFLOAT3 c)
-	{
-		vertices.emplace_back(D3D11::FillVertex
-		{
-			{ a.x, a.y, a.z }
-		});
-		vertices.emplace_back(D3D11::FillVertex
-		{
-			{ b.x, b.y, b.z }
-		});
-		vertices.emplace_back(D3D11::FillVertex
-		{
-			{ c.x, c.y, c.z }
-		});
-	}
-}
-
-void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, const BoxGeometry3D& geometry)
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry)
 {
 	//auto leftTopPoint = geometry.Data.LeftTop;
 	//auto rightBottomPoint = geometry.Data.RightBottom;
@@ -551,7 +544,7 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVer
 	//EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
 }
 
-void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, const BoxGeometry3D& geometry)
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry)
 {
 	const auto position = geometry.Data.Position;
 	const auto width = geometry.Data.Width;
@@ -567,21 +560,76 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVerte
 	XMFLOAT3 pt7{ position.X + width, position.Y + height, position.Z + depth };
 	XMFLOAT3 pt8{ position.X, position.Y + height, position.Z + depth };
 
-	EmplaceTriangle(vertices, pt1, pt2, pt3);
-	EmplaceTriangle(vertices, pt1, pt3, pt4);
+	vertices.emplace_back(D3D11::FillVertex
+	{
+		{ pt1.x, pt1.y, pt1.z },
+		{ 0, 0, 0}, FillVertex::ST_Linear,
+		{ 0, 0 }
+	});
+	vertices.emplace_back(D3D11::FillVertex
+	{
+		{ pt2.x, pt2.y, pt2.z },
+		{ 0, 0, 0 }, FillVertex::ST_Linear,
+		{ 1, 0 }
+	});
+	vertices.emplace_back(D3D11::FillVertex
+	{
+		{ pt3.x, pt3.y, pt3.z },
+		{ 0, 0, 0 }, FillVertex::ST_Linear,
+		{ 1, 1 }
+	});
+	vertices.emplace_back(D3D11::FillVertex
+	{
+		{ pt4.x, pt4.y, pt4.z },
+		{ 0, 0, 0 }, FillVertex::ST_Linear,
+		{ 1, 0 }
+	});
+	vertices.emplace_back(D3D11::FillVertex
+	{
+		{ pt5.x, pt5.y, pt5.z },
+		{ 0, 0, 0 }, FillVertex::ST_Linear,
+		{ 0, 0 }
+	});
+	vertices.emplace_back(D3D11::FillVertex
+	{
+		{ pt6.x, pt6.y, pt6.z },
+		{ 0, 0, 0 }, FillVertex::ST_Linear,
+		{ 1, 0 }
+	});
+	vertices.emplace_back(D3D11::FillVertex
+	{
+		{ pt7.x, pt7.y, pt7.z },
+		{ 0, 0, 0 }, FillVertex::ST_Linear,
+		{ 1, 1 }
+	});
+	vertices.emplace_back(D3D11::FillVertex
+	{
+		{ pt8.x, pt8.y, pt8.z },
+		{ 0, 0, 0 }, FillVertex::ST_Linear,
+		{ 1, 0 }
+	});
 
-	EmplaceTriangle(vertices, pt5, pt1, pt4);
-	EmplaceTriangle(vertices, pt4, pt8, pt5);
+	// face 1
+	indices.emplace_back(0); indices.emplace_back(1); indices.emplace_back(2);
+	indices.emplace_back(0); indices.emplace_back(2); indices.emplace_back(3);
 
-	EmplaceTriangle(vertices, pt5, pt6, pt2);
-	EmplaceTriangle(vertices, pt2, pt1, pt5);
+	// face 2
+	indices.emplace_back(4); indices.emplace_back(0); indices.emplace_back(3);
+	indices.emplace_back(3); indices.emplace_back(7); indices.emplace_back(4);
 
-	EmplaceTriangle(vertices, pt6, pt5, pt8);
-	EmplaceTriangle(vertices, pt8, pt7, pt6);
+	// face 3
+	indices.emplace_back(4); indices.emplace_back(5); indices.emplace_back(1);
+	indices.emplace_back(1); indices.emplace_back(0); indices.emplace_back(4);
 
-	EmplaceTriangle(vertices, pt2, pt6, pt7);
-	EmplaceTriangle(vertices, pt7, pt3, pt2);
+	// face 4
+	indices.emplace_back(5); indices.emplace_back(4); indices.emplace_back(7);
+	indices.emplace_back(7); indices.emplace_back(6); indices.emplace_back(5);
 
-	EmplaceTriangle(vertices, pt3, pt7, pt8);
-	EmplaceTriangle(vertices, pt8, pt4, pt3);
+	// face 5
+	indices.emplace_back(1); indices.emplace_back(5); indices.emplace_back(6);
+	indices.emplace_back(6); indices.emplace_back(2); indices.emplace_back(1);
+
+	// face 6
+	indices.emplace_back(2); indices.emplace_back(6); indices.emplace_back(7);
+	indices.emplace_back(7); indices.emplace_back(3); indices.emplace_back(2);
 }

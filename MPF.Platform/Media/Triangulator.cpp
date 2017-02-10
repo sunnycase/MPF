@@ -75,7 +75,7 @@ Triangulator::Triangulator(const std::vector<Point>& points, const std::vector<s
 	}
 }
 
-void Triangulator::Triangulate(std::function<void(std::array<DirectX::XMFLOAT2, 3>&)>&& outputTriangle)
+void Triangulator::Triangulate(std::function<void(DirectX::XMFLOAT2)>&& outputPoint, std::function<void(std::array<size_t, 3>&)>&& outputTriangle)
 {
 	triangulateio in{}, out{};
 	in.numberofpoints = _points.size() / 2;
@@ -91,15 +91,14 @@ void Triangulator::Triangulate(std::function<void(std::array<DirectX::XMFLOAT2, 
 
 	triangulate("pzQ", &in, &out, nullptr);
 
+	for (size_t i = 0; i < out.numberofpoints; i++)
+		outputPoint({ out.pointlist[i * 2], out.pointlist[i * 2 + 1] });
+
 	for (size_t i = 0; i < out.numberoftriangles; i++)
 	{
-		std::array<DirectX::XMFLOAT2, 3> triangle;
+		std::array<size_t, 3> triangle;
 		for (size_t j = 0; j < 3; j++)
-		{
-			size_t pointIdx = out.trianglelist[i * 3 + j];
-			triangle[j].x = out.pointlist[pointIdx * 2];
-			triangle[j].y = out.pointlist[pointIdx * 2 + 1];
-		}
+			triangle[j] = out.trianglelist[i * 3 + j];
 		outputTriangle(triangle);
 	}
 

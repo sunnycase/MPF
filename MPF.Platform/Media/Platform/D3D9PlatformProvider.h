@@ -62,10 +62,21 @@ enum VertexShaderConstantSlots
 
 struct RenderCall
 {
-	VertexBufferManager<PlatformId::D3D9>* VBMgr;
-	size_t BufferIdx;
-	UINT Stride;
-	UINT StartVertex;
+	struct
+	{
+		VertexBufferManager<PlatformId::D3D9>* Mgr;
+		size_t BufferIdx;
+		UINT Stride;
+		UINT Start;
+		UINT Count;
+	} VB;
+
+	struct
+	{
+		IndexBufferManager<PlatformId::D3D9>* Mgr;
+		size_t BufferIdx;
+		UINT Start;
+	} IB;
 	UINT PrimitiveCount;
 };
 
@@ -96,14 +107,25 @@ struct PlatformProvider<PlatformId::D3D9>
 		NativeType CreateBuffer(DeviceContext& deviceContext, size_t stride, size_t count);
 		void Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer);
 	};
-	RenderCall GetRenderCall(VertexBufferManager<PlatformId::D3D9>& vbMgr, size_t stride, const RentInfo& rent);
+
+	template<>
+	struct BufferProvider<BufferTypes::IndexBuffer>
+	{
+		using NativeType = WRL::ComPtr<IDirect3DIndexBuffer9>;
+
+		NativeType CreateBuffer(DeviceContext& deviceContext, size_t stride, size_t count);
+		void Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer);
+	};
+
+	void GetRenderCall(RenderCall& rc, VertexBufferManager<PlatformId::D3D9>& vbMgr, size_t stride, const BufferRentInfo& rent);
+	void GetRenderCall(RenderCall& rc, IndexBufferManager<PlatformId::D3D9>& ibMgr, size_t stride, const BufferRentInfo& rent);
 	void PlayRenderCall(const PlayRenderCallArgs<PlatformId::D3D9>& args);
 	bool IsNopRenderCall(const RenderCall& rc) noexcept { return rc.PrimitiveCount == 0; }
 
-	void Transform(std::vector<StrokeVertex>& vertices, const LineGeometry& geometry);
-	void Transform(std::vector<StrokeVertex>& vertices, const RectangleGeometry& geometry);
-	void Transform(std::vector<StrokeVertex>& vertices, const PathGeometry& geometry);
-	void Transform(std::vector<StrokeVertex>& vertices, const BoxGeometry3D& geometry);
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const LineGeometry& geometry);
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const RectangleGeometry& geometry);
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const PathGeometry& geometry);
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry);
 };
 
 END_NS_PLATFORM

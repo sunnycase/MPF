@@ -33,5 +33,6 @@ PixelShaderInput main(VertexShaderInput input)
 	output.ParamFormValue = input.ParamFormValue.xy;
 	output.Switch = (int)input.ParamFormValue.z;
 	output.SegmentType = (int)input.SegmentType;
+	output.TexCoord = input.TexCoord;
 	return output;
 }

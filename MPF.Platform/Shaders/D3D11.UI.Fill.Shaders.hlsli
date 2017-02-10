@@ -4,6 +4,7 @@ struct VertexShaderInput
 	float3 Position : SV_Position;
 	float3 ParamFormValue : TEXCOORD0;
 	float SegmentType : TEXCOORD1;
+	float2 TexCoord : TEXCOORD2;
 };
 
 struct PixelShaderInput
@@ -13,6 +14,7 @@ struct PixelShaderInput
 	float2 ParamFormValue : TEXCOORD0;
 	int Switch : TEXCOORD1;
 	int SegmentType : TEXCOORD2;
+	float2 TexCoord : TEXCOORD3;
 };
 
 #define	ST_Linear				0

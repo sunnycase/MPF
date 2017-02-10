@@ -19,7 +19,7 @@ class Triangulator
 public:
 	Triangulator(const std::vector<Point>& points, const std::vector<std::vector<std::pair<size_t, size_t>>>& contours);
 
-	void Triangulate(std::function<void(std::array<DirectX::XMFLOAT2, 3>&)>&& outputTriangle);
+	void Triangulate(std::function<void(DirectX::XMFLOAT2)>&& outputPoint, std::function<void(std::array<size_t, 3>&)>&& outputTriangle);
 private:
 	std::vector<float> _points;
 	std::vector<int> _pointMarkers;

@@ -215,12 +215,9 @@ concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 		static const D3D11_INPUT_ELEMENT_DESC strokeInputElementDesc[] =
 		{
 			{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(StrokeVertex, Position), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data1), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data2), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, offsetof(StrokeVertex, SegmentType), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data3), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 3, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data4), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 4, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, Data5), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(StrokeVertex, Normal), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(StrokeVertex, ParamFormValue), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, offsetof(StrokeVertex, SegmentType), D3D11_INPUT_PER_VERTEX_DATA, 0 }
 		};
 		ThrowIfFailed(_device->CreateInputLayout(strokeInputElementDesc, _countof(strokeInputElementDesc), uiVSData.first,
 			uiVSData.second, &_strokeInputLayout));
@@ -240,6 +237,7 @@ concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 			{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(FillVertex, Position), D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(FillVertex, ParamFormValue), D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, offsetof(FillVertex, SegmentType), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(FillVertex, TexCoord), D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 		ThrowIfFailed(_device->CreateInputLayout(fillInputElementDesc, _countof(fillInputElementDesc), uiVSData.first,
 			uiVSData.second, &_fillInputLayout));
@@ -279,6 +277,7 @@ concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 
 void D3D11DeviceContext::SetPipelineState(PiplineStateTypes type)
 {
+
 	if (type != _pipelineStateType)
 	{
 		switch (type)
