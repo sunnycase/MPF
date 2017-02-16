@@ -4,13 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using MPF.Interop;
 using MPF.Data;
+using System.Collections.Concurrent;
+using MPF.Internal.Media;
 
 namespace MPF.Media
 {
     public sealed class SolidColorBrush : Brush
     {
-        private readonly Lazy<IResource> _brushResource;
-
         public static readonly DependencyProperty<Color> ColorProperty = DependencyProperty.Register(nameof(Color), typeof(SolidColorBrush),
             new PropertyMetadata<Color>(Colors.Transparent, OnColorPropertyChanged));
 
@@ -24,14 +24,7 @@ namespace MPF.Media
 
         public SolidColorBrush()
         {
-            _brushResource = this.CreateResource(ResourceType.RT_SolidColorBrush);
-            OnColorChanged(Color.ToColorF());
-        }
 
-        internal override void OnUpdateResource(object sender, EventArgs e)
-        {
-            base.OnUpdateResource(sender, EventArgs.Empty);
-            MediaResourceManager.Current.UpdateSolidColorBrush(_brushResource.Value, ref _color);
         }
 
         private void OnColorChanged(ColorF color)
@@ -40,7 +33,15 @@ namespace MPF.Media
             RegisterUpdateResource();
         }
 
-        internal override IResource GetResourceOverride() => _brushResource.Value;
+        internal override IResource CreateTextureResource()
+        {
+            return SolidColorTexture.GetOrAdd(Color).Resource;
+        }
+
+        internal override IResource CreateSamplerResource()
+        {
+            return Sampler.Defalut.Resource;
+        }
 
         private static void OnColorPropertyChanged(object sender, PropertyChangedEventArgs<Color> e)
         {
@@ -51,6 +52,41 @@ namespace MPF.Media
         public static implicit operator SolidColorBrush(Color color)
         {
             return new SolidColorBrush { Color = color };
+        }
+
+        class SolidColorTexture : Animatable, IResourceProvider
+        {
+            private readonly Lazy<IResource> _textureRes;
+            private ColorF _color;
+
+            public SolidColorTexture(Color color)
+            {
+                _color = color.ToColorF();
+                _textureRes = this.CreateResource(ResourceType.RT_SolidColorTexture);
+                RegisterUpdateResource();
+            }
+
+            internal override void OnUpdateResource(object sender, EventArgs e)
+            {
+                base.OnUpdateResource(sender, e);
+                MediaResourceManager.Current.UpdateSolidColorTexture(_textureRes.Value, ref _color);
+            }
+
+            public IResource Resource => _textureRes.Value;
+
+            private static readonly ConcurrentDictionary<Color, WeakReference<SolidColorTexture>> _solidColorTextures = new ConcurrentDictionary<Color, WeakReference<SolidColorTexture>>();
+
+            public static SolidColorTexture GetOrAdd(Color color)
+            {
+                var weak = _solidColorTextures.GetOrAdd(color, k => new WeakReference<SolidColorTexture>(new SolidColorTexture(k)));
+                SolidColorTexture result;
+                if (!weak.TryGetTarget(out result))
+                {
+                    result = new SolidColorTexture(color);
+                    weak.SetTarget(result);
+                }
+                return result;
+            }
         }
     }
 }

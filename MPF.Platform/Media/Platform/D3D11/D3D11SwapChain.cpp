@@ -154,7 +154,8 @@ struct SwapChainDrawingContext : public RuntimeClass<RuntimeClassFlags<ClassicCo
 			auto resMgr = cameraRef.GetResourceManagerWeak().Resolve();
 			if (resMgr)
 			{
-				auto& cameraObj = resMgr->GetCamera(cameraRef.GetHandle());
+				Camera cameraObj;
+				resMgr->TryGetCamera(camera, cameraObj);
 				PushAndApply({ cameraObj.View, cameraObj.Projection });
 				return S_OK;
 			}

@@ -521,30 +521,7 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVerte
 
 // 3D Geometry
 
-void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::StrokeVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry)
-{
-	//auto leftTopPoint = geometry.Data.LeftTop;
-	//auto rightBottomPoint = geometry.Data.RightBottom;
-	//SwapIfGeater(leftTopPoint.X, rightBottomPoint.X);
-	//SwapIfGeater(leftTopPoint.Y, rightBottomPoint.Y);
-
-	//XMFLOAT2 leftTop{ leftTopPoint.X, leftTopPoint.Y };
-	//XMFLOAT2 rightTop{ rightBottomPoint.X, leftTopPoint.Y };
-	//XMFLOAT2 rightBottom{ rightBottomPoint.X, rightBottomPoint.Y };
-	//XMFLOAT2 leftBottom{ leftTopPoint.X, rightBottomPoint.Y };
-
-	//const auto ltDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, -1.f });
-	//const auto rtDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, -1.f });
-	//const auto lbDirVec = XMLoadFloat2(&XMFLOAT2{ -1.f, 1.f });
-	//const auto rbDirVec = XMLoadFloat2(&XMFLOAT2{ 1.f, 1.f });
-
-	//EmplaceLine(vertices, leftTop, rightTop, ltDirVec, rtDirVec);
-	//EmplaceLine(vertices, rightTop, rightBottom, rtDirVec, rbDirVec);
-	//EmplaceLine(vertices, rightBottom, leftBottom, rbDirVec, lbDirVec);
-	//EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
-}
-
-void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry)
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::Fill3DVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry)
 {
 	const auto position = geometry.Data.Position;
 	const auto width = geometry.Data.Width;
@@ -560,53 +537,53 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVerte
 	XMFLOAT3 pt7{ position.X + width, position.Y + height, position.Z + depth };
 	XMFLOAT3 pt8{ position.X, position.Y + height, position.Z + depth };
 
-	vertices.emplace_back(D3D11::FillVertex
+	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt1.x, pt1.y, pt1.z },
-		{ 0, 0, 0}, FillVertex::ST_Linear,
-		{ 0, 0 }
+		//{ 0, 0, 0}, FillVertex::ST_Linear,
+		//{ 0, 0 }
 	});
-	vertices.emplace_back(D3D11::FillVertex
+	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt2.x, pt2.y, pt2.z },
-		{ 0, 0, 0 }, FillVertex::ST_Linear,
-		{ 1, 0 }
+		//{ 0, 0, 0 }, FillVertex::ST_Linear,
+		//{ 1, 0 }
 	});
-	vertices.emplace_back(D3D11::FillVertex
+	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt3.x, pt3.y, pt3.z },
-		{ 0, 0, 0 }, FillVertex::ST_Linear,
-		{ 1, 1 }
+		//{ 0, 0, 0 }, FillVertex::ST_Linear,
+		//{ 1, 1 }
 	});
-	vertices.emplace_back(D3D11::FillVertex
+	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt4.x, pt4.y, pt4.z },
-		{ 0, 0, 0 }, FillVertex::ST_Linear,
-		{ 1, 0 }
+		//{ 0, 0, 0 }, FillVertex::ST_Linear,
+		//{ 1, 0 }
 	});
-	vertices.emplace_back(D3D11::FillVertex
+	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt5.x, pt5.y, pt5.z },
-		{ 0, 0, 0 }, FillVertex::ST_Linear,
-		{ 0, 0 }
+		//{ 0, 0, 0 }, FillVertex::ST_Linear,
+		//{ 0, 0 }
 	});
-	vertices.emplace_back(D3D11::FillVertex
+	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt6.x, pt6.y, pt6.z },
-		{ 0, 0, 0 }, FillVertex::ST_Linear,
-		{ 1, 0 }
+		//{ 0, 0, 0 }, FillVertex::ST_Linear,
+		//{ 1, 0 }
 	});
-	vertices.emplace_back(D3D11::FillVertex
+	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt7.x, pt7.y, pt7.z },
-		{ 0, 0, 0 }, FillVertex::ST_Linear,
-		{ 1, 1 }
+		//{ 0, 0, 0 }, FillVertex::ST_Linear,
+		//{ 1, 1 }
 	});
-	vertices.emplace_back(D3D11::FillVertex
+	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt8.x, pt8.y, pt8.z },
-		{ 0, 0, 0 }, FillVertex::ST_Linear,
-		{ 1, 0 }
+		//{ 0, 0, 0 }, FillVertex::ST_Linear,
+		//{ 1, 0 }
 	});
 
 	// face 1
@@ -632,4 +609,19 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::FillVerte
 	// face 6
 	indices.emplace_back(2); indices.emplace_back(6); indices.emplace_back(7);
 	indices.emplace_back(7); indices.emplace_back(3); indices.emplace_back(2);
+}
+
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::Fill3DVertex>& vertices, std::vector<size_t>& indices, const MeshGeometry3D& geometry)
+{
+	for (auto&& vertex : geometry.Vertices)
+		vertices.emplace_back(D3D11::Fill3DVertex
+	{
+		{ vertex.Position.X, vertex.Position.Y, vertex.Position.Z },
+		//{ vertex.Normal.X, vertex.Normal.Y, vertex.Normal.Z },
+		//FillVertex::ST_Linear,
+		//{ vertex.TexCoord.X, vertex.TexCoord.Y }
+	});
+
+	for (auto&& index : geometry.Indices)
+		indices.emplace_back(index);
 }

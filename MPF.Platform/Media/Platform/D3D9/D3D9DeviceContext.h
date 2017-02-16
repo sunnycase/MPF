@@ -22,6 +22,8 @@ public:
 	STDMETHODIMP CreateSwapChain(INativeWindow* window, ISwapChain** swapChain) override;
 	STDMETHODIMP CreateRenderableObject(IRenderableObject ** obj) override;
 	STDMETHODIMP CreateResourceManager(IResourceManager **resMgr);
+	STDMETHODIMP CreateShadersGroup(ShadersGroupData* data, IShadersGroup ** shader) override;
+	STDMETHODIMP Update() override;
 
 	DEFINE_PROPERTY_GET(D3D, IDirect3D9*);
 	IDirect3D9* get_D3D() const noexcept { return _d3d.Get(); }

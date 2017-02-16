@@ -198,6 +198,15 @@
     <ClInclude Include="Media\Camera.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
+    <ClInclude Include="Media\Material.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\Texture.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
+    <ClInclude Include="Media\Sampler.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -296,6 +305,9 @@
     <ClCompile Include="Input\InputManager.cpp">
       <Filter>源文件\Input</Filter>
     </ClCompile>
+    <ClCompile Include="Media\Platform\D3D11\D3D11DeviceResourceTransforms.cpp">
+      <Filter>源文件\Media\Platform\D3D11</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="MPF.Platform.idl">
@@ -324,6 +336,12 @@
     <FxCompile Include="Shaders\D3D11.UI.Fill.VertexShader.hlsl">
       <Filter>资源文件\Shaders\D3D11</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\D3D11.3D.Fill.PixelShader.hlsl">
+      <Filter>资源文件\Shaders\D3D11</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\D3D11.3D.Fill.VertexShader.hlsl">
+      <Filter>资源文件\Shaders\D3D11</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">
@@ -338,6 +356,9 @@
       <Filter>资源文件\Shaders\D3D11</Filter>
     </None>
     <None Include="Shaders\D3D11.UI.Fill.Shaders.hlsli">
+      <Filter>资源文件\Shaders\D3D11</Filter>
+    </None>
+    <None Include="Shaders\D3D11.3D.Fill.Shaders.hlsli">
       <Filter>资源文件\Shaders\D3D11</Filter>
     </None>
   </ItemGroup>

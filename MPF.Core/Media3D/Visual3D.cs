@@ -118,15 +118,17 @@ namespace MPF.Media3D
             _renderableObject.SetContent(_renderData.Close());
         }
 
+        public Geometry3D Geometry;
+
         protected virtual void OnRender(IDrawingContext3D drawingContext)
         {
-            drawingContext.DrawGeometry3D(new BoxGeometry3D
-            {
-                Position = new Point3D(),
-                Width = 200,
-                Height = 100,
-                Depth = 50
-            }, null, Color.FromArgb(0xFFFF0000));
+            var mat = Matrix4x4.CreateScale(1);
+            drawingContext.DrawGeometry3D(Geometry
+                //Position = new Point3D(),
+                //Width = 200,
+                //Height = 100,
+                //Depth = 50
+            , Color.FromArgb(0xFFFF0000), ref mat);
         }
 
         internal virtual void RenderContent(ref SwapChainDrawingContext context)

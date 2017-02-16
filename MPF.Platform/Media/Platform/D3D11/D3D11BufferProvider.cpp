@@ -74,3 +74,111 @@ void BufferProvider<BufferTypes::IndexBuffer>::Upload(DeviceContext& deviceConte
 {
 	deviceContext->DeviceContext->UpdateSubresource(buffer.Get(), 0, nullptr, data.data(), data.size(), 0);
 }
+
+auto BufferProvider<BufferTypes::TextureBuffer>::CreateBuffer(DeviceContext& deviceContext, size_t count) -> NativeType
+{
+	return std::vector<TextureEntry>(count);
+}
+
+namespace
+{
+
+}
+
+void BufferProvider<BufferTypes::TextureBuffer>::Update(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>& data)
+{
+	for (auto& item : data)
+	{
+		ComPtr<ID3D11Resource> resource;
+		switch (item.Dimension)
+		{
+		case 2:
+		{
+			ComPtr<ID3D11Texture2D> texture;
+			ThrowIfFailed(deviceContext->Device->CreateTexture2D(&item.Desc.Tex2D, nullptr, &texture));
+			resource = std::move(texture);
+			break;
+		}
+		default:
+			ThrowAlways(L"This texture dimension is not supported.");
+			break;
+		}
+		
+		for (size_t i = 0; i < std::size(item.SRVDesc); i++)
+		{
+			const auto& desc = item.SRVDesc[i];
+			if (desc.ViewDimension)
+				ThrowIfFailed(deviceContext->Device->CreateShaderResourceView(resource.Get(), &desc, &buffer.at(offset).SRVs[i]));
+		}
+		buffer.at(offset++).Texture = std::move(resource);
+	}
+}
+
+void BufferProvider<BufferTypes::TextureBuffer>::Upload(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>&& data)
+{
+	for (auto& item : data)
+	{
+		auto entry = buffer.at(offset);
+		deviceContext->DeviceContext->UpdateSubresource(entry.Texture.Get(), 0, nullptr, item.Data.data(), item.SrcRowPitch, item.SrcDepthPitch);
+	}
+}
+
+void BufferProvider<BufferTypes::TextureBuffer>::Retire(NativeType& buffer, size_t offset, size_t length)
+{
+	for (size_t i = 0; i < length; i++)
+	{
+		auto& entry = buffer.at(offset + i);
+		entry.Texture.Reset();
+		for (auto&& srv : entry.SRVs)
+			srv.Reset();
+	}
+}
+
+auto BufferProvider<BufferTypes::SamplerBuffer>::CreateBuffer(DeviceContext& deviceContext, size_t count) -> NativeType
+{
+	return std::vector<WRL::ComPtr<ID3D11SamplerState>>(count);
+}
+
+void BufferProvider<BufferTypes::SamplerBuffer>::Update(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>& data)
+{
+	for (auto& item : data)
+		ThrowIfFailed(deviceContext->Device->CreateSamplerState(&item.Desc, &buffer.at(offset++)));
+}
+
+void BufferProvider<BufferTypes::SamplerBuffer>::Retire(NativeType& buffer, size_t offset, size_t length)
+{
+	for (size_t i = 0; i < length; i++)
+		buffer.at(offset + i).Reset();
+}
+
+void PlatformProvider<PlatformId::D3D11>::GetRenderCall(BrushRenderCall& rc, BufferManager<PlatformId::D3D11, BufferTypes::TextureBuffer>& tbMgr, const BufferRentInfo& rent)
+{
+	rc.Texture.Mgr = &tbMgr;
+	rc.Texture.BufferIdx = rent.entryIdx;
+	rc.Texture.Start = rent.offset;
+	rc.Texture.Count = rent.length;
+}
+
+void PlatformProvider<PlatformId::D3D11>::GetRenderCall(BrushRenderCall& rc, BufferManager<PlatformId::D3D11, BufferTypes::SamplerBuffer>& sbMgr, const BufferRentInfo& rent)
+{
+	rc.Sampler.Mgr = &sbMgr;
+	rc.Sampler.BufferIdx = rent.entryIdx;
+	rc.Sampler.Start = rent.offset;
+	rc.Sampler.Count = rent.length;
+}
+
+void PlatformProvider<PlatformId::D3D11>::ConvertRenderCall(const PenRenderCall& prc, StrokeRenderCall<RenderCall>& rc) const
+{
+	rc.Material.Brush = prc.Brush;
+	rc.Thickness = prc.Thickness;
+}
+
+void PlatformProvider<PlatformId::D3D11>::ConvertRenderCall(const BrushRenderCall& brc, FillRenderCall<RenderCall>& rc) const
+{
+	rc.Material.Brush = brc;
+}
+
+void PlatformProvider<PlatformId::D3D11>::ConvertRenderCall(const BrushRenderCall& brc, Fill3DRenderCall<RenderCall>& rc) const
+{
+	rc.Material.Brush = brc;
+}

@@ -10,6 +10,8 @@
 #include <memory>
 #include <DirectXMath.h>
 #include "../Geometry.h"
+#include "../Texture.h"
+#include "../Sampler.h"
 
 DEFINE_NS_PLATFORM
 
@@ -23,6 +25,16 @@ struct BufferRentInfo
 struct GeometryRentInfo
 {
 	BufferRentInfo Vertices, Indices;
+};
+
+struct TextureRentInfo
+{
+	BufferRentInfo Textures;
+};
+
+struct SamplerRentInfo
+{
+	BufferRentInfo Samplers;
 };
 
 template<class TRenderCall>
@@ -40,6 +52,13 @@ struct FillRenderCall : public TRenderCall
 	DirectX::XMFLOAT4X4 Transform;
 };
 
+template<class TRenderCall>
+struct Fill3DRenderCall : public TRenderCall
+{
+	float Color[4];
+	DirectX::XMFLOAT4X4 Transform;
+};
+
 enum class PlatformId
 {
 	D3D9,
@@ -50,15 +69,31 @@ enum class PlatformId
 enum class BufferTypes
 {
 	VertexBuffer,
-	IndexBuffer
+	IndexBuffer,
+	TextureBuffer,
+	SamplerBuffer
 };
 
 enum class PiplineStateTypes
 {
 	None,
 	Stroke,
-	Fill
+	Fill,
+	Fill3D
 };
+
+enum class RenderCallAwareness
+{
+	None	=	0,
+	Stroke	=	1,
+	Fill	=	2,
+	Fill3D	=	4,
+	Texture =	8,
+	Sampler	=	16,
+	Brush	=	32,
+	Pen		=	64
+};
+DEFINE_ENUM_FLAG_OPERATORS(RenderCallAwareness);
 
 template<PlatformId PId, BufferTypes BufferType>
 class BufferManager;
@@ -76,8 +111,10 @@ template<PlatformId PId>
 struct PlatformProvider
 {
 	using RenderCall = struct {};
+	using BrushRenderCall = struct {};
 	using StrokeVertex = struct {};
 	using FillVertex = struct {};
+	using Fill3DVertex = struct {};
 	using DeviceContext = struct {};
 	using DrawCallList = struct {};
 
@@ -85,6 +122,7 @@ struct PlatformProvider
 	struct BufferProvider
 	{
 		using NativeType = struct {};
+		using RentUpdateContext = struct {};
 
 		NativeType CreateBuffer(DeviceContext& deviceContext, size_t stride, size_t count);
 		void Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer);
@@ -99,15 +137,14 @@ struct PlatformProvider
 	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry) {}
 };
 
-template<class T>
-class ResourceContainer;
+class ResourceManagerBase;
 
-template<typename T>
+template<typename TData>
 struct ITransformedResourceContainer
 {
-	virtual void Add(const std::vector<UINT_PTR>& handles, const ResourceContainer<T>& container) = 0;
-	virtual void Update(const std::vector<UINT_PTR>& handles, const ResourceContainer<T>& container) = 0;
-	virtual void Remove(const std::vector<UINT_PTR>& handles) = 0;
+	virtual void Update(UINT_PTR handle, TData&& data) = 0;
+	virtual void Remove(UINT_PTR handle) = 0;
+	virtual void UpdateDeviceResources(ResourceManagerBase& resMgr, std::function<void(UINT_PTR, RenderCallAwareness)>& registerRenderCallUpdate) = 0;
 };
 
 struct IDrawCallList : std::enable_shared_from_this<IDrawCallList>

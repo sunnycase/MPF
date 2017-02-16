@@ -12,10 +12,10 @@
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
-struct Pen : public ResourceBase
+struct Pen
 {
 	float Thickness;
-	WRL::ComPtr<ResourceRef> Brush;
+	WRL::ComPtr<IResource> Brush;
 };
 
 END_NS_PLATFORM

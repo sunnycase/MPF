@@ -46,9 +46,9 @@ namespace MPF.Media
             _resourceManager.UpdatePathGeometry(res, data, (uint)(data?.Length ?? 0));
         }
 
-        public void UpdateSolidColorBrush(IResource res, ref ColorF color)
+        public void UpdateBrush(IResource res, IResource texture, IResource sampler)
         {
-            _resourceManager.UpdateSolidColorBrush(res, ref color);
+            _resourceManager.UpdateBrush(res, texture, sampler);
         }
 
         public void UpdatePen(IResource res, float thickness, Brush brush)
@@ -64,6 +64,21 @@ namespace MPF.Media
         public void UpdateBoxGeometry3D(IResource res, ref BoxGeometry3DData data)
         {
             _resourceManager.UpdateBoxGeometry3D(res, ref data);
+        }
+
+        public void UpdateMeshGeometry3D(IResource res, ref MeshGeometry3DData data)
+        {
+            _resourceManager.UpdateMeshGeometry3D(res, ref data);
+        }
+
+        public void UpdateSolidColorTexture(IResource res, ref ColorF color)
+        {
+            _resourceManager.UpdateSolidColorTexture(res, color);
+        }
+
+        public void UpdateSampler(IResource res, ref SamplerData data)
+        {
+            _resourceManager.UpdateSampler(res, ref data);
         }
 
         public IFontFace CreateFontFaceFromMemory(IntPtr buffer, ulong size, uint faceIndex)

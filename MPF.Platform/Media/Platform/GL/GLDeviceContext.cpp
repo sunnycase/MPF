@@ -44,3 +44,14 @@ STDMETHODIMP GLDeviceContext::CreateResourceManager(IResourceManager ** resMgr)
 {
 	return E_NOTIMPL;
 }
+
+STDMETHODIMP GLDeviceContext::CreateShadersGroup(ShadersGroupData * data, IShadersGroup ** shader)
+{
+	return E_NOTIMPL;
+}
+
+
+STDMETHODIMP GLDeviceContext::Update()
+{
+	return E_NOTIMPL;
+}

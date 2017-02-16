@@ -28,14 +28,14 @@ namespace MPF.Media
             _renderData.DrawGeometry(geometry, pen, brush, ref _identityMat4x4);
         }
 
-        public void DrawGeometry3D(Geometry3D geometry, Pen pen, Brush brush, ref Matrix4x4 transform)
+        public void DrawGeometry3D(Geometry3D geometry, Brush brush, ref Matrix4x4 transform)
         {
-            _renderData.DrawGeometry3D(geometry, pen, brush, ref transform);
+            _renderData.DrawGeometry3D(geometry, brush, ref transform);
         }
 
-        public void DrawGeometry3D(Geometry3D geometry, Pen pen, Brush brush)
+        public void DrawGeometry3D(Geometry3D geometry, Brush brush)
         {
-            _renderData.DrawGeometry3D(geometry, pen, brush, ref _identityMat4x4);
+            _renderData.DrawGeometry3D(geometry, brush, ref _identityMat4x4);
         }
 
         #region IDisposable Support

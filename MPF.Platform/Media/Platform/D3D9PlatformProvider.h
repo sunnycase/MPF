@@ -92,7 +92,28 @@ struct PlatformProvider<PlatformId::D3D9>
 	using RenderCall = D3D9::RenderCall;
 	using StrokeVertex = D3D9::StrokeVertex;
 	using FillVertex = D3D9::StrokeVertex;
+	using Fill3DVertex = D3D9::StrokeVertex;
 	using DeviceContext = WRL::ComPtr<D3D9::D3D9DeviceContext>;
+
+	struct SamplerStates
+	{
+		struct
+		{
+			D3DSAMPLERSTATETYPE Type;
+			DWORD Value;
+		} States[13];
+	};
+
+	using BrushRenderCall = struct
+	{
+		SamplerStates SamplerStates;
+	};
+
+	using PenRenderCall = struct
+	{
+		BrushRenderCall Brush;
+		float Thickness;
+	};
 
 	template<BufferTypes>
 	struct BufferProvider
@@ -117,8 +138,46 @@ struct PlatformProvider<PlatformId::D3D9>
 		void Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer);
 	};
 
+	template<>
+	struct BufferProvider<BufferTypes::TextureBuffer>
+	{
+		using NativeType = std::vector<WRL::ComPtr<IDirect3DTexture9>>;
+		using RentUpdateContext = struct
+		{
+			UINT Width, Height, Levels;
+			DWORD Usage;
+			D3DFORMAT Format;
+			std::vector<byte> Data;
+		};
+
+		NativeType CreateBuffer(DeviceContext& deviceContext, size_t count);
+		void Update(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>& data);
+		void Upload(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>&& data);
+		void Retire(NativeType& buffer, size_t offset, size_t length);
+	};
+
+	template<>
+	struct BufferProvider<BufferTypes::SamplerBuffer>
+	{
+		using RentUpdateContext = SamplerStates;
+		using NativeType = std::vector<SamplerStates>;
+
+		NativeType CreateBuffer(DeviceContext& deviceContext, size_t count);
+		void Update(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>& data) {}
+		void Upload(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>&& data);
+		void Retire(NativeType& buffer, size_t offset, size_t length) {}
+	};
+	
 	void GetRenderCall(RenderCall& rc, VertexBufferManager<PlatformId::D3D9>& vbMgr, size_t stride, const BufferRentInfo& rent);
 	void GetRenderCall(RenderCall& rc, IndexBufferManager<PlatformId::D3D9>& ibMgr, size_t stride, const BufferRentInfo& rent);
+
+	void GetRenderCall(BrushRenderCall& rc, BufferManager<PlatformId::D3D9, BufferTypes::TextureBuffer>& tbMgr, const BufferRentInfo& rent) {}
+	void GetRenderCall(BrushRenderCall& rc, BufferManager<PlatformId::D3D9, BufferTypes::SamplerBuffer>& sbMgr, const BufferRentInfo& rent) {}
+
+	void ConvertRenderCall(const PenRenderCall& brc, StrokeRenderCall<RenderCall>& rc) const {}
+	void ConvertRenderCall(const BrushRenderCall& brc, FillRenderCall<RenderCall>& rc) const {}
+	void ConvertRenderCall(const BrushRenderCall& brc, Fill3DRenderCall<RenderCall>& rc) const {}
+
 	void PlayRenderCall(const PlayRenderCallArgs<PlatformId::D3D9>& args);
 	bool IsNopRenderCall(const RenderCall& rc) noexcept { return rc.PrimitiveCount == 0; }
 
@@ -126,6 +185,10 @@ struct PlatformProvider<PlatformId::D3D9>
 	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const RectangleGeometry& geometry);
 	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const PathGeometry& geometry);
 	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry);
+	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const MeshGeometry3D& geometry);
+
+	void Transform(std::vector<typename BufferProvider<BufferTypes::TextureBuffer>::RentUpdateContext>& textures, SolidColorTexture&& data) {}
+	void Transform(std::vector<typename BufferProvider<BufferTypes::SamplerBuffer>::RentUpdateContext>& samplers, Sampler&& data) {}
 };
 
 END_NS_PLATFORM

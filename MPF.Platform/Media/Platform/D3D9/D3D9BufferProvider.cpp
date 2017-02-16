@@ -81,3 +81,41 @@ void BufferProvider<BufferTypes::IndexBuffer>::Upload(DeviceContext& deviceConte
 	auto fin = make_finalizer([&] {buffer->Unlock(); });
 	ThrowIfNot(memcpy_s(pData, size, data.data(), size) == 0, L"Cannot upload indices.");
 }
+
+auto BufferProvider<BufferTypes::TextureBuffer>::CreateBuffer(DeviceContext& deviceContext, size_t count) -> NativeType
+{
+	return std::vector<WRL::ComPtr<IDirect3DTexture9>>(count);
+}
+
+void BufferProvider<BufferTypes::TextureBuffer>::Update(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>& data)
+{
+	for (auto& item : data)
+		ThrowIfFailed(deviceContext->Device->CreateTexture(item.Width, item.Height, item.Levels, item.Usage, 
+			item.Format, D3DPOOL_DEFAULT, &buffer.at(offset++), nullptr));
+}
+
+void BufferProvider<BufferTypes::TextureBuffer>::Upload(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>&& data)
+{
+	for (auto& item : data)
+	{
+		auto tex = buffer.at(offset);
+		ThrowIfFailed(E_NOTIMPL);
+	}
+}
+
+void BufferProvider<BufferTypes::TextureBuffer>::Retire(NativeType& buffer, size_t offset, size_t length)
+{
+	for (size_t i = 0; i < length; i++)
+		buffer.at(offset + i).Reset();
+}
+
+auto BufferProvider<BufferTypes::SamplerBuffer>::CreateBuffer(DeviceContext& deviceContext, size_t count) -> NativeType
+{
+	return std::vector<SamplerStates>(count);
+}
+
+void BufferProvider<BufferTypes::SamplerBuffer>::Upload(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>&& data)
+{
+	for (auto& item : data)
+		buffer.at(offset++) = item;
+}

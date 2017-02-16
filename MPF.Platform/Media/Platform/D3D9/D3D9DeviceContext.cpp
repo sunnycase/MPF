@@ -72,6 +72,24 @@ STDMETHODIMP D3D9DeviceContext::CreateSwapChain(INativeWindow * window, ISwapCha
 	CATCH_ALL();
 }
 
+STDMETHODIMP D3D9DeviceContext::Update()
+{
+	try
+	{
+		_callback->OnRender();
+		UpdateResourceManagers();
+		UpdateRenderObjects();
+
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
+STDMETHODIMP D3D9DeviceContext::CreateShadersGroup(ShadersGroupData * data, IShadersGroup ** shader)
+{
+	return E_NOTIMPL;
+}
+
 namespace
 {
 	const DWORD* LoadShaderResource(int id)
@@ -138,9 +156,9 @@ bool D3D9DeviceContext::IsActive() const noexcept
 
 void D3D9DeviceContext::DoFrame()
 {
-	_callback->OnRender();
-	UpdateResourceManagers();
-	UpdateRenderObjects();
+	for (auto&& resMgrRef : _resourceManagers)
+		if (auto resMgr = resMgrRef.Resolve())
+			resMgr->UpdateGPU();
 
 	std::vector<ComPtr<D3D9SwapChainBase>> swapChains;
 	{
@@ -155,9 +173,7 @@ void D3D9DeviceContext::DoFrame()
 
 void D3D9DeviceContext::UpdateResourceManagers()
 {
-	for (auto&& resMgrRef : _resourceManagers)
-		if (auto resMgr = resMgrRef.Resolve())
-			resMgr->Update();
+
 }
 
 void D3D9DeviceContext::ActiveDeviceAndStartRender()

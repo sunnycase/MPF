@@ -25,6 +25,11 @@ namespace MPF.Media3D
             return $"{X}, {Y}, {Z}";
         }
 
+        public static implicit operator Point3D((float x, float y, float z) value)
+        {
+            return new Point3D(value.x, value.y, value.z);
+        }
+
         public static explicit operator Vector3(Point3D point)
         {
             return new Vector3(point.X, point.Y, point.Z);

@@ -44,6 +44,11 @@ struct FillVertex
 	static constexpr float ST_Arc = 3;
 };
 
+struct Fill3DVertex
+{
+	DirectX::XMFLOAT3 Position;
+};
+
 #pragma pack(pop)
 #pragma pack(push, 16)
 
@@ -138,6 +143,31 @@ struct SwapChainUpdateContext
 	ConstantBuffer<D3D11::GeometryData> Geometry;
 };
 
+struct BrushRenderCall
+{
+	struct
+	{
+		BufferManager<PlatformId::D3D11, BufferTypes::TextureBuffer>* Mgr;
+		size_t BufferIdx;
+		UINT Start;
+		UINT Count;
+	} Texture;
+
+	struct
+	{
+		BufferManager<PlatformId::D3D11, BufferTypes::SamplerBuffer>* Mgr;
+		size_t BufferIdx;
+		UINT Start;
+		UINT Count;
+	} Sampler;
+};
+
+struct PenRenderCall
+{
+	BrushRenderCall Brush;
+	float Thickness;
+};
+
 struct RenderCall
 {
 	struct
@@ -157,6 +187,11 @@ struct RenderCall
 		UINT Start;
 		UINT Count;
 	} IB;
+
+	struct
+	{
+		BrushRenderCall Brush;
+	} Material;
 };
 
 class D3D11DeviceContext;
@@ -171,7 +206,11 @@ struct PlatformProvider<PlatformId::D3D11>
 	using RenderCall = D3D11::RenderCall;
 	using StrokeVertex = D3D11::StrokeVertex;
 	using FillVertex = D3D11::FillVertex;
+	using Fill3DVertex = D3D11::Fill3DVertex;
 	using DeviceContext = WRL::ComPtr<D3D11::D3D11DeviceContext>;
+
+	using BrushRenderCall = D3D11::BrushRenderCall;
+	using PenRenderCall = D3D11::PenRenderCall;
 
 	template<BufferTypes>
 	struct BufferProvider
@@ -196,20 +235,81 @@ struct PlatformProvider<PlatformId::D3D11>
 		void Upload(DeviceContext& deviceContext, const std::vector<byte>& data, NativeType& buffer);
 	};
 
+	template<>
+	struct BufferProvider<BufferTypes::TextureBuffer>
+	{
+		struct TextureEntry
+		{
+			WRL::ComPtr<ID3D11Resource> Texture;
+			WRL::ComPtr<ID3D11ShaderResourceView> SRVs[2];
+		};
+
+		using NativeType = std::vector<TextureEntry>;
+		using RentUpdateContext = struct
+		{
+			struct
+			{
+				union
+				{
+					D3D11_TEXTURE1D_DESC Tex1D;
+					D3D11_TEXTURE2D_DESC Tex2D;
+					D3D11_TEXTURE3D_DESC Tex3D;
+				} Desc;
+				UINT Dimension;
+				UINT SrcRowPitch;
+				UINT SrcDepthPitch;
+
+				D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc[2];
+			};
+			std::vector<byte> Data;
+		};
+
+		NativeType CreateBuffer(DeviceContext& deviceContext, size_t count);
+		void Update(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>& data);
+		void Upload(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>&& data);
+		void Retire(NativeType& buffer, size_t offset, size_t length);
+	};
+
+	template<>
+	struct BufferProvider<BufferTypes::SamplerBuffer>
+	{
+		using NativeType = std::vector<WRL::ComPtr<ID3D11SamplerState>>;
+		using RentUpdateContext = struct
+		{
+			D3D11_SAMPLER_DESC Desc;
+		};
+
+		NativeType CreateBuffer(DeviceContext& deviceContext, size_t count);
+		void Update(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>& data);
+		void Upload(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>&& data) {}
+		void Retire(NativeType& buffer, size_t offset, size_t length);
+	};
+
 	void GetRenderCall(RenderCall& rc, VertexBufferManager<PlatformId::D3D11>& vbMgr, size_t stride, const BufferRentInfo& rent);
 	void GetRenderCall(RenderCall& rc, IndexBufferManager<PlatformId::D3D11>& ibMgr, size_t stride, const BufferRentInfo& rent);
+
+	void GetRenderCall(BrushRenderCall& rc, BufferManager<PlatformId::D3D11, BufferTypes::TextureBuffer>& tbMgr, const BufferRentInfo& rent);
+	void GetRenderCall(BrushRenderCall& rc, BufferManager<PlatformId::D3D11, BufferTypes::SamplerBuffer>& sbMgr, const BufferRentInfo& rent);
+
+	void ConvertRenderCall(const PenRenderCall& brc, StrokeRenderCall<RenderCall>& rc) const;
+	void ConvertRenderCall(const BrushRenderCall& brc, FillRenderCall<RenderCall>& rc) const;
+	void ConvertRenderCall(const BrushRenderCall& brc, Fill3DRenderCall<RenderCall>& rc) const;
+
 	void PlayRenderCall(const PlayRenderCallArgs<PlatformId::D3D11>& args);
 	bool IsNopRenderCall(const RenderCall& rc) noexcept { return rc.IB.Count == 0; }
 
 	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const LineGeometry& geometry);
 	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const RectangleGeometry& geometry);
 	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const PathGeometry& geometry);
-	void Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry);
 
 	void Transform(std::vector<FillVertex>& vertices, std::vector<size_t>& indices, const LineGeometry& geometry);
 	void Transform(std::vector<FillVertex>& vertices, std::vector<size_t>& indices, const RectangleGeometry& geometry);
 	void Transform(std::vector<FillVertex>& vertices, std::vector<size_t>& indices, const PathGeometry& geometry);
-	void Transform(std::vector<FillVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry);
+	void Transform(std::vector<Fill3DVertex>& vertices, std::vector<size_t>& indices, const BoxGeometry3D& geometry);
+	void Transform(std::vector<Fill3DVertex>& vertices, std::vector<size_t>& indices, const MeshGeometry3D& geometry);
+
+	void Transform(std::vector<typename BufferProvider<BufferTypes::TextureBuffer>::RentUpdateContext>& textures, SolidColorTexture&& data);
+	void Transform(std::vector<typename BufferProvider<BufferTypes::SamplerBuffer>::RentUpdateContext>& samplers, Sampler&& data);
 };
 
 END_NS_PLATFORM

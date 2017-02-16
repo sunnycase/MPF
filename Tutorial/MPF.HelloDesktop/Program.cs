@@ -5,6 +5,7 @@ using MPF.Media;
 using MPF.Media3D;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -59,15 +60,12 @@ namespace MPF.HelloDesktop
             };
             Grid.SetRow(button, 1);
             grid.Children.Add(button);
-            var scene = new Scene
-                {
-                    new Visual3D()
-                };
+            var scene = LoadScene();
             var viewport = new Viewport3D
             {
                 Camera = new MatrixCamera
                 {
-                    ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(150, 150, 250), new Vector3(50, 50, 0), Vector3.UnitY)
+                    ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(15, 15, 25), new Vector3(0, 0, 0), Vector3.UnitY)
                 },
                 Scene = scene
             };
@@ -77,7 +75,7 @@ namespace MPF.HelloDesktop
             {
                 Camera = new MatrixCamera
                 {
-                    ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(-150, 150, 250), new Vector3(50, 50, 0), Vector3.UnitY)
+                    ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(0, 0, 50), new Vector3(0, 0, 0), Vector3.UnitY)
                 },
                 Scene = scene
             };
@@ -90,6 +88,47 @@ namespace MPF.HelloDesktop
             _window.Show();
             //ShowWindow2(scene);
             ChangeMaximizeBox();
+        }
+
+        private Scene LoadScene()
+        {
+            var mesh2 = new MeshGeometry3D
+            {
+                Positions = new FreezableCollection<Point3D>
+                {
+                    (0, 0, 0), (100, 0, 0), (100, 100, 0), (0, 100, 0)
+                },
+                Indices = new FreezableCollection<uint>
+                {
+                    0, 1, 2, 2, 3, 0
+                }
+            };
+            var dstScene = new Scene();
+            var context = new Assimp.AssimpContext();
+            var scene = context.ImportFile(@"Content\Reimu\reimu_Sheep3D_0.957.fbx", Assimp.PostProcessSteps.MakeLeftHanded | Assimp.PostProcessSteps.Triangulate);
+            foreach(var src in scene.Meshes)
+            {
+                var mesh = new MeshGeometry3D
+                {
+                    Positions = new FreezableCollection<Point3D>(from v in src.Vertices
+                                                                 select new Point3D(v.X, v.Y, v.Z)),
+                    Normals = new FreezableCollection<Vector3>(from v in src.Normals
+                                                               select new Vector3(v.X, v.Y, v.Z)),
+                    TextureCoordinates = new FreezableCollection<Point>(from v in src.TextureCoordinateChannels[0]
+                                                                        select new Point(v.X, v.Y)),
+                    Indices = new FreezableCollection<uint>(from f in src.Faces
+                                                            from i in f.Indices
+                                                            select (uint)i)
+                };
+                var visual = new Visual3D
+                {
+                    Geometry = mesh
+                };
+                dstScene.Add(visual);
+            }
+
+            Console.WriteLine($"Total Vertex Count: { dstScene.Sum(o => ((MeshGeometry3D)o.Geometry).Positions.Count) }");
+            return dstScene;
         }
 
         private void Viewport_SizeChanged(object sender, EventArgs e)

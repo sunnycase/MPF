@@ -11,14 +11,10 @@
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
-struct Brush : public ResourceBase
+struct Brush
 {
-
-};
-
-struct SolidColorBrush : public Brush
-{
-	ColorF Color;
+	WRL::ComPtr<IResource> Texture;
+	WRL::ComPtr<IResource> Sampler;
 };
 
 END_NS_PLATFORM

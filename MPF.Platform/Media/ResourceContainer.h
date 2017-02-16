@@ -21,7 +21,7 @@ struct IDrawCallList;
 template<class T>
 class ResourceContainer;
 
-struct ResourceBase : NonCopyable
+struct ResourceBase
 {
 	std::vector<std::weak_ptr<IDrawCallList>>& GetDependentDrawCallLists() noexcept { return _dependentDrawCallLists; }
 	void AddDependentDrawCallList(std::weak_ptr<IDrawCallList>&& dcl) { _dependentDrawCallLists.emplace_back(std::move(dcl)); }
@@ -168,6 +168,14 @@ public:
 			return S_OK;
 		}
 		CATCH_ALL();
+	}
+
+	void RetireAndCleanupResource(UINT_PTR handle)
+	{
+		auto& obj = _data[handle];
+		obj.Free();
+		obj.SetUnused();
+		_freeList.Retire(handle, 1);
 	}
 
 	void CleanUp()

@@ -1,5 +1,8 @@
 #include "D3D11.UI.Fill.Shaders.hlsli"
 
+Texture2D Tex1;
+sampler Sampler1;
+
 float GetQuadraticBezierSignedDistance(float2 px, float2 py, float2 value)
 {
 	float fx = (2 * value.x)*px.x - px.y;
@@ -30,7 +33,6 @@ float4 main(PixelShaderInput input) : SV_TARGET
 		else if (segmentType == ST_Arc)
 			sd = GetArcSignedDistance(px, py, input.ParamFormValue);
 		clip(sd * input.Switch);
-		return float4(input.Color.rgb, 1);
 	}
-	return input.Color;
+	return Tex1.Sample(Sampler1, float2(0.5, 0.5));
 }

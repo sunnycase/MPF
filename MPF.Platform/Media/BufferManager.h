@@ -9,13 +9,14 @@
 #include "../inc/FreeList.h"
 #include "Platform/PlatformProvider.h"
 #include <limits>
+#include <concurrent_queue.h>
 
 DEFINE_NS_PLATFORM
 
 namespace Details
 {
 	template<PlatformId PId, BufferTypes BufferType>
-	class BufferEntry
+	class SimpleBufferEntry
 	{
 	public:
 		using PlatformProvider_t = PlatformProvider<PId>;
@@ -24,7 +25,7 @@ namespace Details
 		using NativeType = typename BufferProvider::NativeType;
 		using RenderCall = typename PlatformProvider_t::RenderCall;
 
-		BufferEntry(DeviceContext& deviceContext, size_t stride, size_t count)
+		SimpleBufferEntry(DeviceContext& deviceContext, size_t stride, size_t count)
 			:_stride(stride), _freeList(count),
 			_buffer(_bufferProvider.CreateBuffer(deviceContext, stride, count))
 		{
@@ -78,7 +79,7 @@ namespace Details
 		bool _gpuDirty = false;
 	};
 
-	template<PlatformId PId, BufferTypes BufferType>
+	template<PlatformId PId, BufferTypes BufferType, template<PlatformId, BufferTypes> class BufferEntry>
 	class BufferManagerImpl
 	{
 	protected:
@@ -89,7 +90,7 @@ namespace Details
 		using RenderCall = typename PlatformProvider_t::RenderCall;
 	public:
 		BufferManagerImpl(DeviceContext& deviceContext)
-			:_deviceContext(deviceContext)
+			:_deviceContext(deviceContext), _buffersLock(500)
 		{
 
 		}
@@ -97,27 +98,26 @@ namespace Details
 		template<typename T>
 		const NativeType& GetBuffer(const T& renderCall) const noexcept
 		{
+			auto locker = _buffersLock.Lock();
 			return _buffers[renderCall.BufferIdx].GetBuffer();
 		}
 
 		void Retire(const BufferRentInfo& rent)
 		{
+			auto locker = _buffersLock.Lock();
 			_buffers[rent.entryIdx].Retire(rent);
-		}
-
-		void Update(const BufferRentInfo& rent, size_t offset, const void* src, size_t length)
-		{
-			_buffers[rent.entryIdx].Update(rent, offset, src, length);
 		}
 
 		void Upload()
 		{
+			auto locker = _buffersLock.Lock();
 			for (auto&& buffer : _buffers)
 				buffer.Upload(_deviceContext);
 		}
 	protected:
 		BufferRentInfo AllocateCore(size_t length, size_t stride)
 		{
+			auto locker = _buffersLock.Lock();
 			BufferRentInfo info;
 			for (size_t i = 0; i < _buffers.size(); ++i)
 			{
@@ -136,7 +136,72 @@ namespace Details
 		PlatformProvider_t _platformProvider;
 		BufferProvider _bufferProvider;
 		DeviceContext _deviceContext;
+		mutable WRL::Wrappers::CriticalSection _buffersLock;
 		std::vector<BufferEntry<PId, BufferType>> _buffers;
+	};
+
+	template<PlatformId PId, BufferTypes BufferType>
+	class BufferEntry
+	{
+	public:
+		using PlatformProvider_t = PlatformProvider<PId>;
+		using DeviceContext = typename PlatformProvider_t::DeviceContext;
+		using BufferProvider = typename PlatformProvider_t::template BufferProvider<BufferType>;
+		using NativeType = typename BufferProvider::NativeType;
+		using RenderCall = typename PlatformProvider_t::RenderCall;
+		using RentUpdateContext = typename BufferProvider::RentUpdateContext;
+
+		BufferEntry(DeviceContext& deviceContext, size_t stride, size_t count)
+			:_freeList(count),
+			_buffer(_bufferProvider.CreateBuffer(deviceContext, count))
+		{
+
+		}
+
+		bool TryAllocate(size_t length, BufferRentInfo& rent)
+		{
+			size_t offset;
+			if (_freeList.TryAllocate(length, offset))
+			{
+				rent.offset = offset;
+				rent.length = length;
+				return true;
+			}
+			return false;
+		}
+
+		void Retire(const BufferRentInfo& rent)
+		{
+			_bufferProvider.Retire(_buffer, rent.offset, rent.length);
+			_freeList.Retire(rent.offset, rent.length);
+		}
+
+		void Update(DeviceContext& deviceContext, const BufferRentInfo& rent, size_t offset, std::vector<RentUpdateContext>&& src)
+		{
+			assert(rent.length >= offset + src.size());
+
+			auto cpuOffset = rent.offset + offset;
+			_bufferProvider.Update(deviceContext, _buffer, cpuOffset, src);
+			_itemsToUpload.push({ cpuOffset, std::move(src) });
+		}
+
+		void Upload(DeviceContext& deviceContext)
+		{
+			if (!_itemsToUpload.empty())
+			{
+				std::pair<size_t, std::vector<RentUpdateContext>> itemToUpload;
+				while(_itemsToUpload.try_pop(itemToUpload))
+					_bufferProvider.Upload(deviceContext, _buffer, itemToUpload.first, std::move(itemToUpload.second));
+			}
+		}
+
+		const NativeType& GetBuffer() const noexcept { return _buffer; }
+	private:
+		BufferProvider _bufferProvider;
+		DeviceContext _deviceContext;
+		NativeType _buffer;
+		FreeList _freeList;
+		concurrency::concurrent_queue<std::pair<size_t, std::vector<RentUpdateContext>>> _itemsToUpload;
 	};
 }
 
@@ -144,7 +209,7 @@ template<PlatformId PId, BufferTypes BufferType>
 class BufferManager;
 
 template<PlatformId PId>
-class BufferManager<PId, BufferTypes::VertexBuffer> : public Details::BufferManagerImpl<PId, BufferTypes::VertexBuffer>
+class BufferManager<PId, BufferTypes::VertexBuffer> : public Details::BufferManagerImpl<PId, BufferTypes::VertexBuffer, Details::SimpleBufferEntry>
 {
 public:
 	BufferManager(DeviceContext& deviceContext, UINT stride)
@@ -158,6 +223,12 @@ public:
 		return AllocateCore(length, _stride);
 	}
 
+	void Update(const BufferRentInfo& rent, size_t offset, const void* src, size_t length)
+	{
+		auto locker = _buffersLock.Lock();
+		_buffers[rent.entryIdx].Update(rent, offset, src, length);
+	}
+
 	void GetRenderCall(const BufferRentInfo& rent, RenderCall& rc)
 	{
 		_platformProvider.GetRenderCall(rc, *this, _stride, rent);
@@ -167,7 +238,7 @@ private:
 };
 
 template<PlatformId PId>
-class BufferManager<PId, BufferTypes::IndexBuffer> : public Details::BufferManagerImpl<PId, BufferTypes::IndexBuffer>
+class BufferManager<PId, BufferTypes::IndexBuffer> : public Details::BufferManagerImpl<PId, BufferTypes::IndexBuffer, Details::SimpleBufferEntry>
 {
 public:
 	BufferManager(DeviceContext& deviceContext)
@@ -183,6 +254,8 @@ public:
 
 	void Update(const BufferRentInfo& rent, size_t offset, const size_t* src, size_t length)
 	{
+		auto locker = _buffersLock.Lock();
+
 		auto& buffer = _buffers[rent.entryIdx];
 		const auto stride = buffer.GetStride();
 		if(stride == sizeof(*src))
@@ -215,7 +288,68 @@ public:
 
 	void GetRenderCall(const BufferRentInfo& rent, RenderCall& rc)
 	{
+		auto locker = _buffersLock.Lock();
 		return _platformProvider.GetRenderCall(rc, *this, _buffers[rent.entryIdx].GetStride(), rent);
+	}
+};
+
+template<PlatformId PId>
+class BufferManager<PId, BufferTypes::TextureBuffer> : public Details::BufferManagerImpl<PId, BufferTypes::TextureBuffer, Details::BufferEntry>
+{
+public:
+	using BrushRenderCall = typename PlatformProvider_t::BrushRenderCall;
+	using RentUpdateContext = typename BufferProvider::RentUpdateContext;
+
+	BufferManager(DeviceContext& deviceContext)
+		:BufferManagerImpl(deviceContext)
+	{
+
+	}
+
+	BufferRentInfo Allocate(size_t length)
+	{
+		return AllocateCore(length, 0);
+	}
+
+	void Update(const BufferRentInfo& rent, size_t offset, std::vector<RentUpdateContext>&& src)
+	{
+		auto locker = _buffersLock.Lock();
+		_buffers[rent.entryIdx].Update(_deviceContext, rent, offset, std::move(src));
+	}
+
+	void GetRenderCall(const BufferRentInfo& rent, BrushRenderCall& rc)
+	{
+		_platformProvider.GetRenderCall(rc, *this, rent);
+	}
+};
+
+template<PlatformId PId>
+class BufferManager<PId, BufferTypes::SamplerBuffer> : public Details::BufferManagerImpl<PId, BufferTypes::SamplerBuffer, Details::BufferEntry>
+{
+public:
+	using BrushRenderCall = typename PlatformProvider_t::BrushRenderCall;
+	using RentUpdateContext = typename BufferProvider::RentUpdateContext;
+
+	BufferManager(DeviceContext& deviceContext)
+		:BufferManagerImpl(deviceContext)
+	{
+
+	}
+
+	BufferRentInfo Allocate(size_t length)
+	{
+		return AllocateCore(length, 0);
+	}
+
+	void Update(const BufferRentInfo& rent, size_t offset, std::vector<RentUpdateContext>&& src)
+	{
+		auto locker = _buffersLock.Lock();
+		_buffers[rent.entryIdx].Update(_deviceContext, rent, offset, std::move(src));
+	}
+
+	void GetRenderCall(const BufferRentInfo& rent, BrushRenderCall& rc)
+	{
+		_platformProvider.GetRenderCall(rc, *this, rent);
 	}
 };
 

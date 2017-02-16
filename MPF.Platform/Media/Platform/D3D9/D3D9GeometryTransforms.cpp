@@ -253,3 +253,7 @@ void PlatformProvider<PlatformId::D3D9>::Transform(std::vector<StrokeVertex>& ve
 	//EmplaceLine(vertices, rightBottom, leftBottom, rbDirVec, lbDirVec);
 	//EmplaceLine(vertices, leftBottom, leftTop, lbDirVec, ltDirVec);
 }
+
+void PlatformProvider<PlatformId::D3D9>::Transform(std::vector<StrokeVertex>& vertices, std::vector<size_t>& indices, const MeshGeometry3D& geometry)
+{
+}

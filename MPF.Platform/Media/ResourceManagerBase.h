@@ -11,31 +11,30 @@
 #include "Brush.h"
 #include "Pen.h"
 #include "Camera.h"
+#include "Material.h"
+#include "Texture.h"
+#include "Sampler.h"
 #include "../../inc/WeakReferenceBase.h"
 #include "RenderCommandBuffer.h"
 #include "Platform/PlatformProvider.h"
 #include <DirectXMath.h>
+#include <unordered_map>
 
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
 class FontManager;
 
-#define DECL_RESCONTAINERAWARE(T) \
-std::shared_ptr<ResourceContainer<T>> _container##T; \
-std::vector<UINT_PTR> _added##T;				 \
-std::vector<UINT_PTR> _updated##T;					 
+#define DECL_GEOMETRY_RESOURCEMGR_TRC_GETTER(T)		  \
+virtual ITransformedResourceContainer<T>& Get##T##StrokeTRC() noexcept = 0; \
+virtual ITransformedResourceContainer<T>& Get##T##FillTRC() noexcept = 0
 
-#define DECL_RESOURCEMGR_IMPL1(T)		  \
-T& Get##T##(UINT_PTR handle);			  \
-const T& Get##T##(UINT_PTR handle) const;		 
+#define DECL_GEOMETRY3D_RESOURCEMGR_TRC_GETTER(T)		  \
+virtual ITransformedResourceContainer<T>& Get##T##FillTRC() noexcept = 0;
 
-#define DECL_RESOURCEMGR_TRC_GETTER(T)		  \
+#define DECL_DEVICE_RESOURCEMGR_TRC_GETTER(T)		  \
 virtual ITransformedResourceContainer<T>& Get##T##TRC() noexcept = 0
 
-#define DEFINE_RESOURCEMGR_IMPL1(T)															  \
-T& Get##T##(UINT_PTR handle) { return _container##T##->FindResource(handle); }				  \
-const T& Get##T##(UINT_PTR handle) const { return _container##T##->FindResource(handle); }
 
 class ResourceManagerBase : public WeakReferenceBase<ResourceManagerBase, WRL::RuntimeClassFlags<WRL::ClassicCom>, IResourceManager>
 {
@@ -50,43 +49,47 @@ public:
 	STDMETHODIMP UpdateRectangleGeometry(IResource * res, RectangleGeometryData * data) override;
 	HRESULT UpdatePathGeometry(IResource * res, std::vector<PathGeometrySegments::Segment>&& segments) noexcept;
 	STDMETHODIMP UpdatePathGeometry(IResource * res, byte* data, UINT32 length) override;
-	STDMETHODIMP UpdateSolidColorBrush(IResource * res, ColorF * color) override;
+	STDMETHODIMP UpdateBrush(IResource * res, IResource* texture, IResource* sampler) override;
 	STDMETHODIMP UpdatePen(IResource * res, float thickness, IResource* brush) override;
 	STDMETHODIMP UpdateCamera(IResource * res, float* viewMatrix, float* projectionMatrix) override;
+	STDMETHODIMP UpdateShaderParameters(IResource * res, BYTE *data, UINT dataSize, IResource *brushes[], UINT brushesCount) override;
+	STDMETHODIMP UpdateMaterial(IResource * res, IShadersGroup *shader, IResource* shaderParameters) override;
 	STDMETHODIMP UpdateBoxGeometry3D(IResource * res, BoxGeometry3DData * data) override;
+	STDMETHODIMP UpdateMeshGeometry3D(IResource * res, MeshGeometry3DData * data) override;
+	STDMETHODIMP UpdateSolidColorTexture(IResource * res, ColorF * color) override;
+	STDMETHODIMP UpdateSampler(IResource * res, SamplerData * data) override;
 
 	void RetireResource(IResource * res);
 
-	DEFINE_RESOURCEMGR_IMPL1(LineGeometry);
-	DEFINE_RESOURCEMGR_IMPL1(RectangleGeometry);
-	DEFINE_RESOURCEMGR_IMPL1(PathGeometry);
-	DECL_RESOURCEMGR_IMPL1(Brush);
-	DEFINE_RESOURCEMGR_IMPL1(Pen);
-	DEFINE_RESOURCEMGR_IMPL1(Camera);
-	DEFINE_RESOURCEMGR_IMPL1(BoxGeometry3D);
-
-	void Update();
+	virtual void UpdateGPU();
 	virtual std::shared_ptr<IDrawCallList> CreateDrawCallList(RenderCommandBuffer* rcb) = 0;
 	void AddDependentDrawCallList(std::weak_ptr<IDrawCallList>&& dcl, IResource* res);
 
+	void AddDependentResource(UINT_PTR handle, IResource* res);
+
 	virtual void BeginResetDevice() {}
 	virtual void EndResetDevice() {}
+
+	virtual bool TryGetCamera(IResource* res, Camera& camera) const = 0;
 protected:
-	DECL_RESOURCEMGR_TRC_GETTER(LineGeometry);
-	DECL_RESOURCEMGR_TRC_GETTER(RectangleGeometry);
-	DECL_RESOURCEMGR_TRC_GETTER(PathGeometry);
-	DECL_RESOURCEMGR_TRC_GETTER(BoxGeometry3D);
-	virtual void UpdateOverride() {};
+	DECL_GEOMETRY_RESOURCEMGR_TRC_GETTER(LineGeometry);
+	DECL_GEOMETRY_RESOURCEMGR_TRC_GETTER(RectangleGeometry);
+	DECL_GEOMETRY_RESOURCEMGR_TRC_GETTER(PathGeometry);
+
+	DECL_GEOMETRY3D_RESOURCEMGR_TRC_GETTER(BoxGeometry3D);
+	DECL_GEOMETRY3D_RESOURCEMGR_TRC_GETTER(MeshGeometry3D);
+
+	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(SolidColorTexture);
+	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(Sampler);
+
+	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(Brush);
+	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(Pen);
 private:
-	DECL_RESCONTAINERAWARE(LineGeometry);
-	DECL_RESCONTAINERAWARE(RectangleGeometry);
-	DECL_RESCONTAINERAWARE(PathGeometry);
-	DECL_RESCONTAINERAWARE(SolidColorBrush);
-	DECL_RESCONTAINERAWARE(Pen);
-	DECL_RESCONTAINERAWARE(Camera);
-	DECL_RESCONTAINERAWARE(BoxGeometry3D);
 	std::vector<std::shared_ptr<IDrawCallList>> _updatedDrawCallList;
+	std::unordered_multimap<UINT_PTR, std::weak_ptr<IDrawCallList>> _dependentDrawCallLists;
+	std::unordered_multimap<UINT_PTR, UINT_PTR> _dependentResources;
 	WRL::Wrappers::CriticalSection _containerCS;
 	std::shared_ptr<FontManager> _fontManager;
+	std::atomic<UINT_PTR> _nextResourceId = 1;
 };
 END_NS_PLATFORM

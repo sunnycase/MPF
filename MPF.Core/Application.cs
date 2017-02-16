@@ -1,5 +1,6 @@
 ﻿using MPF.Input;
 using MPF.Interop;
+using MPF.Media;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +30,7 @@ namespace MPF
         private void OnUpdate()
         {
             Update?.Invoke(this, EventArgs.Empty);
+            DeviceContext.Current?.Update();
         }
 
         public void Run()

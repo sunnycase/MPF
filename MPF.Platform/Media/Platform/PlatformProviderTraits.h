@@ -21,6 +21,8 @@ struct PlatformProviderTraits
 {
 	using VertexBufferManager = NS_PLATFORM::VertexBufferManager<PId>;
 	using IndexBufferManager = NS_PLATFORM::IndexBufferManager<PId>;
+	using TextureBufferManager = BufferManager<PId, BufferTypes::TextureBuffer>;
+	using SamplerBufferManager = BufferManager<PId, BufferTypes::SamplerBuffer>;
 	using ResourceManager = WRL::ComPtr<NS_PLATFORM::ResourceManager<PId>>;
 	using DrawCallList = NS_PLATFORM::DrawCallList<PId>;
 };
@@ -37,6 +39,7 @@ struct PlayRenderCallArgs
 	const DirectX::XMFLOAT4X4& ModelTransform;
 	const std::vector<StrokeRenderCall<RenderCall>>& StrokeRenderCalls;
 	const std::vector<FillRenderCall<RenderCall>>& FillRenderCalls;
+	const std::vector<Fill3DRenderCall<RenderCall>>& Fill3DRenderCalls;
 };
 
 END_NS_PLATFORM

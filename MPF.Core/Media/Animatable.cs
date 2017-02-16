@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace MPF.Media
 {
-    public abstract class Animatable : DependencyObject
+    public abstract class Animatable : Freezable
     {
         internal event EventHandler UpdateResource;
 

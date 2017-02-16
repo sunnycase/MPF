@@ -21,6 +21,7 @@ public:
 	using RenderCall = typename PlatformProvider_t::RenderCall;
 	using StrokeRenderCall_t = StrokeRenderCall<RenderCall>;
 	using FillRenderCall_t = FillRenderCall<RenderCall>;
+	using Fill3DRenderCall_t = Fill3DRenderCall<RenderCall>;
 
 	DrawCallList(DeviceContext& deviceContext, ResourceManager& resMgr, RenderCommandBuffer* rcb)
 		:_deviceContext(deviceContext), _resMgr(resMgr), _rcb(rcb)
@@ -39,7 +40,7 @@ public:
 
 	virtual void Draw(const DirectX::XMFLOAT4X4& modelTransform) override
 	{
-		PlayRenderCallArgs<PId> args{ _deviceContext, _resMgr, modelTransform, _strokeRenderCalls, _fillRenderCalls };
+		PlayRenderCallArgs<PId> args{ _deviceContext, _resMgr, modelTransform, _strokeRenderCalls, _fillRenderCalls, _fill3DRenderCalls };
 		_platformProvider.PlayRenderCall(args);
 	}
 private:
@@ -48,15 +49,32 @@ private:
 	{
 		_strokeRenderCalls.clear();
 		_fillRenderCalls.clear();
-		for (auto&& geoRef : _rcb->GetGeometries())
+		for (auto&& geoRef : _rcb->GetCommands())
 		{
 			PushGeometryDrawCall(geoRef.Geometry.Get(), geoRef.Pen.Get(), geoRef.Brush.Get(), geoRef.Transform);
 			if (AddResDependent)
 			{
 				auto me = shared_from_this();
-				_resMgr->AddDependentDrawCallList(me, geoRef.Geometry.Get());
-				_resMgr->AddDependentDrawCallList(me, geoRef.Pen.Get());
-				_resMgr->AddDependentDrawCallList(me, geoRef.Brush.Get());
+				if (geoRef.Geometry)
+					_resMgr->AddDependentDrawCallList(me, geoRef.Geometry.Get());
+				if (geoRef.Pen)
+					_resMgr->AddDependentDrawCallList(me, geoRef.Pen.Get());
+				if (geoRef.Brush)
+					_resMgr->AddDependentDrawCallList(me, geoRef.Brush.Get());
+			}
+		}
+
+		_fill3DRenderCalls.clear();
+		for (auto&& geoRef : _rcb->GetCommand3Ds())
+		{
+			PushGeometry3DDrawCall(geoRef.Geometry3D.Get(), geoRef.Material.Get(), geoRef.Transform);
+			if (AddResDependent)
+			{
+				auto me = shared_from_this();
+				if (geoRef.Geometry3D)
+					_resMgr->AddDependentDrawCallList(me, geoRef.Geometry3D.Get());
+				if (geoRef.Material)
+					_resMgr->AddDependentDrawCallList(me, geoRef.Material.Get());
 			}
 		}
 	}
@@ -66,30 +84,16 @@ private:
 		if (pen)
 		{
 			StrokeRenderCall_t rc;
-			auto& penObj = _resMgr->GetPen(static_cast<ResourceRef*>(pen)->GetHandle());
-			rc.Thickness = penObj.Thickness;
-			if (penObj.Brush)
+			if (!_resMgr->PopulateRenderCallWithGeometry(resource, rc))
+				;//assert(false && "Geometry not found.");
+			else
 			{
-				auto& brushObj = _resMgr->GetBrush(penObj.Brush->GetHandle());
-				if (typeid(brushObj) == typeid(Brush&))
+				if (!_resMgr->PopulateRenderCallWithPen(pen, rc))
+					;//assert(false && "Brush not found.");
+				else if (!_platformProvider.IsNopRenderCall(rc))
 				{
-					auto& color = static_cast<SolidColorBrush&>(brushObj).Color;
-					rc.Color[0] = color.R;
-					rc.Color[1] = color.G;
-					rc.Color[2] = color.B;
-					rc.Color[3] = color.A;
-				}
-				if (_resMgr->TryGet(resource, rc))
-				{
-					if (!_platformProvider.IsNopRenderCall(rc))
-					{
-						rc.Transform = transform;
-						_strokeRenderCalls.emplace_back(rc);
-					}
-				}
-				else
-				{
-					//assert(false && "Geometry not found.");
+					rc.Transform = transform;
+					_strokeRenderCalls.emplace_back(rc);
 				}
 			}
 		}
@@ -97,26 +101,37 @@ private:
 		if (brush)
 		{
 			FillRenderCall_t rc;
-			auto& brushObj = _resMgr->GetBrush(static_cast<ResourceRef*>(brush)->GetHandle());
-			if (typeid(brushObj) == typeid(Brush&))
+			if (!_resMgr->PopulateRenderCallWithGeometry(resource, rc))
+				;//assert(false && "Geometry not found.");
+			else
 			{
-				auto& color = static_cast<SolidColorBrush&>(brushObj).Color;
-				rc.Color[0] = color.R;
-				rc.Color[1] = color.G;
-				rc.Color[2] = color.B;
-				rc.Color[3] = color.A;
-			}
-			if (_resMgr->TryGet(resource, rc))
-			{
-				if (!_platformProvider.IsNopRenderCall(rc))
+				if (!_resMgr->PopulateRenderCallWithBrush(brush, rc))
+					;//assert(false && "Brush not found.");
+				else if (!_platformProvider.IsNopRenderCall(rc))
 				{
 					rc.Transform = transform;
 					_fillRenderCalls.emplace_back(rc);
 				}
 			}
+		}
+	}
+
+	void PushGeometry3DDrawCall(IResource* resource, IResource* material, const DirectX::XMFLOAT4X4 transform)
+	{
+		if (material)
+		{
+			Fill3DRenderCall_t rc;
+			if (!_resMgr->PopulateRenderCallWithGeometry3D(resource, rc))
+				;//assert(false && "Geometry not found.");
 			else
 			{
-				//assert(false && "Geometry not found.");
+				if (!_resMgr->PopulateRenderCallWithBrush(material, rc))
+					;//assert(false && "Brush not found.");
+				else if (!_platformProvider.IsNopRenderCall(rc))
+				{
+					rc.Transform = transform;
+					_fill3DRenderCalls.emplace_back(rc);
+				}
 			}
 		}
 	}
@@ -128,6 +143,7 @@ private:
 
 	std::vector<StrokeRenderCall_t> _strokeRenderCalls;
 	std::vector<FillRenderCall_t> _fillRenderCalls;
+	std::vector<Fill3DRenderCall_t> _fill3DRenderCalls;
 };
 
 END_NS_PLATFORM

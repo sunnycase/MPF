@@ -147,6 +147,7 @@ interface ISwapChain : IUnknown
 interface IRenderCommandBuffer : IUnknown
 {
 	HRESULT DrawGeometry([in]IResource* geometry, [in]IResource* pen, [in]IResource* brush, [in]float* values);
+	HRESULT DrawGeometry3D([in]IResource* geometry3D, [in]IResource* material, [in]float* values);
 };
 
 typedef enum
@@ -154,10 +155,15 @@ typedef enum
 	RT_LineGeometry,
 	RT_RectangleGeometry,
 	RT_PathGeometry,
-	RT_SolidColorBrush,
+	RT_Brush,
 	RT_Pen,
 	RT_Camera,
-	RT_BoxGeometry3D
+	RT_ShaderParameters,
+	RT_Material,
+	RT_BoxGeometry3D,
+	RT_MeshGeometry3D,
+	RT_SolidColorTexture,
+	RT_Sampler
 } ResourceType;
 
 typedef struct
@@ -184,6 +190,32 @@ typedef struct
 	float Height;
 	float Depth;
 } BoxGeometry3DData;
+
+typedef struct
+{
+	Point3D* Positions;
+	UINT32 PositionsCount;
+	Point3D* Normals;
+	UINT32 NormalsCount;
+	Point* TextureCoordinates;
+	UINT32 TextureCoordinatesCount;
+	UINT32* Indices;
+	UINT32 IndicesCount;
+} MeshGeometry3DData;
+
+typedef enum
+{
+	TA_Wrap,
+	TA_Mirror,
+	TA_Clamp
+} TextureAddress;
+
+typedef struct
+{
+	TextureAddress AddressU;
+	TextureAddress AddressV;
+	TextureAddress AddressW;
+} SamplerData;
 
 interface IResourceManager;
 
@@ -231,6 +263,24 @@ interface IFontFace : IUnknown
 	HRESULT CreateGlyphGeometry([in]IResourceManager* resMgr, [in]UINT unicode, [out]GlyphMetrics* metrics, [out, retval]IResource** geometry);
 };
 
+typedef struct
+{
+	INT_PTR VertexShader;
+	UINT VertexShaderLength;
+	INT_PTR PixelShader;
+	UINT PixelShaderLength;
+} ShadersGroupData;
+
+[
+	uuid(8820ACEC-AF5E-4918-9303-94CBE3A3CE68),
+	helpstring("Shaders Group Interface"),
+	version(1.0)
+]
+interface IShadersGroup : IUnknown
+{
+	
+};
+
 [
 	uuid(C8E784D3-3EBD-40D0-A421-55B3B52EF590),
 	helpstring("Resource Container Interface"),
@@ -244,10 +294,15 @@ interface IResourceManager : IUnknown
 	HRESULT UpdateLineGeometry([in]IResource* res, [in]LineGeometryData* data);
 	HRESULT UpdateRectangleGeometry([in]IResource* res, [in]RectangleGeometryData* data);
 	HRESULT UpdatePathGeometry([in]IResource* res, [in, size_is(length)]byte* data, [in]UINT32 length);
-	HRESULT UpdateSolidColorBrush([in]IResource* res, [in]ColorF* color);
+	HRESULT UpdateBrush([in]IResource* res, [in]IResource* texture, [in]IResource* sampler);
 	HRESULT UpdatePen([in]IResource* res, [in]float thickness, [in]IResource* brush);
 	HRESULT UpdateCamera([in]IResource* res, [in]float* viewMatrix, [in]float* projectionMatrix);
+	HRESULT UpdateShaderParameters([in]IResource* res, [in, size_is(dataSize)]BYTE* data, [in]UINT dataSize, [in, size_is(brushesCount)]IResource* brushes[], [in]UINT brushesCount);
+	HRESULT UpdateMaterial([in]IResource* res, [in]IShadersGroup* shader, [in]IResource* shaderParameters);
 	HRESULT UpdateBoxGeometry3D([in]IResource* res, [in]BoxGeometry3DData* data);
+	HRESULT UpdateMeshGeometry3D([in]IResource* res, [in]MeshGeometry3DData* data);
+	HRESULT UpdateSolidColorTexture([in]IResource* res, [in]ColorF* color);
+	HRESULT UpdateSampler([in]IResource* res, [in]SamplerData* data);
 };
 
 [
@@ -270,6 +325,8 @@ interface IDeviceContext : IUnknown
 	HRESULT CreateSwapChain([in]INativeWindow* window, [out, retval]ISwapChain** swapChain);
 	HRESULT CreateRenderableObject([out, retval]IRenderableObject** obj);
 	HRESULT CreateResourceManager([out, retval]IResourceManager** resMgr);
+	HRESULT CreateShadersGroup([in]ShadersGroupData* data, [out, retval]IShadersGroup** shader);
+	HRESULT Update();
 };
 
 // Input

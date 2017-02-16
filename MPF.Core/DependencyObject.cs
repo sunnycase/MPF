@@ -108,6 +108,12 @@ namespace MPF
             var args = new PropertyChangedEventArgs<T>(property, oldValue, newValue);
             property.RaisePropertyChanged(_realType, this, args);
             InvokeLocalPropertyChangedHandlers(args);
+            OnDependencyPropertyChanged(args);
+        }
+
+        protected virtual void OnDependencyPropertyChanged<T>(PropertyChangedEventArgs<T> args)
+        {
+
         }
 
         private void InvokeLocalPropertyChangedHandlers<T>(PropertyChangedEventArgs<T> e)

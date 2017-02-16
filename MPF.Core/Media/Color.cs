@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MPF.Media
 {
-    public struct Color
+    public struct Color : IEquatable<Color>
     {
         public byte A { get; set; }
         public byte R { get; set; }
@@ -33,6 +33,23 @@ namespace MPF.Media
                 G = (byte)(argb >> 8),
                 B = (byte)(argb)
             };
+        }
+
+        public override int GetHashCode()
+        {
+            return A.GetHashCode() ^ R.GetHashCode() ^ G.GetHashCode() ^ B.GetHashCode();
+        }
+
+        public bool Equals(Color other)
+        {
+            return A == other.A && R == other.R && G == other.G && B == other.B;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Color)
+                return Equals((Color)obj);
+            return false;
         }
     }
 }

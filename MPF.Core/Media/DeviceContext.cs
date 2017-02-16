@@ -34,6 +34,11 @@ namespace MPF.Media
             return new SwapChain(_deviceContext.CreateSwapChain(window));
         }
 
+        public void Update()
+        {
+            _deviceContext.Update();
+        }
+
         public IRenderableObject CreateRenderableObject()
         {
             return _deviceContext.CreateRenderableObject();

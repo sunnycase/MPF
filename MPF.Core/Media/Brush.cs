@@ -8,9 +8,23 @@ namespace MPF.Media
 {
     public abstract class Brush : Animatable, IResourceProvider
     {
-        IResource IResourceProvider.Resource => GetResourceOverride();
+        private readonly Lazy<IResource> _brushRes;
+        IResource IResourceProvider.Resource => _brushRes.Value;
 
-        internal abstract IResource GetResourceOverride();
+        internal Brush()
+        {
+            _brushRes = this.CreateResource(ResourceType.RT_Brush);
+            RegisterUpdateResource();
+        }
+
+        internal override void OnUpdateResource(object sender, EventArgs e)
+        {
+            base.OnUpdateResource(sender, e);
+            MediaResourceManager.Current.UpdateBrush(_brushRes.Value, CreateTextureResource(), CreateSamplerResource());
+        }
+
+        internal abstract IResource CreateTextureResource();
+        internal abstract IResource CreateSamplerResource();
 
         public static implicit operator Brush(Color color)
         {

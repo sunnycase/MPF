@@ -12,12 +12,12 @@
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
-struct LineGeometry : public ResourceBase
+struct LineGeometry
 {
 	LineGeometryData Data;
 };
 
-struct RectangleGeometry : public ResourceBase
+struct RectangleGeometry
 {
 	RectangleGeometryData Data;
 };
@@ -70,7 +70,7 @@ namespace PathGeometrySegments
 	};
 }
 
-struct PathGeometry : public ResourceBase
+struct PathGeometry
 {
 private:
 	using Segment = PathGeometrySegments::Segment;
@@ -78,9 +78,25 @@ public:
 	std::vector<Segment> Segments;
 };
 
-struct BoxGeometry3D : public ResourceBase
+struct BoxGeometry3D
 {
 	BoxGeometry3DData Data;
+};
+
+struct MeshGeometry3D
+{
+	struct MeshVertex
+	{
+		Point3D Position;
+		Point3D Normal;
+		Point TexCoord;
+
+		MeshVertex()
+			:Position({ 0 }), Normal({ 0 }), TexCoord({ 0 }) {}
+	};
+
+	std::vector<MeshVertex> Vertices;
+	std::vector<size_t> Indices;
 };
 
 END_NS_PLATFORM

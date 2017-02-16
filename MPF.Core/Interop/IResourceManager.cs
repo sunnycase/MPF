@@ -13,10 +13,15 @@ namespace MPF.Interop
         RT_LineGeometry,
         RT_RectangleGeometry,
         RT_PathGeometry,
-        RT_SolidColorBrush,
+        RT_Brush,
         RT_Pen,
         RT_Camera,
-        RT_BoxGeometry3D
+        RT_ShaderParameters,
+        RT_Material,
+        RT_BoxGeometry3D,
+        RT_MeshGeometry3D,
+        RT_SolidColorTexture,
+        RT_Sampler
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -74,6 +79,34 @@ namespace MPF.Interop
         public float Depth;
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    unsafe struct MeshGeometry3DData
+    {
+        public Point3D* Positions;
+        public uint PositionsCount;
+        public Vector3* Normals;
+        public uint NormalsCount;
+        public Point* TextureCoordinates;
+        public uint TextureCoordinatesCount;
+        public uint* Indices;
+        public uint IndicesCount;
+    }
+
+    enum TextureAddress
+    {
+        TA_Wrap,
+        TA_Mirror,
+        TA_Clamp
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    struct SamplerData
+    {
+        public TextureAddress AddressU;
+        public TextureAddress AddressV;
+        public TextureAddress AddressW;
+    }
+
     [Guid("C8E784D3-3EBD-40D0-A421-55B3B52EF590")]
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -85,9 +118,14 @@ namespace MPF.Interop
         void UpdateLineGeometry([In]IResource resource, [In] ref LineGeometryData data);
         void UpdateRectangleGeometry([In]IResource resource, [In] ref RectangleGeometryData data);
         void UpdatePathGeometry([In]IResource resource, [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] byte[] data, [In] uint length);
-        void UpdateSolidColorBrush([In]IResource resource, [In] ref ColorF color);
+        void UpdateBrush([In]IResource resource, [In]IResource texture, [In]IResource sampler);
         void UpdatePen([In]IResource resource, [In] float thickness, [In]IResource brush);
         void UpdateCamera([In]IResource resource, [In]ref Matrix4x4 viewMatrix, [In]ref Matrix4x4 projectionMatrix);
+        void UpdateShaderParameters();
+        void UpdateMaterial();
         void UpdateBoxGeometry3D([In]IResource resource, [In] ref BoxGeometry3DData data);
+        void UpdateMeshGeometry3D([In]IResource resource, [In] ref MeshGeometry3DData data);
+        void UpdateSolidColorTexture([In]IResource resource, [In]ref ColorF color);
+        void UpdateSampler([In]IResource resource, [In]ref SamplerData data);
     }
 }
