@@ -168,6 +168,23 @@ struct PenRenderCall
 	float Thickness;
 };
 
+struct MaterialRenderCall
+{
+	struct
+	{
+		BufferManager<PlatformId::D3D11, BufferTypes::ShaderBuffer>* Mgr;
+		size_t BufferIdx;
+		UINT Start;
+		UINT Count;
+	} Shader;
+
+	struct
+	{
+		BrushRenderCall Brushes[8];
+		const std::vector<byte>* Variables;
+	} ShaderParameters;
+};
+
 struct RenderCall
 {
 	struct
@@ -188,9 +205,10 @@ struct RenderCall
 		UINT Count;
 	} IB;
 
-	struct
+	union
 	{
 		BrushRenderCall Brush;
+		MaterialRenderCall Material;
 	} Material;
 };
 
@@ -211,6 +229,7 @@ struct PlatformProvider<PlatformId::D3D11>
 
 	using BrushRenderCall = D3D11::BrushRenderCall;
 	using PenRenderCall = D3D11::PenRenderCall;
+	using MaterialRenderCall = D3D11::MaterialRenderCall;
 
 	template<BufferTypes>
 	struct BufferProvider
@@ -285,15 +304,38 @@ struct PlatformProvider<PlatformId::D3D11>
 		void Retire(NativeType& buffer, size_t offset, size_t length);
 	};
 
+	template<>
+	struct BufferProvider<BufferTypes::ShaderBuffer>
+	{
+		struct ShaderEntry
+		{
+			WRL::ComPtr<ID3D11VertexShader> VertexShader;
+			WRL::ComPtr<ID3D11PixelShader> PixelShader;
+		};
+		using NativeType = std::vector<ShaderEntry>;
+		using RentUpdateContext = struct
+		{
+			std::vector<byte> VertexShader;
+			std::vector<byte> PixelShader;
+		};
+
+		NativeType CreateBuffer(DeviceContext& deviceContext, size_t count);
+		void Update(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>& data);
+		void Upload(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>&& data) {}
+		void Retire(NativeType& buffer, size_t offset, size_t length);
+	};
+
 	void GetRenderCall(RenderCall& rc, VertexBufferManager<PlatformId::D3D11>& vbMgr, size_t stride, const BufferRentInfo& rent);
 	void GetRenderCall(RenderCall& rc, IndexBufferManager<PlatformId::D3D11>& ibMgr, size_t stride, const BufferRentInfo& rent);
 
 	void GetRenderCall(BrushRenderCall& rc, BufferManager<PlatformId::D3D11, BufferTypes::TextureBuffer>& tbMgr, const BufferRentInfo& rent);
 	void GetRenderCall(BrushRenderCall& rc, BufferManager<PlatformId::D3D11, BufferTypes::SamplerBuffer>& sbMgr, const BufferRentInfo& rent);
 
+	void GetRenderCall(MaterialRenderCall& rc, BufferManager<PlatformId::D3D11, BufferTypes::ShaderBuffer>& sbMgr, const BufferRentInfo& rent);
+
 	void ConvertRenderCall(const PenRenderCall& brc, StrokeRenderCall<RenderCall>& rc) const;
 	void ConvertRenderCall(const BrushRenderCall& brc, FillRenderCall<RenderCall>& rc) const;
-	void ConvertRenderCall(const BrushRenderCall& brc, Fill3DRenderCall<RenderCall>& rc) const;
+	void ConvertRenderCall(const MaterialRenderCall& brc, Fill3DRenderCall<RenderCall>& rc) const;
 
 	void PlayRenderCall(const PlayRenderCallArgs<PlatformId::D3D11>& args);
 	bool IsNopRenderCall(const RenderCall& rc) noexcept { return rc.IB.Count == 0; }
@@ -310,6 +352,8 @@ struct PlatformProvider<PlatformId::D3D11>
 
 	void Transform(std::vector<typename BufferProvider<BufferTypes::TextureBuffer>::RentUpdateContext>& textures, SolidColorTexture&& data);
 	void Transform(std::vector<typename BufferProvider<BufferTypes::SamplerBuffer>::RentUpdateContext>& samplers, Sampler&& data);
+
+	void Transform(std::vector<typename BufferProvider<BufferTypes::ShaderBuffer>::RentUpdateContext>& shaders, ShadersGroup&& data);
 };
 
 END_NS_PLATFORM

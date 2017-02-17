@@ -30,7 +30,6 @@ namespace MPF.Interop
         ISwapChain CreateSwapChain([MarshalAs(UnmanagedType.Interface), In]INativeWindow window);
         IRenderableObject CreateRenderableObject();
         IResourceManager CreateResourceManager();
-        IShadersGroup CreateShadersGroup([In]IntPtr vertexShader, [In]IntPtr pixelShader);
         void Update();
     }
 }

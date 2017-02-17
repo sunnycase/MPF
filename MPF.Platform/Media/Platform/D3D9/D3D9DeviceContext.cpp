@@ -85,11 +85,6 @@ STDMETHODIMP D3D9DeviceContext::Update()
 	CATCH_ALL();
 }
 
-STDMETHODIMP D3D9DeviceContext::CreateShadersGroup(ShadersGroupData * data, IShadersGroup ** shader)
-{
-	return E_NOTIMPL;
-}
-
 namespace
 {
 	const DWORD* LoadShaderResource(int id)

@@ -353,4 +353,34 @@ public:
 	}
 };
 
+template<PlatformId PId>
+class BufferManager<PId, BufferTypes::ShaderBuffer> : public Details::BufferManagerImpl<PId, BufferTypes::ShaderBuffer, Details::BufferEntry>
+{
+public:
+	using MaterialRenderCall = typename PlatformProvider_t::MaterialRenderCall;
+	using RentUpdateContext = typename BufferProvider::RentUpdateContext;
+
+	BufferManager(DeviceContext& deviceContext)
+		:BufferManagerImpl(deviceContext)
+	{
+
+	}
+
+	BufferRentInfo Allocate(size_t length)
+	{
+		return AllocateCore(length, 0);
+	}
+
+	void Update(const BufferRentInfo& rent, size_t offset, std::vector<RentUpdateContext>&& src)
+	{
+		auto locker = _buffersLock.Lock();
+		_buffers[rent.entryIdx].Update(_deviceContext, rent, offset, std::move(src));
+	}
+
+	void GetRenderCall(const BufferRentInfo& rent, MaterialRenderCall& rc)
+	{
+		_platformProvider.GetRenderCall(rc, *this, rent);
+	}
+};
+
 END_NS_PLATFORM

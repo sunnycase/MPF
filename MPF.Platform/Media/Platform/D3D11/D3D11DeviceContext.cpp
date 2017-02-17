@@ -163,38 +163,28 @@ STDMETHODIMP D3D11DeviceContext::CreateResourceManager(IResourceManager ** resMg
 
 namespace
 {
-	struct ShadersGroup : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, IShadersGroup>
-	{
-		ShadersGroup(const ShadersGroupData& data, ID3D11Device* device)
-		{
-			static const D3D11_INPUT_ELEMENT_DESC fillInputElementDesc[] =
-			{
-				{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Fill3DVertex, Position), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				//{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(FillVertex, ParamFormValue), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				//{ "TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, offsetof(FillVertex, SegmentType), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				//{ "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(FillVertex, TexCoord), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			};
-			ThrowIfFailed(device->CreateInputLayout(fillInputElementDesc, _countof(fillInputElementDesc), reinterpret_cast<void*>(data.VertexShader),
-				data.VertexShaderLength, &_inputLayout));
+	//struct ShadersGroup : public WRL::RuntimeClass<WRL::RuntimeClassFlags<WRL::ClassicCom>, IShadersGroup>
+	//{
+	//	ShadersGroup(const ShadersGroupData& data, ID3D11Device* device)
+	//	{
+	//		static const D3D11_INPUT_ELEMENT_DESC fillInputElementDesc[] =
+	//		{
+	//			{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Fill3DVertex, Position), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	//			//{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(FillVertex, ParamFormValue), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	//			//{ "TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, offsetof(FillVertex, SegmentType), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	//			//{ "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(FillVertex, TexCoord), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	//		};
+	//		ThrowIfFailed(device->CreateInputLayout(fillInputElementDesc, _countof(fillInputElementDesc), reinterpret_cast<void*>(data.VertexShader),
+	//			data.VertexShaderLength, &_inputLayout));
 
-			ThrowIfFailed(device->CreateVertexShader(reinterpret_cast<void*>(data.VertexShader), data.VertexShaderLength, nullptr, &_vertexShader));
-			ThrowIfFailed(device->CreatePixelShader(reinterpret_cast<void*>(data.PixelShader), data.PixelShaderLength, nullptr, &_pixelShader));
-		}
+	//		ThrowIfFailed(device->CreateVertexShader(reinterpret_cast<void*>(data.VertexShader), data.VertexShaderLength, nullptr, &_vertexShader));
+	//		ThrowIfFailed(device->CreatePixelShader(reinterpret_cast<void*>(data.PixelShader), data.PixelShaderLength, nullptr, &_pixelShader));
+	//	}
 
-		WRL::ComPtr<ID3D11InputLayout> _inputLayout;
-		WRL::ComPtr<ID3D11VertexShader> _vertexShader;
-		WRL::ComPtr<ID3D11PixelShader> _pixelShader;
-	};
-}
-
-STDMETHODIMP D3D11DeviceContext::CreateShadersGroup(ShadersGroupData* data, IShadersGroup ** shader)
-{
-	try
-	{
-		*shader = Make<ShadersGroup>(*data, _device.Get()).Detach();
-		return S_OK;
-	}
-	CATCH_ALL();
+	//	WRL::ComPtr<ID3D11InputLayout> _inputLayout;
+	//	WRL::ComPtr<ID3D11VertexShader> _vertexShader;
+	//	WRL::ComPtr<ID3D11PixelShader> _pixelShader;
+	//};
 }
 
 STDMETHODIMP D3D11DeviceContext::Update()

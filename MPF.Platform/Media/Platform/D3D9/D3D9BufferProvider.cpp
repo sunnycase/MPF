@@ -90,7 +90,7 @@ auto BufferProvider<BufferTypes::TextureBuffer>::CreateBuffer(DeviceContext& dev
 void BufferProvider<BufferTypes::TextureBuffer>::Update(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>& data)
 {
 	for (auto& item : data)
-		ThrowIfFailed(deviceContext->Device->CreateTexture(item.Width, item.Height, item.Levels, item.Usage, 
+		ThrowIfFailed(deviceContext->Device->CreateTexture(item.Width, item.Height, item.Levels, item.Usage,
 			item.Format, D3DPOOL_DEFAULT, &buffer.at(offset++), nullptr));
 }
 
@@ -118,4 +118,32 @@ void BufferProvider<BufferTypes::SamplerBuffer>::Upload(DeviceContext& deviceCon
 {
 	for (auto& item : data)
 		buffer.at(offset++) = item;
+}
+
+auto BufferProvider<BufferTypes::ShaderBuffer>::CreateBuffer(DeviceContext& deviceContext, size_t count) -> NativeType
+{
+	return std::vector<ShaderEntry>(count);
+}
+
+void BufferProvider<BufferTypes::ShaderBuffer>::Update(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>& data)
+{
+	for (auto& item : data)
+	{
+		if (!item.VertexShader.empty())
+			ThrowIfFailed(deviceContext->Device->CreateVertexShader(reinterpret_cast<const DWORD*>(item.VertexShader.data()),
+				&buffer.at(offset).VertexShader));
+		if (!item.PixelShader.empty())
+			ThrowIfFailed(deviceContext->Device->CreatePixelShader(reinterpret_cast<const DWORD*>(item.PixelShader.data()),
+				&buffer.at(offset).PixelShader));
+	}
+}
+
+void BufferProvider<BufferTypes::ShaderBuffer>::Retire(NativeType& buffer, size_t offset, size_t length)
+{
+	for (size_t i = 0; i < length; i++)
+	{
+		auto& entry = buffer.at(offset + i);
+		entry.VertexShader.Reset();
+		entry.PixelShader.Reset();
+	}
 }

@@ -118,22 +118,22 @@ private:
 
 	void PushGeometry3DDrawCall(IResource* resource, IResource* material, const DirectX::XMFLOAT4X4 transform)
 	{
-		if (material)
-		{
-			Fill3DRenderCall_t rc;
-			if (!_resMgr->PopulateRenderCallWithGeometry3D(resource, rc))
-				;//assert(false && "Geometry not found.");
-			else
-			{
-				if (!_resMgr->PopulateRenderCallWithBrush(material, rc))
-					;//assert(false && "Brush not found.");
-				else if (!_platformProvider.IsNopRenderCall(rc))
-				{
-					rc.Transform = transform;
-					_fill3DRenderCalls.emplace_back(rc);
-				}
-			}
-		}
+		//if (material)
+		//{
+		//	Fill3DRenderCall_t rc;
+		//	if (!_resMgr->PopulateRenderCallWithGeometry3D(resource, rc))
+		//		;//assert(false && "Geometry not found.");
+		//	else
+		//	{
+		//		if (!_resMgr->PopulateRenderCallWithMaterial(material, rc))
+		//			;//assert(false && "Brush not found.");
+		//		else if (!_platformProvider.IsNopRenderCall(rc))
+		//		{
+		//			rc.Transform = transform;
+		//			_fill3DRenderCalls.emplace_back(rc);
+		//		}
+		//	}
+		//}
 	}
 private:
 	PlatformProvider_t _platformProvider;

@@ -21,7 +21,8 @@ namespace MPF.Interop
         RT_BoxGeometry3D,
         RT_MeshGeometry3D,
         RT_SolidColorTexture,
-        RT_Sampler
+        RT_Sampler,
+        RT_ShadersGroup
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -107,6 +108,15 @@ namespace MPF.Interop
         public TextureAddress AddressW;
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    struct ShadersGroupData
+    {
+        public IntPtr VertexShader;
+        public uint VertexShaderLength;
+        public IntPtr PixelShader;
+        public uint PixelShaderLength;
+    }
+
     [Guid("C8E784D3-3EBD-40D0-A421-55B3B52EF590")]
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -127,5 +137,6 @@ namespace MPF.Interop
         void UpdateMeshGeometry3D([In]IResource resource, [In] ref MeshGeometry3DData data);
         void UpdateSolidColorTexture([In]IResource resource, [In]ref ColorF color);
         void UpdateSampler([In]IResource resource, [In]ref SamplerData data);
+        void UpdateShadersGroup([In]IResource resource, [In]ref ShadersGroupData data);
     }
 }

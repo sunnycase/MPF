@@ -28,7 +28,6 @@ public:
 	STDMETHODIMP CreateSwapChain(INativeWindow* window, ISwapChain** swapChain) override;
 	STDMETHODIMP CreateRenderableObject(IRenderableObject ** obj) override;
 	STDMETHODIMP CreateResourceManager(IResourceManager **resMgr) override;
-	STDMETHODIMP CreateShadersGroup(ShadersGroupData* data, IShadersGroup ** shader) override;
 	STDMETHODIMP Update() override;
 
 	void SetPipelineState(PiplineStateTypes type);

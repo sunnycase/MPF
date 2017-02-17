@@ -81,6 +81,11 @@ namespace MPF.Media
             _resourceManager.UpdateSampler(res, ref data);
         }
 
+        public void UpdateShadersGroup(IResource res, ref ShadersGroupData data)
+        {
+            _resourceManager.UpdateShadersGroup(res, ref data);
+        }
+
         public IFontFace CreateFontFaceFromMemory(IntPtr buffer, ulong size, uint faceIndex)
         {
             return _resourceManager.CreateFontFaceFromMemory(buffer, size, faceIndex);

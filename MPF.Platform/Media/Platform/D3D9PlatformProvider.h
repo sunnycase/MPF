@@ -115,6 +115,20 @@ struct PlatformProvider<PlatformId::D3D9>
 		float Thickness;
 	};
 
+	using MaterialRenderCall = struct
+	{
+		struct
+		{
+
+		} Shader;
+
+		struct
+		{
+			BrushRenderCall Brushes[8];
+			const std::vector<byte>* Variables;
+		} ShaderParameters;
+	};
+
 	template<BufferTypes>
 	struct BufferProvider
 	{
@@ -167,16 +181,39 @@ struct PlatformProvider<PlatformId::D3D9>
 		void Upload(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>&& data);
 		void Retire(NativeType& buffer, size_t offset, size_t length) {}
 	};
-	
+
+	template<>
+	struct BufferProvider<BufferTypes::ShaderBuffer>
+	{
+		struct ShaderEntry
+		{
+			WRL::ComPtr<IDirect3DVertexShader9> VertexShader;
+			WRL::ComPtr<IDirect3DPixelShader9> PixelShader;
+		};
+		using NativeType = std::vector<ShaderEntry>;
+		using RentUpdateContext = struct
+		{
+			std::vector<byte> VertexShader;
+			std::vector<byte> PixelShader;
+		};
+
+		NativeType CreateBuffer(DeviceContext& deviceContext, size_t count);
+		void Update(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>& data);
+		void Upload(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>&& data) {}
+		void Retire(NativeType& buffer, size_t offset, size_t length);
+	};
+
 	void GetRenderCall(RenderCall& rc, VertexBufferManager<PlatformId::D3D9>& vbMgr, size_t stride, const BufferRentInfo& rent);
 	void GetRenderCall(RenderCall& rc, IndexBufferManager<PlatformId::D3D9>& ibMgr, size_t stride, const BufferRentInfo& rent);
 
 	void GetRenderCall(BrushRenderCall& rc, BufferManager<PlatformId::D3D9, BufferTypes::TextureBuffer>& tbMgr, const BufferRentInfo& rent) {}
 	void GetRenderCall(BrushRenderCall& rc, BufferManager<PlatformId::D3D9, BufferTypes::SamplerBuffer>& sbMgr, const BufferRentInfo& rent) {}
 
+	void GetRenderCall(MaterialRenderCall& rc, BufferManager<PlatformId::D3D9, BufferTypes::ShaderBuffer>& sbMgr, const BufferRentInfo& rent) {}
+
 	void ConvertRenderCall(const PenRenderCall& brc, StrokeRenderCall<RenderCall>& rc) const {}
 	void ConvertRenderCall(const BrushRenderCall& brc, FillRenderCall<RenderCall>& rc) const {}
-	void ConvertRenderCall(const BrushRenderCall& brc, Fill3DRenderCall<RenderCall>& rc) const {}
+	void ConvertRenderCall(const MaterialRenderCall& brc, Fill3DRenderCall<RenderCall>& rc) const {}
 
 	void PlayRenderCall(const PlayRenderCallArgs<PlatformId::D3D9>& args);
 	bool IsNopRenderCall(const RenderCall& rc) noexcept { return rc.PrimitiveCount == 0; }
@@ -189,6 +226,8 @@ struct PlatformProvider<PlatformId::D3D9>
 
 	void Transform(std::vector<typename BufferProvider<BufferTypes::TextureBuffer>::RentUpdateContext>& textures, SolidColorTexture&& data) {}
 	void Transform(std::vector<typename BufferProvider<BufferTypes::SamplerBuffer>::RentUpdateContext>& samplers, Sampler&& data) {}
+
+	void Transform(std::vector<typename BufferProvider<BufferTypes::ShaderBuffer>::RentUpdateContext>& shaders, ShadersGroup&& data) {}
 };
 
 END_NS_PLATFORM

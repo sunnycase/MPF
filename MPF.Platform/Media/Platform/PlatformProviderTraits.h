@@ -23,6 +23,7 @@ struct PlatformProviderTraits
 	using IndexBufferManager = NS_PLATFORM::IndexBufferManager<PId>;
 	using TextureBufferManager = BufferManager<PId, BufferTypes::TextureBuffer>;
 	using SamplerBufferManager = BufferManager<PId, BufferTypes::SamplerBuffer>;
+	using ShaderBufferManager = BufferManager<PId, BufferTypes::ShaderBuffer>;
 	using ResourceManager = WRL::ComPtr<NS_PLATFORM::ResourceManager<PId>>;
 	using DrawCallList = NS_PLATFORM::DrawCallList<PId>;
 };

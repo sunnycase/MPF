@@ -19,6 +19,7 @@
 #include "Platform/PlatformProviderTraits.h"
 #include "Geometry.h"
 #include "Brush.h"
+#include "Material.h"
 
 DEFINE_NS_PLATFORM
 
@@ -509,6 +510,166 @@ private:
 	}
 
 	void UnregisterDependentResource(ResourceManagerBase& resMgr, UINT_PTR handle, const Camera& data)
+	{
+
+	}
+private:
+	PlatformProvider<PId> _platformProvider;
+};
+
+template<PlatformId PId, typename TData, typename TRenderCall>
+class TransformedShadersGroupResourceContainer : public Details::TransformedResourceContainerImpl<TransformedShadersGroupResourceContainer<PId, TData, TRenderCall>, TData, ShadersGroupRentInfo>
+{
+public:
+	using PlatformProvider_t = PlatformProvider<PId>;
+	using ShaderBufferManager = typename PlatformProviderTraits<PId>::ShaderBufferManager;
+	using ShaderBufferRentUpdateContext = typename ShaderBufferManager::RentUpdateContext;
+
+	TransformedShadersGroupResourceContainer(RenderCallAwareness rcAware, ShaderBufferManager& sbMgr)
+		:TransformedResourceContainerImpl(rcAware), _sbMgr(sbMgr)
+	{
+
+	}
+
+	bool PopulateRenderCall(UINT_PTR handle, TRenderCall& rc) const
+	{
+		ShadersGroupRentInfo rent;
+		if (TryGetRentInfo(handle, rent))
+		{
+			_sbMgr.GetRenderCall(rent.Shaders, rc);
+			return true;
+		}
+		return false;
+	}
+private:
+	friend class Details::TransformedResourceContainerImpl<TransformedShadersGroupResourceContainer, TData, ShadersGroupRentInfo>;
+
+	void RetireRent(const ShadersGroupRentInfo& rent)
+	{
+		_sbMgr.Retire(rent.Shaders);
+	}
+
+	ShadersGroupRentInfo Transform(const std::optional<ShadersGroupRentInfo>& oldRent, TData&& data, bool& affectRenderCall)
+	{
+		std::vector<ShaderBufferRentUpdateContext> shaders;
+
+		_platformProvider.Transform(shaders, std::move(data));
+
+		ShadersGroupRentInfo newRent;
+		bool needAllocS = false;
+		if (!oldRent.has_value())
+			needAllocS = true;
+		else
+		{
+			if (oldRent.value().Shaders.length != shaders.size())
+			{
+				_sbMgr.Retire(oldRent.value().Shaders);
+				needAllocS = true;
+			}
+		}
+		if (needAllocS)
+			newRent.Shaders = _sbMgr.Allocate(shaders.size());
+		_sbMgr.Update(newRent.Shaders, 0, std::move(shaders));
+		affectRenderCall = needAllocS;
+		return newRent;
+	}
+private:
+	PlatformProvider<PId> _platformProvider;
+	ShaderBufferManager& _sbMgr;
+};
+
+template<PlatformId PId, typename TRenderCall>
+class TransformedShaderParametersResourceContainer : public Details::DependentResourceContainerImpl<TransformedShaderParametersResourceContainer<PId, TRenderCall>, ShaderParameters>
+{
+public:
+	using PlatformProvider_t = PlatformProvider<PId>;
+
+	TransformedShaderParametersResourceContainer(RenderCallAwareness rcAware)
+		:DependentResourceContainerImpl(rcAware)
+	{
+
+	}
+
+	template<typename TResourceManager>
+	bool PopulateRenderCall(const TResourceManager& resMgr, UINT_PTR handle, TRenderCall& rc) const
+	{
+		UINT_PTR rent;
+		if (TryGetRentInfo(handle, rent))
+		{
+			bool success = true;
+			auto& data = GetResource(rent);
+
+			size_t bid = 0;
+			for (auto& brush : data.Brushes)
+			{
+				if (brush)
+					success = success && resMgr.PopulateRenderCallWithBrush(brush.Get(), rc.ShaderParameters.Brushes[bid++]);
+			}
+			rc.ShaderParameters.Variables = &data.Variables;
+			return success;
+		}
+		return false;
+	}
+private:
+	friend class Details::DependentResourceContainerImpl<TransformedShaderParametersResourceContainer, ShaderParameters>;
+
+	void RegisterDependentResource(ResourceManagerBase& resMgr, UINT_PTR handle, const ShaderParameters& data)
+	{
+		for (auto&& brush : data.Brushes)
+		{
+			if (brush)
+				resMgr.AddDependentResource(handle, brush.Get());
+		}
+	}
+
+	void UnregisterDependentResource(ResourceManagerBase& resMgr, UINT_PTR handle, const ShaderParameters& data)
+	{
+
+	}
+private:
+	PlatformProvider<PId> _platformProvider;
+};
+
+template<PlatformId PId, typename TRenderCall>
+class TransformedMaterialResourceContainer : public Details::DependentResourceContainerImpl<TransformedMaterialResourceContainer<PId, TRenderCall>, Material>
+{
+public:
+	using PlatformProvider_t = PlatformProvider<PId>;
+
+	TransformedMaterialResourceContainer(RenderCallAwareness rcAware)
+		:DependentResourceContainerImpl(rcAware)
+	{
+
+	}
+
+	template<typename TResourceManager>
+	bool PopulateRenderCall(const TResourceManager& resMgr, UINT_PTR handle, TRenderCall& rc) const
+	{
+		UINT_PTR rent;
+		if (TryGetRentInfo(handle, rent))
+		{
+			bool success = true;
+			auto& data = GetResource(rent);
+			if (data.Shader)
+				success = success && resMgr.PopulateRenderCallWithShadersGroup(data.Shader.Get(), rc);
+			if (data.ShaderParameters)
+				success = success && resMgr.PopulateRenderCallWithShaderParameters(data.ShaderParameters.Get(), rc);
+			return success;
+		}
+		return false;
+	}
+private:
+	friend class Details::DependentResourceContainerImpl<TransformedMaterialResourceContainer, Material>;
+
+	void RegisterDependentResource(ResourceManagerBase& resMgr, UINT_PTR handle, const Material& data)
+	{
+		if (data.Shader)
+			resMgr.AddDependentResource(handle, data.Shader.Get());
+		if (data.ShaderParameters)
+			resMgr.AddDependentResource(handle, data.ShaderParameters.Get());
+	}
+
+	void UnregisterDependentResource(ResourceManagerBase& resMgr, UINT_PTR handle, const Material& data)
 	{
 
 	}

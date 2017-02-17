@@ -163,7 +163,8 @@ typedef enum
 	RT_BoxGeometry3D,
 	RT_MeshGeometry3D,
 	RT_SolidColorTexture,
-	RT_Sampler
+	RT_Sampler,
+	RT_ShadersGroup
 } ResourceType;
 
 typedef struct
@@ -272,16 +273,6 @@ typedef struct
 } ShadersGroupData;
 
 [
-	uuid(8820ACEC-AF5E-4918-9303-94CBE3A3CE68),
-	helpstring("Shaders Group Interface"),
-	version(1.0)
-]
-interface IShadersGroup : IUnknown
-{
-	
-};
-
-[
 	uuid(C8E784D3-3EBD-40D0-A421-55B3B52EF590),
 	helpstring("Resource Container Interface"),
 	version(1.0)
@@ -298,11 +289,12 @@ interface IResourceManager : IUnknown
 	HRESULT UpdatePen([in]IResource* res, [in]float thickness, [in]IResource* brush);
 	HRESULT UpdateCamera([in]IResource* res, [in]float* viewMatrix, [in]float* projectionMatrix);
 	HRESULT UpdateShaderParameters([in]IResource* res, [in, size_is(dataSize)]BYTE* data, [in]UINT dataSize, [in, size_is(brushesCount)]IResource* brushes[], [in]UINT brushesCount);
-	HRESULT UpdateMaterial([in]IResource* res, [in]IShadersGroup* shader, [in]IResource* shaderParameters);
+	HRESULT UpdateMaterial([in]IResource* res, [in]IResource* shader, [in]IResource* shaderParameters);
 	HRESULT UpdateBoxGeometry3D([in]IResource* res, [in]BoxGeometry3DData* data);
 	HRESULT UpdateMeshGeometry3D([in]IResource* res, [in]MeshGeometry3DData* data);
 	HRESULT UpdateSolidColorTexture([in]IResource* res, [in]ColorF* color);
 	HRESULT UpdateSampler([in]IResource* res, [in]SamplerData* data);
+	HRESULT UpdateShadersGroup([in]IResource* res, [in]ShadersGroupData* data);
 };
 
 [
@@ -325,7 +317,6 @@ interface IDeviceContext : IUnknown
 	HRESULT CreateSwapChain([in]INativeWindow* window, [out, retval]ISwapChain** swapChain);
 	HRESULT CreateRenderableObject([out, retval]IRenderableObject** obj);
 	HRESULT CreateResourceManager([out, retval]IResourceManager** resMgr);
-	HRESULT CreateShadersGroup([in]ShadersGroupData* data, [out, retval]IShadersGroup** shader);
 	HRESULT Update();
 };
 

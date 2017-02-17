@@ -12,6 +12,7 @@
 #include "../Geometry.h"
 #include "../Texture.h"
 #include "../Sampler.h"
+#include "../Material.h"
 
 DEFINE_NS_PLATFORM
 
@@ -35,6 +36,11 @@ struct TextureRentInfo
 struct SamplerRentInfo
 {
 	BufferRentInfo Samplers;
+};
+
+struct ShadersGroupRentInfo
+{
+	BufferRentInfo Shaders;
 };
 
 template<class TRenderCall>
@@ -71,7 +77,8 @@ enum class BufferTypes
 	VertexBuffer,
 	IndexBuffer,
 	TextureBuffer,
-	SamplerBuffer
+	SamplerBuffer,
+	ShaderBuffer
 };
 
 enum class PiplineStateTypes
@@ -84,14 +91,17 @@ enum class PiplineStateTypes
 
 enum class RenderCallAwareness
 {
-	None	=	0,
-	Stroke	=	1,
-	Fill	=	2,
-	Fill3D	=	4,
-	Texture =	8,
-	Sampler	=	16,
-	Brush	=	32,
-	Pen		=	64
+	None				=	0x0,
+	Stroke				=	0x1,
+	Fill				=	0x2,
+	Fill3D				=	0x4,
+	Texture				=	0x8,
+	Sampler				=	0x10,
+	Brush				=	0x20,
+	Pen					=	0x40,
+	ShadersGroup		=	0x80,
+	ShaderParameters	=	0x100,
+	Material			=	0x200
 };
 DEFINE_ENUM_FLAG_OPERATORS(RenderCallAwareness);
 

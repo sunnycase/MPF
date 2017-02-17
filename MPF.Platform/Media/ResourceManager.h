@@ -36,6 +36,12 @@ TransformedTextureResourceContainer<PId, T, BrushRenderCall> _trc##T
 #define RM_DECL_SAMPLER_TRC_MEMBER(T) \
 TransformedSamplerResourceContainer<PId, T, BrushRenderCall> _trc##T
 
+#define RM_DECL_SHADERSGROUP_TRC_MEMBER(T) \
+TransformedShadersGroupResourceContainer<PId, T, MaterialRenderCall> _trc##T
+
+#define RM_DECL_SHADERPARAMETERS_TRC_MEMBER(T) \
+TransformedShaderParametersResourceContainer<PId, MaterialRenderCall> _trc##T
+
 #define RM_DECL_DEPENDENT_TRC_MEMBER(T) \
 Transformed##T##ResourceContainer<PId, ##T##RenderCall> _trc##T
 
@@ -47,6 +53,8 @@ Transformed##T##ResourceContainer<PId> _trc##T
 #define RM_CTOR_GEOMETRY3D_IMPL(T) _trc##T##Fill(RenderCallAwareness::Fill3D, _fill3DVBMgr, _fill3DIBMgr)
 #define RM_CTOR_TEXTURE_IMPL(T) _trc##T(RenderCallAwareness::Texture, _textureBufferMgr)
 #define RM_CTOR_SAMPLER_IMPL(T) _trc##T(RenderCallAwareness::Sampler, _samplerBufferMgr)
+#define RM_CTOR_SHADERSGROUP_IMPL(T) _trc##T(RenderCallAwareness::ShadersGroup, _shaderBufferMgr)
+#define RM_CTOR_SHADERPARAMETERS_IMPL(T) _trc##T(RenderCallAwareness::ShaderParameters)
 #define RM_CTOR_DEPENDENT_IMPL(T) _trc##T(RenderCallAwareness::T)
 #define RM_CTOR_NO_DEPENDENT_IMPL(T) _trc##T(RenderCallAwareness::None)
 
@@ -66,9 +74,11 @@ public:
 	using IndexBufferManager = typename PlatformProviderTraits<PId>::IndexBufferManager;
 	using TextureBufferManager = typename PlatformProviderTraits<PId>::TextureBufferManager;
 	using SamplerBufferManager = typename PlatformProviderTraits<PId>::SamplerBufferManager;
+	using ShaderBufferManager = typename PlatformProviderTraits<PId>::ShaderBufferManager;
 
 	using BrushRenderCall = typename PlatformProvider_t::BrushRenderCall;
 	using PenRenderCall = typename PlatformProvider_t::PenRenderCall;
+	using MaterialRenderCall = typename PlatformProvider_t::MaterialRenderCall;
 
 	using StrokeRenderCall_t = StrokeRenderCall<RenderCall>;
 	using FillRenderCall_t = FillRenderCall<RenderCall>;
@@ -80,11 +90,12 @@ public:
 		_strokeIBMgr(deviceContext), _fillIBMgr(deviceContext),
 		_fill3DVBMgr(deviceContext, sizeof(Fill3DVertex)), _fill3DIBMgr(deviceContext),
 		_textureBufferMgr(deviceContext), _samplerBufferMgr(deviceContext),
+		_shaderBufferMgr(deviceContext),
 		RM_CTOR_GEOMETRY_IMPL(LineGeometry), RM_CTOR_GEOMETRY_IMPL(RectangleGeometry), RM_CTOR_GEOMETRY_IMPL(PathGeometry),
 		RM_CTOR_GEOMETRY3D_IMPL(BoxGeometry3D), RM_CTOR_GEOMETRY3D_IMPL(MeshGeometry3D),
 		RM_CTOR_TEXTURE_IMPL(SolidColorTexture),
-		RM_CTOR_SAMPLER_IMPL(Sampler),
-		RM_CTOR_DEPENDENT_IMPL(Brush), RM_CTOR_DEPENDENT_IMPL(Pen),
+		RM_CTOR_SAMPLER_IMPL(Sampler), RM_CTOR_SHADERSGROUP_IMPL(ShadersGroup), RM_CTOR_SHADERPARAMETERS_IMPL(ShaderParameters),
+		RM_CTOR_DEPENDENT_IMPL(Brush), RM_CTOR_DEPENDENT_IMPL(Pen), RM_CTOR_DEPENDENT_IMPL(Material),
 		RM_CTOR_NO_DEPENDENT_IMPL(Camera)
 	{
 
@@ -190,17 +201,6 @@ public:
 		return false;
 	}
 
-	bool PopulateRenderCallWithBrush(IResource* res, Fill3DRenderCall_t& rc) const
-	{
-		BrushRenderCall brc{};
-		if (PopulateRenderCallWithBrush(res, brc))
-		{
-			_platformProvider.ConvertRenderCall(brc, rc);
-			return true;
-		}
-		return false;
-	}
-
 	bool PopulateRenderCallWithPen(IResource* res, PenRenderCall& rc) const
 	{
 		auto resRef = static_cast<ResourceRef*>(res);
@@ -219,6 +219,53 @@ public:
 		if (PopulateRenderCallWithPen(res, prc))
 		{
 			_platformProvider.ConvertRenderCall(prc, rc);
+			return true;
+		}
+		return false;
+	}
+
+	bool PopulateRenderCallWithShadersGroup(IResource* res, MaterialRenderCall& rc) const
+	{
+		auto resRef = static_cast<ResourceRef*>(res);
+		switch (resRef->GetType())
+		{
+			RM_POPULATE_DEVICE_RES_RENDERCALL_IMPL1(ShadersGroup);
+		default:
+			ThrowAlways(L"Invalid Resource Type.");
+		}
+		return false;
+	}
+
+	bool PopulateRenderCallWithShaderParameters(IResource* res, MaterialRenderCall& rc) const
+	{
+		auto resRef = static_cast<ResourceRef*>(res);
+		switch (resRef->GetType())
+		{
+			RM_POPULATE_DEPENDENT_RES_RENDERCALL_IMPL1(ShaderParameters);
+		default:
+			ThrowAlways(L"Invalid Resource Type.");
+		}
+		return false;
+	}
+
+	bool PopulateRenderCallWithMaterial(IResource* res, MaterialRenderCall& rc) const
+	{
+		auto resRef = static_cast<ResourceRef*>(res);
+		switch (resRef->GetType())
+		{
+			RM_POPULATE_DEPENDENT_RES_RENDERCALL_IMPL1(Material);
+		default:
+			ThrowAlways(L"Invalid Resource Type.");
+		}
+		return false;
+	}
+
+	bool PopulateRenderCallWithMaterial(IResource* res, Fill3DRenderCall_t& rc) const
+	{
+		MaterialRenderCall mrc{};
+		if (PopulateRenderCallWithMaterial(res, mrc))
+		{
+			_platformProvider.ConvertRenderCall(mrc, rc);
 			return true;
 		}
 		return false;
@@ -303,9 +350,14 @@ protected:
 
 	RM_DECL_GET_DEVICE_TRC(SolidColorTexture);
 	RM_DECL_GET_DEVICE_TRC(Sampler);
+	RM_DECL_GET_DEVICE_TRC(ShadersGroup);
+	RM_DECL_GET_DEVICE_TRC(ShaderParameters);
 
 	RM_DECL_GET_DEVICE_TRC(Brush);
 	RM_DECL_GET_DEVICE_TRC(Pen);
+	RM_DECL_GET_DEVICE_TRC(Material);
+
+	RM_DECL_GET_DEVICE_TRC(Camera);
 
 	DeviceContext _deviceContext;
 private:
@@ -320,6 +372,7 @@ private:
 
 	TextureBufferManager _textureBufferMgr;
 	SamplerBufferManager _samplerBufferMgr;
+	ShaderBufferManager _shaderBufferMgr;
 
 	RM_DECL_GEOMETRY_TRC_MEMBER(LineGeometry);
 	RM_DECL_GEOMETRY_TRC_MEMBER(RectangleGeometry);
@@ -329,11 +382,13 @@ private:
 	RM_DECL_GEOMETRY3D_TRC_MEMBER(MeshGeometry3D);
 
 	RM_DECL_TEXTURE_TRC_MEMBER(SolidColorTexture);
-
 	RM_DECL_SAMPLER_TRC_MEMBER(Sampler);
+	RM_DECL_SHADERSGROUP_TRC_MEMBER(ShadersGroup);
+	RM_DECL_SHADERPARAMETERS_TRC_MEMBER(ShaderParameters);
 
 	RM_DECL_DEPENDENT_TRC_MEMBER(Brush);
 	RM_DECL_DEPENDENT_TRC_MEMBER(Pen);
+	RM_DECL_DEPENDENT_TRC_MEMBER(Material);
 
 	RM_DECL_NO_DEPENDENT_TRC_MEMBER(Camera);
 };

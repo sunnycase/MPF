@@ -151,6 +151,32 @@ void BufferProvider<BufferTypes::SamplerBuffer>::Retire(NativeType& buffer, size
 		buffer.at(offset + i).Reset();
 }
 
+auto BufferProvider<BufferTypes::ShaderBuffer>::CreateBuffer(DeviceContext& deviceContext, size_t count) -> NativeType
+{
+	return std::vector<ShaderEntry>(count);
+}
+
+void BufferProvider<BufferTypes::ShaderBuffer>::Update(DeviceContext& deviceContext, NativeType& buffer, size_t offset, std::vector<RentUpdateContext>& data)
+{
+	for (auto& item : data)
+	{
+		if (!item.VertexShader.empty())
+			ThrowIfFailed(deviceContext->Device->CreateVertexShader(item.VertexShader.data(), item.VertexShader.size(), nullptr, &buffer.at(offset).VertexShader));
+		if (!item.PixelShader.empty())
+			ThrowIfFailed(deviceContext->Device->CreatePixelShader(item.PixelShader.data(), item.PixelShader.size(), nullptr, &buffer.at(offset++).PixelShader));
+	}
+}
+
+void BufferProvider<BufferTypes::ShaderBuffer>::Retire(NativeType& buffer, size_t offset, size_t length)
+{
+	for (size_t i = 0; i < length; i++)
+	{
+		auto& entry = buffer.at(offset + i);
+		entry.VertexShader.Reset();
+		entry.PixelShader.Reset();
+	}
+}
+
 void PlatformProvider<PlatformId::D3D11>::GetRenderCall(BrushRenderCall& rc, BufferManager<PlatformId::D3D11, BufferTypes::TextureBuffer>& tbMgr, const BufferRentInfo& rent)
 {
 	rc.Texture.Mgr = &tbMgr;
@@ -167,6 +193,14 @@ void PlatformProvider<PlatformId::D3D11>::GetRenderCall(BrushRenderCall& rc, Buf
 	rc.Sampler.Count = rent.length;
 }
 
+void PlatformProvider<PlatformId::D3D11>::GetRenderCall(MaterialRenderCall& rc, BufferManager<PlatformId::D3D11, BufferTypes::ShaderBuffer>& sbMgr, const BufferRentInfo& rent)
+{
+	rc.Shader.Mgr = &sbMgr;
+	rc.Shader.BufferIdx = rent.entryIdx;
+	rc.Shader.Start = rent.offset;
+	rc.Shader.Count = rent.length;
+}
+
 void PlatformProvider<PlatformId::D3D11>::ConvertRenderCall(const PenRenderCall& prc, StrokeRenderCall<RenderCall>& rc) const
 {
 	rc.Material.Brush = prc.Brush;
@@ -178,7 +212,7 @@ void PlatformProvider<PlatformId::D3D11>::ConvertRenderCall(const BrushRenderCal
 	rc.Material.Brush = brc;
 }
 
-void PlatformProvider<PlatformId::D3D11>::ConvertRenderCall(const BrushRenderCall& brc, Fill3DRenderCall<RenderCall>& rc) const
+void PlatformProvider<PlatformId::D3D11>::ConvertRenderCall(const MaterialRenderCall& mrc, Fill3DRenderCall<RenderCall>& rc) const
 {
-	rc.Material.Brush = brc;
+	rc.Material.Material = mrc;
 }

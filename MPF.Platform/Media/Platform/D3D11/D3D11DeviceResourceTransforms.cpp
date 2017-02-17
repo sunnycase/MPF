@@ -35,5 +35,13 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<typename BufferP
 {
 	BufferProvider<BufferTypes::SamplerBuffer>::RentUpdateContext c;
 	c.Desc = CD3D11_SAMPLER_DESC(D3D11_DEFAULT);
-	samplers.emplace_back(c);
+	samplers.emplace_back(std::move(c));
+}
+
+void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<typename BufferProvider<BufferTypes::ShaderBuffer>::RentUpdateContext>& shaders, ShadersGroup&& data)
+{
+	BufferProvider<BufferTypes::ShaderBuffer>::RentUpdateContext c;
+	c.VertexShader = std::move(data.VertexShader);
+	c.PixelShader = std::move(data.PixelShader);
+	shaders.emplace_back(std::move(c));
 }

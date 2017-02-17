@@ -12,16 +12,22 @@
 DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
-struct ShaderParameters : public ResourceBase
+struct ShadersGroup
 {
-	std::vector<WRL::ComPtr<ResourceRef>> Brushes;
-	std::vector<byte> Data;
+	std::vector<byte> VertexShader;
+	std::vector<byte> PixelShader;
 };
 
-struct Material : public ResourceBase
+struct ShaderParameters
 {
-	WRL::ComPtr<IShadersGroup> Shader;
-	WRL::ComPtr<ResourceRef> ShaderParameters;
+	std::vector<WRL::ComPtr<ResourceRef>> Brushes;
+	std::vector<byte> Variables;
+};
+
+struct Material
+{
+	WRL::ComPtr<IResource> Shader;
+	WRL::ComPtr<IResource> ShaderParameters;
 };
 
 END_NS_PLATFORM

@@ -118,12 +118,11 @@ HRESULT ResourceManagerBase::UpdatePen(IResource * res, float thickness, IResour
 
 STDMETHODIMP ResourceManagerBase::UpdateCamera(IResource * res, float * viewMatrix, float * projectionMatrix)
 {
-	//UPDATE_RES_IMPL1_PRE(Camera)
-	//	using namespace DirectX;
-	//XMStoreFloat4x4(&resObj.View, XMMatrixTranspose(DirectX::XMMATRIX(viewMatrix)));
-	//XMStoreFloat4x4(&resObj.Projection, XMMatrixTranspose(DirectX::XMMATRIX(projectionMatrix)));
-	//UPDATE_RES_IMPL1_AFT(Pen);
-	return S_OK;
+	Camera resObj{};
+	XMStoreFloat4x4(&resObj.View, XMMatrixTranspose(DirectX::XMMATRIX(viewMatrix)));
+	XMStoreFloat4x4(&resObj.Projection, XMMatrixTranspose(DirectX::XMMATRIX(projectionMatrix)));
+
+	UPDATE_DEVICE_RES_IMPL(Camera, std::move(resObj));
 }
 
 STDMETHODIMP ResourceManagerBase::UpdateShaderParameters(IResource * res, BYTE * data, UINT dataSize, IResource * brushes[], UINT brushesCount)
@@ -138,7 +137,7 @@ STDMETHODIMP ResourceManagerBase::UpdateShaderParameters(IResource * res, BYTE *
 	return S_OK;
 }
 
-STDMETHODIMP ResourceManagerBase::UpdateMaterial(IResource * res, IShadersGroup * shader, IResource * shaderParameters)
+STDMETHODIMP ResourceManagerBase::UpdateMaterial(IResource * res, IResource * shader, IResource * shaderParameters)
 {
 	//UPDATE_RES_IMPL1_PRE(Material)
 	//	resObj.Shader = shader;
@@ -193,6 +192,13 @@ HRESULT ResourceManagerBase::UpdateSolidColorTexture(IResource * res, ColorF * c
 HRESULT ResourceManagerBase::UpdateSampler(IResource * res, SamplerData * data)
 {
 	UPDATE_DEVICE_RES_IMPL(Sampler, { *data });
+}
+
+HRESULT ResourceManagerBase::UpdateShadersGroup(IResource * res, ShadersGroupData * data)
+{
+	ShadersGroup src;
+	//src.VertexShader.assign
+	UPDATE_DEVICE_RES_IMPL(ShadersGroup, std::move(src));
 }
 
 HRESULT ResourceManagerBase::CreateRenderCommandBuffer(IRenderCommandBuffer ** buffer)

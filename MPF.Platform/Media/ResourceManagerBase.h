@@ -53,11 +53,12 @@ public:
 	STDMETHODIMP UpdatePen(IResource * res, float thickness, IResource* brush) override;
 	STDMETHODIMP UpdateCamera(IResource * res, float* viewMatrix, float* projectionMatrix) override;
 	STDMETHODIMP UpdateShaderParameters(IResource * res, BYTE *data, UINT dataSize, IResource *brushes[], UINT brushesCount) override;
-	STDMETHODIMP UpdateMaterial(IResource * res, IShadersGroup *shader, IResource* shaderParameters) override;
+	STDMETHODIMP UpdateMaterial(IResource * res, IResource *shader, IResource* shaderParameters) override;
 	STDMETHODIMP UpdateBoxGeometry3D(IResource * res, BoxGeometry3DData * data) override;
 	STDMETHODIMP UpdateMeshGeometry3D(IResource * res, MeshGeometry3DData * data) override;
 	STDMETHODIMP UpdateSolidColorTexture(IResource * res, ColorF * color) override;
 	STDMETHODIMP UpdateSampler(IResource * res, SamplerData * data) override;
+	STDMETHODIMP UpdateShadersGroup(IResource * res, ShadersGroupData * data) override;
 
 	void RetireResource(IResource * res);
 
@@ -81,9 +82,14 @@ protected:
 
 	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(SolidColorTexture);
 	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(Sampler);
+	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(ShadersGroup);
+	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(ShaderParameters);
 
 	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(Brush);
 	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(Pen);
+	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(Material);
+
+	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(Camera);
 private:
 	std::vector<std::shared_ptr<IDrawCallList>> _updatedDrawCallList;
 	std::unordered_multimap<UINT_PTR, std::weak_ptr<IDrawCallList>> _dependentDrawCallLists;
