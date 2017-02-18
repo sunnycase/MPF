@@ -1,4 +1,5 @@
-﻿using MPF.Media;
+﻿using MPF.Interop;
+using MPF.Media;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,10 +9,15 @@ using System.Text;
 
 namespace MPF.Media3D
 {
-    public abstract class ShaderParameters : Animatable
+    public abstract class ShaderParameters : Animatable, IResourceProvider
     {
+        private readonly Lazy<IResource> _shaderParamsRes;
+
+        IResource IResourceProvider.Resource => _shaderParamsRes.Value;
+
         public ShaderParameters()
         {
+            _shaderParamsRes = this.CreateResource(ResourceType.RT_ShaderParameters);
             RegisterUpdateResource();
         }
 
@@ -32,7 +38,8 @@ namespace MPF.Media3D
             {
                 OnWriteParameters(context);
                 (var data, var brushes) = context.Close();
-                
+                MediaResourceManager.Current.UpdateShaderParameters(_shaderParamsRes.Value,
+                    data, brushes);
             }
         }
 
@@ -43,7 +50,7 @@ namespace MPF.Media3D
     {
         private readonly MemoryStream _stream = new MemoryStream();
         private readonly BinaryWriter _writer;
-        private readonly List<Brush> _brushes;
+        private readonly List<IResource> _brushes = new List<IResource>();
 
         public ShaderParametersWriteContext()
         {
@@ -95,7 +102,7 @@ namespace MPF.Media3D
 
         public void Write(Brush value)
         {
-            _brushes.Add(value);
+            _brushes.Add(((IResourceProvider)value).Resource);
         }
 
         public void Dispose()
@@ -103,9 +110,9 @@ namespace MPF.Media3D
             _writer.Dispose();
         }
 
-        internal (byte[] data, IReadOnlyList<Brush> brushes) Close()
+        internal (byte[] data, IResource[] brushes) Close()
         {
-            return (_stream.ToArray(), _brushes);
+            return (_stream.ToArray(), _brushes.ToArray());
         }
     }
 }

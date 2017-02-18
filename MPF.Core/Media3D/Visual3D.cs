@@ -119,6 +119,7 @@ namespace MPF.Media3D
         }
 
         public Geometry3D Geometry;
+        public Material Material;
 
         protected virtual void OnRender(IDrawingContext3D drawingContext)
         {
@@ -128,7 +129,7 @@ namespace MPF.Media3D
                 //Width = 200,
                 //Height = 100,
                 //Depth = 50
-            , Color.FromArgb(0xFFFF0000), ref mat);
+            , Material, ref mat);
         }
 
         internal virtual void RenderContent(ref SwapChainDrawingContext context)

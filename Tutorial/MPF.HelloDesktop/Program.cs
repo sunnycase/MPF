@@ -3,6 +3,7 @@ using MPF.Documents;
 using MPF.Input;
 using MPF.Media;
 using MPF.Media3D;
+using MPF.Media3D.Shaders;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -122,7 +123,15 @@ namespace MPF.HelloDesktop
                 };
                 var visual = new Visual3D
                 {
-                    Geometry = mesh
+                    Geometry = mesh,
+                    Material = new Material<StandardShaderParameters>
+                    {
+                        Shader = new StandardShadersGroup(),
+                        Parameters = new StandardShaderParameters
+                        {
+                            MainTexture = new SolidColorBrush { Color = Colors.Black }
+                        }
+                    }
                 };
                 dstScene.Add(visual);
             }

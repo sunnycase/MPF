@@ -127,23 +127,16 @@ STDMETHODIMP ResourceManagerBase::UpdateCamera(IResource * res, float * viewMatr
 
 STDMETHODIMP ResourceManagerBase::UpdateShaderParameters(IResource * res, BYTE * data, UINT dataSize, IResource * brushes[], UINT brushesCount)
 {
-	//UPDATE_RES_IMPL1_PRE(ShaderParameters)
-	//	resObj.Brushes.clear();
-
-	//resObj.Data.assign(data, data + dataSize);
-	//for (size_t i = 0; i < brushesCount; i++)
-	//	resObj.Brushes.emplace_back(static_cast<ResourceRef*>(brushes[i]));
-	//UPDATE_RES_IMPL1_AFT(ShaderParameters);
-	return S_OK;
+	ShaderParameters resObj;
+	for (size_t i = 0; i < brushesCount; i++)
+		resObj.Brushes.emplace_back(brushes[i]);
+	resObj.Variables.assign(data, data + dataSize);
+	UPDATE_DEVICE_RES_IMPL(ShaderParameters, std::move(resObj));
 }
 
 STDMETHODIMP ResourceManagerBase::UpdateMaterial(IResource * res, IResource * shader, IResource * shaderParameters)
 {
-	//UPDATE_RES_IMPL1_PRE(Material)
-	//	resObj.Shader = shader;
-	//resObj.ShaderParameters = static_cast<ResourceRef*>(shaderParameters);
-	//UPDATE_RES_IMPL1_AFT(Material);
-	return S_OK;
+	UPDATE_DEVICE_RES_IMPL(Material, (Material{ shader, shaderParameters }));
 }
 
 #define UPDATE_GEOMETRY3D_RES_IMPL(T, src)								\
@@ -197,7 +190,10 @@ HRESULT ResourceManagerBase::UpdateSampler(IResource * res, SamplerData * data)
 HRESULT ResourceManagerBase::UpdateShadersGroup(IResource * res, ShadersGroupData * data)
 {
 	ShadersGroup src;
-	//src.VertexShader.assign
+	src.VertexShader.assign(reinterpret_cast<byte*>(data->VertexShader),
+		reinterpret_cast<byte*>(data->VertexShader) + data->VertexShaderLength);
+	src.PixelShader.assign(reinterpret_cast<byte*>(data->PixelShader), 
+		reinterpret_cast<byte*>(data->PixelShader) + data->PixelShaderLength);
 	UPDATE_DEVICE_RES_IMPL(ShadersGroup, std::move(src));
 }
 
@@ -293,9 +289,13 @@ void ResourceManagerBase::UpdateGPU()
 
 	UPDATE_DEVICE_TRC_DEVRES_IMPL(SolidColorTexture);
 	UPDATE_DEVICE_TRC_DEVRES_IMPL(Sampler);
+	UPDATE_DEVICE_TRC_DEVRES_IMPL(ShadersGroup);
+	UPDATE_DEVICE_TRC_DEVRES_IMPL(ShaderParameters);
 
 	UPDATE_DEVICE_TRC_DEVRES_IMPL(Brush);
 	UPDATE_DEVICE_TRC_DEVRES_IMPL(Pen);
+	UPDATE_DEVICE_TRC_DEVRES_IMPL(Material);
+	UPDATE_DEVICE_TRC_DEVRES_IMPL(Camera);
 
 	auto locker = _containerCS.Lock();
 	for (auto&& handle : updatedRes)

@@ -81,7 +81,6 @@
       <Name>MPF.Visual</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Content Include="Content\Reimu\06ac.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

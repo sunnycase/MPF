@@ -37,15 +37,7 @@ namespace MPF.Media3D
 
         protected abstract (byte[] vertexShader, byte[] pixelShader) GetShaderBytesCode();
 
-        private static readonly Lazy<ShadersGroup> _standard = new Lazy<ShadersGroup>(OnCreateStandard);
-        public static ShadersGroup Standard => _standard.Value;
-
         IResource IResourceProvider.Resource => _shadersRes.Value;
-
-        private static ShadersGroup OnCreateStandard()
-        {
-            return null;
-        }
     }
 
     public abstract class ShadersGroup<T> : ShadersGroup where T : ShaderParameters

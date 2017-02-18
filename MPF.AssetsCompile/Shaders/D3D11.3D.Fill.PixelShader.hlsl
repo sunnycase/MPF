@@ -5,5 +5,5 @@ sampler Sampler1;
 
 float4 main(PixelShaderInput input) : SV_TARGET
 {
-	return float4(1, 0, 0, 1);
+	return Tex1.Sample(Sampler1, float2(0.5, 0.5));
 }

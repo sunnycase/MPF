@@ -31,6 +31,7 @@ public:
 	STDMETHODIMP Update() override;
 
 	void SetPipelineState(PiplineStateTypes type);
+	void SetPipelineState(PiplineStateTypes type, const MaterialRenderCall& mrc);
 
 	DEFINE_PROPERTY_GET(Device, ID3D11Device*);
 	ID3D11Device* get_Device() const noexcept { return _device.Get(); }

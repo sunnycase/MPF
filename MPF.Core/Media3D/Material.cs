@@ -7,7 +7,7 @@ using System.Text;
 
 namespace MPF.Media3D
 {
-    public class Material : Animatable
+    public abstract class Material : Animatable, IResourceProvider
     {
         public static readonly DependencyProperty<ShadersGroup> ShaderProperty = DependencyProperty.Register(nameof(Shader),
             typeof(Material), new PropertyMetadata<ShadersGroup>(null, OnShaderPropertyChanged));
@@ -17,6 +17,8 @@ namespace MPF.Media3D
             get => GetValue(ShaderProperty);
             set => this.SetLocalValue(ShaderProperty, value);
         }
+
+        IResource IResourceProvider.Resource => _materialRes.Value;
 
         internal readonly Lazy<IResource> _materialRes;
 
@@ -43,6 +45,11 @@ namespace MPF.Media3D
             set => this.SetLocalValue(ParametersProperty, value);
         }
 
+        public Material()
+        {
+
+        }
+
         private static void OnParametersPropertyChanged(object sender, PropertyChangedEventArgs<T> e)
         {
             ((Material<T>)sender).RegisterUpdateResource();
@@ -51,7 +58,8 @@ namespace MPF.Media3D
         internal override void OnUpdateResource(object sender, EventArgs e)
         {
             base.OnUpdateResource(sender, e);
-            
+            MediaResourceManager.Current.UpdateMaterial(_materialRes.Value,
+                ((IResourceProvider)Shader)?.Resource, ((IResourceProvider)Parameters)?.Resource);
         }
     }
 }

@@ -20,7 +20,7 @@ struct ShadersGroup
 
 struct ShaderParameters
 {
-	std::vector<WRL::ComPtr<ResourceRef>> Brushes;
+	std::vector<WRL::ComPtr<IResource>> Brushes;
 	std::vector<byte> Variables;
 };
 

@@ -316,7 +316,6 @@ concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 
 void D3D11DeviceContext::SetPipelineState(PiplineStateTypes type)
 {
-
 	if (type != _pipelineStateType)
 	{
 		switch (type)
@@ -339,17 +338,56 @@ void D3D11DeviceContext::SetPipelineState(PiplineStateTypes type)
 			_deviceContext->PSSetShader(_fillPS.Get(), nullptr, 0);
 			_deviceContext->GSSetShader(nullptr, nullptr, 0);
 			break;
-		//case PiplineStateTypes::Fill3D:
-		//	_deviceContext->IASetInputLayout(_fill3DInputLayout.Get());
-		//	_deviceContext->VSSetShader(_fill3DVS.Get(), nullptr, 0);
-		//	_deviceContext->PSSetShader(_fill3DPS.Get(), nullptr, 0);
-		//	_deviceContext->GSSetShader(nullptr, nullptr, 0);
-		//	break;
+			//case PiplineStateTypes::Fill3D:
+			//	_deviceContext->IASetInputLayout(_fill3DInputLayout.Get());
+			//	_deviceContext->VSSetShader(_fill3DVS.Get(), nullptr, 0);
+			//	_deviceContext->PSSetShader(_fill3DPS.Get(), nullptr, 0);
+			//	_deviceContext->GSSetShader(nullptr, nullptr, 0);
+			//	break;
 		default:
-			//ThrowAlways(L"This PiplineState is not supported.");
+			ThrowAlways(L"This PiplineState is not supported.");
 			break;
 		}
 		_pipelineStateType = type;
+	}
+}
+
+void D3D11DeviceContext::SetPipelineState(PiplineStateTypes type, const MaterialRenderCall& mrc)
+{
+	//if (type != _pipelineStateType)
+	{
+		switch (type)
+		{
+		case PiplineStateTypes::None:
+			_deviceContext->IASetInputLayout(nullptr);
+			_deviceContext->VSSetShader(nullptr, nullptr, 0);
+			_deviceContext->PSSetShader(nullptr, nullptr, 0);
+			_deviceContext->GSSetShader(nullptr, nullptr, 0);
+			break;
+		case PiplineStateTypes::Fill3D:
+		{
+			if (mrc.Shader.Count)
+			{
+				auto& entry = mrc.Shader.Mgr->GetBuffer(mrc.Shader).at(mrc.Shader.Start);
+				_deviceContext->IASetInputLayout(entry.InputLayout.Get());
+				_deviceContext->VSSetShader(entry.VertexShader.Get(), nullptr, 0);
+				_deviceContext->PSSetShader(entry.PixelShader.Get(), nullptr, 0);
+				_deviceContext->GSSetShader(nullptr, nullptr, 0);
+			}
+			else
+			{
+				_deviceContext->IASetInputLayout(nullptr);
+				_deviceContext->VSSetShader(nullptr, nullptr, 0);
+				_deviceContext->PSSetShader(nullptr, nullptr, 0);
+				_deviceContext->GSSetShader(nullptr, nullptr, 0);
+			}
+		}
+		break;
+		default:
+			ThrowAlways(L"This PiplineState is not supported.");
+			break;
+		}
+		//_pipelineStateType = type;
 	}
 }
 

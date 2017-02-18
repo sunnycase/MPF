@@ -24,9 +24,9 @@ namespace MPF.Media
             _buffer.DrawGeometry(((IResourceProvider)geometry).Resource, ((IResourceProvider)pen)?.Resource, ((IResourceProvider)brush)?.Resource, ref transform);
         }
 
-        public void DrawGeometry3D(Geometry3D geometry, Brush brush, ref Matrix4x4 transform)
+        public void DrawGeometry3D(Geometry3D geometry, Material material, ref Matrix4x4 transform)
         {
-            _buffer.DrawGeometry3D(((IResourceProvider)geometry).Resource, ((IResourceProvider)brush)?.Resource, ref transform);
+            _buffer.DrawGeometry3D(((IResourceProvider)geometry).Resource, ((IResourceProvider)material)?.Resource, ref transform);
         }
 
         public IRenderCommandBuffer Close()

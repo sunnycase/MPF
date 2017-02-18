@@ -309,6 +309,7 @@ struct PlatformProvider<PlatformId::D3D11>
 	{
 		struct ShaderEntry
 		{
+			WRL::ComPtr<ID3D11InputLayout> InputLayout;
 			WRL::ComPtr<ID3D11VertexShader> VertexShader;
 			WRL::ComPtr<ID3D11PixelShader> PixelShader;
 		};

@@ -131,8 +131,8 @@ namespace MPF.Interop
         void UpdateBrush([In]IResource resource, [In]IResource texture, [In]IResource sampler);
         void UpdatePen([In]IResource resource, [In] float thickness, [In]IResource brush);
         void UpdateCamera([In]IResource resource, [In]ref Matrix4x4 viewMatrix, [In]ref Matrix4x4 projectionMatrix);
-        void UpdateShaderParameters();
-        void UpdateMaterial();
+        void UpdateShaderParameters([In]IResource resource, [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)]byte[] data, uint dataSize, [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)]IResource[] brushes, uint brushesCount);
+        void UpdateMaterial([In]IResource resource, [In]IResource shader, [In] IResource shaderParams);
         void UpdateBoxGeometry3D([In]IResource resource, [In] ref BoxGeometry3DData data);
         void UpdateMeshGeometry3D([In]IResource resource, [In] ref MeshGeometry3DData data);
         void UpdateSolidColorTexture([In]IResource resource, [In]ref ColorF color);

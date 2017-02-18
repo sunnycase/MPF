@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26127.3
+VisualStudioVersion = 15.0.26206.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tutorial", "Tutorial", "{35332891-13CD-4752-935C-48DD59BF3641}"
 EndProject
@@ -13,6 +13,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPF.Platform", "MPF.Platform\MPF.Platform.vcxproj", "{371A67E4-442A-4F9D-9AC9-BF08BC92FA28}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MPF.Core", "MPF.Core\MPF.Core.csproj", "{44D846A5-DBEB-41E2-B7F2-BE9B028E69A6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EEFD2976-CE00-49F1-95CF-9946046BFBBF} = {EEFD2976-CE00-49F1-95CF-9946046BFBBF}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MPF.Visual", "MPF.Visual\MPF.Visual.csproj", "{4EB26A72-57A0-492D-8E6D-0A734B0A6C3B}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -33,6 +36,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MPF.VisualStudio.HanaExtension", "Hana\MPF.VisualStudio.HanaExtension\MPF.VisualStudio.HanaExtension.csproj", "{4FEA7141-C43A-4671-A950-3169B1EEE26D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MPF.CodeAnalysis.Remote.Hana", "Hana\MPF.CodeAnalysis.Remote.Hana\MPF.CodeAnalysis.Remote.Hana.csproj", "{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MPF.AssetsCompile", "MPF.AssetsCompile\MPF.AssetsCompile.vcxproj", "{EEFD2976-CE00-49F1-95CF-9946046BFBBF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -127,6 +132,16 @@ Global
 		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Release|x64.Build.0 = Release|x64
 		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Release|x86.ActiveCfg = Release|x86
 		{8CA8D79C-F978-4FA8-AD83-60DDB39CC3A6}.Release|x86.Build.0 = Release|x86
+		{EEFD2976-CE00-49F1-95CF-9946046BFBBF}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{EEFD2976-CE00-49F1-95CF-9946046BFBBF}.Debug|x64.ActiveCfg = Debug|x64
+		{EEFD2976-CE00-49F1-95CF-9946046BFBBF}.Debug|x64.Build.0 = Debug|x64
+		{EEFD2976-CE00-49F1-95CF-9946046BFBBF}.Debug|x86.ActiveCfg = Debug|Win32
+		{EEFD2976-CE00-49F1-95CF-9946046BFBBF}.Debug|x86.Build.0 = Debug|Win32
+		{EEFD2976-CE00-49F1-95CF-9946046BFBBF}.Release|Any CPU.ActiveCfg = Release|Win32
+		{EEFD2976-CE00-49F1-95CF-9946046BFBBF}.Release|x64.ActiveCfg = Release|x64
+		{EEFD2976-CE00-49F1-95CF-9946046BFBBF}.Release|x64.Build.0 = Release|x64
+		{EEFD2976-CE00-49F1-95CF-9946046BFBBF}.Release|x86.ActiveCfg = Release|Win32
+		{EEFD2976-CE00-49F1-95CF-9946046BFBBF}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
