@@ -1,10 +1,19 @@
-﻿using System;
+﻿using MPF.Interop;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace MPF.Media
 {
-    class ImageSource
+    public abstract class ImageSource : Animatable, IResourceProvider
     {
+        internal ImageSource()
+        {
+
+        }
+
+        IResource IResourceProvider.Resource => GetResourceOverride();
+
+        internal abstract IResource GetResourceOverride();
     }
 }
