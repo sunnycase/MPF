@@ -17,4 +17,16 @@ struct SolidColorTexture
 	ColorF color;
 };
 
+struct MemoryTexture
+{
+	PixelFormat Format;
+	UINT Dimension;
+	UINT Width;
+	UINT Height;
+	UINT Depth;
+	UINT RowPitch;
+	UINT DepthPitch;
+	std::vector<byte> Pixels;
+};
+
 END_NS_PLATFORM

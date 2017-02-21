@@ -2,6 +2,7 @@
 using MPF.Documents;
 using MPF.Input;
 using MPF.Media;
+using MPF.Media.Imaging;
 using MPF.Media3D;
 using MPF.Media3D.Shaders;
 using System;
@@ -31,7 +32,7 @@ namespace MPF.HelloDesktop
         public Application()
         {
             InputManager.Current.HIDAware = HIDUsages.Default;
-
+            
             _window = new Window
             {
                 Width = 1024,
@@ -93,20 +94,40 @@ namespace MPF.HelloDesktop
 
         private Scene LoadScene()
         {
-            var mesh2 = new MeshGeometry3D
-            {
-                Positions = new FreezableCollection<Point3D>
-                {
-                    (0, 0, 0), (100, 0, 0), (100, 100, 0), (0, 100, 0)
-                },
-                Indices = new FreezableCollection<uint>
-                {
-                    0, 1, 2, 2, 3, 0
-                }
-            };
+            //var mesh2 = new MeshGeometry3D
+            //{
+            //    Positions = new FreezableCollection<Point3D>
+            //    {
+            //        (0, 0, 0), (100, 0, 0), (100, 100, 0), (0, 100, 0)
+            //    },
+            //    Indices = new FreezableCollection<uint>
+            //    {
+            //        0, 1, 2, 2, 3, 0
+            //    }
+            //};
             var dstScene = new Scene();
+
+            //var bitmap = BitmapDecoder.Create(File.OpenRead(Path.Combine(@"Content\", "heart.png")));
+            //var frame = bitmap.Frames[0];
+            //var brush = new ImageBrush { Source = frame };
+            //for (int i = 0; i < 5; i++)
+            //{
+            //    dstScene.Add(new Visual3D
+            //    {
+            //        Geometry = new BoxGeometry3D { Width = 10, Height = 2, Depth = 20 },
+            //        Material = new Material<StandardShaderParameters>
+            //        {
+            //            Shader = new StandardShadersGroup(),
+            //            Parameters = new StandardShaderParameters
+            //            {
+            //                MainTexture = brush
+            //            }
+            //        }
+            //    });
+            //}
+#if true
             var context = new Assimp.AssimpContext();
-            var scene = context.ImportFile(@"Content\Reimu\reimu_Sheep3D_0.957.fbx", Assimp.PostProcessSteps.MakeLeftHanded | Assimp.PostProcessSteps.Triangulate);
+            var scene = context.ImportFile(@"Content\Reimu\reimu_Sheep3D_0.957.fbx", Assimp.PostProcessSteps.GenerateSmoothNormals | Assimp.PostProcessSteps.GenerateUVCoords);
             foreach(var src in scene.Meshes)
             {
                 var mesh = new MeshGeometry3D
@@ -121,6 +142,16 @@ namespace MPF.HelloDesktop
                                                             from i in f.Indices
                                                             select (uint)i)
                 };
+                var srcMaterial = scene.Materials[src.MaterialIndex];
+                Brush mainTexture;
+                if (srcMaterial.HasTextureDiffuse)
+                {
+                    var bitmap = BitmapDecoder.Create(File.OpenRead(Path.Combine(@"Content\Reimu\", srcMaterial.TextureDiffuse.FilePath)));
+                    var frame = bitmap.Frames[0];
+                    mainTexture = new ImageBrush { Source = frame };
+                }
+                else
+                    mainTexture = new SolidColorBrush { Color = Colors.Black };
                 var visual = new Visual3D
                 {
                     Geometry = mesh,
@@ -129,14 +160,15 @@ namespace MPF.HelloDesktop
                         Shader = new StandardShadersGroup(),
                         Parameters = new StandardShaderParameters
                         {
-                            MainTexture = new SolidColorBrush { Color = Colors.Black }
+                            MainTexture = mainTexture
                         }
                     }
                 };
                 dstScene.Add(visual);
             }
+#endif
 
-            Console.WriteLine($"Total Vertex Count: { dstScene.Sum(o => ((MeshGeometry3D)o.Geometry).Positions.Count) }");
+            //Console.WriteLine($"Total Vertex Count: { dstScene.Sum(o => ((MeshGeometry3D)o.Geometry).Positions.Count) }");
             return dstScene;
         }
 

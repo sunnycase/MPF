@@ -207,6 +207,9 @@
     <ClInclude Include="Media\Sampler.h">
       <Filter>头文件\Media</Filter>
     </ClInclude>
+    <ClInclude Include="Media\ImageManager.h">
+      <Filter>头文件\Media</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -307,6 +310,9 @@
     </ClCompile>
     <ClCompile Include="Media\Platform\D3D11\D3D11DeviceResourceTransforms.cpp">
       <Filter>源文件\Media\Platform\D3D11</Filter>
+    </ClCompile>
+    <ClCompile Include="Media\ImageManager.cpp">
+      <Filter>源文件\Media</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

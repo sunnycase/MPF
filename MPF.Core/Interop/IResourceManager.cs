@@ -1,9 +1,11 @@
-﻿using MPF.Media3D;
+﻿using MPF.Media.Imaging;
+using MPF.Media3D;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 
 namespace MPF.Interop
@@ -21,6 +23,7 @@ namespace MPF.Interop
         RT_BoxGeometry3D,
         RT_MeshGeometry3D,
         RT_SolidColorTexture,
+        RT_MemoryTexture,
         RT_Sampler,
         RT_ShadersGroup
     }
@@ -93,6 +96,20 @@ namespace MPF.Interop
         public uint IndicesCount;
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    unsafe struct MemoryTextureData
+    {
+        public PixelFormat Format;
+        public uint Dimension;
+        public uint Width;
+        public uint Height;
+        public uint Depth;
+        public uint RowPitch;
+        public uint DepthPitch;
+        public IntPtr Pixels;
+        public uint PixelsLength;
+    }
+
     enum TextureAddress
     {
         TA_Wrap,
@@ -124,6 +141,8 @@ namespace MPF.Interop
     {
         IRenderCommandBuffer CreateRenderCommandBuffer();
         IFontFace CreateFontFaceFromMemory([In]IntPtr buffer, [In]ulong size, [In] uint faceIndex);
+        IBitmapDecoder CreateBitmapDecoderFromStream([In]IStream stream);
+        uint GetBitsPerPixel(PixelFormat format);
         IResource CreateResource([In]ResourceType resType);
         void UpdateLineGeometry([In]IResource resource, [In] ref LineGeometryData data);
         void UpdateRectangleGeometry([In]IResource resource, [In] ref RectangleGeometryData data);
@@ -136,6 +155,7 @@ namespace MPF.Interop
         void UpdateBoxGeometry3D([In]IResource resource, [In] ref BoxGeometry3DData data);
         void UpdateMeshGeometry3D([In]IResource resource, [In] ref MeshGeometry3DData data);
         void UpdateSolidColorTexture([In]IResource resource, [In]ref ColorF color);
+        void UpdateMemoryTexture([In]IResource resource, [In]ref MemoryTextureData data);
         void UpdateSampler([In]IResource resource, [In]ref SamplerData data);
         void UpdateShadersGroup([In]IResource resource, [In]ref ShadersGroupData data);
     }

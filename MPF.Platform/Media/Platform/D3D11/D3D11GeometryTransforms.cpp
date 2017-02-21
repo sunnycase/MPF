@@ -540,50 +540,50 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::Fill3DVer
 	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt1.x, pt1.y, pt1.z },
-		//{ 0, 0, 0}, FillVertex::ST_Linear,
-		//{ 0, 0 }
+		{ 0, 0, 0 },
+		{ 0, 0, 0 }
 	});
 	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt2.x, pt2.y, pt2.z },
-		//{ 0, 0, 0 }, FillVertex::ST_Linear,
-		//{ 1, 0 }
+		{ 0, 0, 0 },
+		{ 1, 0, 0 }
 	});
 	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt3.x, pt3.y, pt3.z },
-		//{ 0, 0, 0 }, FillVertex::ST_Linear,
-		//{ 1, 1 }
+		{ 0, 0, 0 },
+		{ 1, 1, 0 }
 	});
 	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt4.x, pt4.y, pt4.z },
-		//{ 0, 0, 0 }, FillVertex::ST_Linear,
-		//{ 1, 0 }
+		{ 0, 0, 0 }, 
+		{ 0, 1, 0 }
 	});
 	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt5.x, pt5.y, pt5.z },
-		//{ 0, 0, 0 }, FillVertex::ST_Linear,
-		//{ 0, 0 }
+		{ 0, 0, 0 },
+		{ 0, 0, 1 }
 	});
 	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt6.x, pt6.y, pt6.z },
-		//{ 0, 0, 0 }, FillVertex::ST_Linear,
-		//{ 1, 0 }
+		{ 0, 0, 0 },
+		{ 1, 0, 0 }
 	});
 	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt7.x, pt7.y, pt7.z },
-		//{ 0, 0, 0 }, FillVertex::ST_Linear,
-		//{ 1, 1 }
+		{ 0, 0, 0 },
+		{ 1, 1, 1 }
 	});
 	vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ pt8.x, pt8.y, pt8.z },
-		//{ 0, 0, 0 }, FillVertex::ST_Linear,
-		//{ 1, 0 }
+		{ 0, 0, 0 },
+		{ 0, 1, 1 }
 	});
 
 	// face 1
@@ -617,9 +617,8 @@ void PlatformProvider<PlatformId::D3D11>::Transform(std::vector<D3D11::Fill3DVer
 		vertices.emplace_back(D3D11::Fill3DVertex
 	{
 		{ vertex.Position.X, vertex.Position.Y, vertex.Position.Z },
-		//{ vertex.Normal.X, vertex.Normal.Y, vertex.Normal.Z },
-		//FillVertex::ST_Linear,
-		//{ vertex.TexCoord.X, vertex.TexCoord.Y }
+		{ vertex.Normal.X, vertex.Normal.Y, vertex.Normal.Z },
+		{ vertex.TexCoord.X, vertex.TexCoord.Y, 0 }
 	});
 
 	for (auto&& index : geometry.Indices)

@@ -1,6 +1,8 @@
 ﻿using MPF.Interop;
+using MPF.Media.Imaging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -24,6 +26,16 @@ namespace MPF.Media
         public IResource CreateResouce(ResourceType resType)
         {
             return _resourceManager.CreateResource(resType);
+        }
+
+        public IBitmapDecoder CreateBitmapDecoderFromStream(Stream stream)
+        {
+            return _resourceManager.CreateBitmapDecoderFromStream(new ManagedIStream(stream));
+        }
+
+        public uint GetBitsPerPixel(PixelFormat format)
+        {
+            return _resourceManager.GetBitsPerPixel(format);
         }
 
         public IRenderCommandBuffer CreateRenderCommandBuffer()
@@ -73,7 +85,12 @@ namespace MPF.Media
 
         public void UpdateSolidColorTexture(IResource res, ref ColorF color)
         {
-            _resourceManager.UpdateSolidColorTexture(res, color);
+            _resourceManager.UpdateSolidColorTexture(res, ref color);
+        }
+
+        public void UpdateMemoryTexture(IResource res, ref MemoryTextureData data)
+        {
+            _resourceManager.UpdateMemoryTexture(res, ref data);
         }
 
         public void UpdateSampler(IResource res, ref SamplerData data)
@@ -107,6 +124,11 @@ namespace MPF.Media
         public static Lazy<IResource> CreateResource(this DependencyObject obj, ResourceType type)
         {
             return new Lazy<IResource>(() => MediaResourceManager.Current.CreateResouce(type));
+        }
+
+        public static uint GetBitsPerPixel(this PixelFormat format)
+        {
+            return MediaResourceManager.Current.GetBitsPerPixel(format);
         }
     }
 }

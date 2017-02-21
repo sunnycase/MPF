@@ -24,6 +24,7 @@ DEFINE_NS_PLATFORM
 #include "../MPF.Platform_i.h"
 
 class FontManager;
+class ImageManager;
 
 #define DECL_GEOMETRY_RESOURCEMGR_TRC_GETTER(T)		  \
 virtual ITransformedResourceContainer<T>& Get##T##StrokeTRC() noexcept = 0; \
@@ -44,6 +45,8 @@ public:
 	// Í¨¹ý RuntimeClass ¼Ì³Ð
 	STDMETHODIMP CreateRenderCommandBuffer(IRenderCommandBuffer ** buffer) override;
 	STDMETHODIMP CreateFontFaceFromMemory(INT_PTR buffer, UINT64 size, UINT faceIndex, IFontFace **fontFace) override;
+	STDMETHODIMP CreateBitmapDecoderFromStream(IStream *stream, IBitmapDecoder **decoder) override;
+	STDMETHODIMP GetBitsPerPixel(PixelFormat format, UINT* bits) override;
 	STDMETHODIMP CreateResource(ResourceType resType, IResource ** res) override;
 	STDMETHODIMP UpdateLineGeometry(IResource * res, LineGeometryData * data) override;
 	STDMETHODIMP UpdateRectangleGeometry(IResource * res, RectangleGeometryData * data) override;
@@ -57,6 +60,7 @@ public:
 	STDMETHODIMP UpdateBoxGeometry3D(IResource * res, BoxGeometry3DData * data) override;
 	STDMETHODIMP UpdateMeshGeometry3D(IResource * res, MeshGeometry3DData * data) override;
 	STDMETHODIMP UpdateSolidColorTexture(IResource * res, ColorF * color) override;
+	STDMETHODIMP UpdateMemoryTexture(IResource * res, MemoryTextureData * data) override;
 	STDMETHODIMP UpdateSampler(IResource * res, SamplerData * data) override;
 	STDMETHODIMP UpdateShadersGroup(IResource * res, ShadersGroupData * data) override;
 
@@ -81,6 +85,7 @@ protected:
 	DECL_GEOMETRY3D_RESOURCEMGR_TRC_GETTER(MeshGeometry3D);
 
 	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(SolidColorTexture);
+	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(MemoryTexture);
 	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(Sampler);
 	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(ShadersGroup);
 	DECL_DEVICE_RESOURCEMGR_TRC_GETTER(ShaderParameters);
@@ -96,6 +101,7 @@ private:
 	std::unordered_multimap<UINT_PTR, UINT_PTR> _dependentResources;
 	WRL::Wrappers::CriticalSection _containerCS;
 	std::shared_ptr<FontManager> _fontManager;
+	std::shared_ptr<ImageManager> _imageManager;
 	std::atomic<UINT_PTR> _nextResourceId = 1;
 };
 END_NS_PLATFORM

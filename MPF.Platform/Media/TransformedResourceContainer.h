@@ -74,8 +74,8 @@ namespace Details
 						oldRentIt->second = GetThis()->Transform(oldRentIt->second, std::move(toTrans.second), affectRenderCall);
 					else
 						_rentInfos.emplace(toTrans.first, GetThis()->Transform({}, std::move(toTrans.second), affectRenderCall));
-					if (affectRenderCall)
-						registerRenderCallUpdate(toTrans.first, _rcAware);
+					
+					registerRenderCallUpdate(toTrans.first, _rcAware);
 				}
 			}
 		}

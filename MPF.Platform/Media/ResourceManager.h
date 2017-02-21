@@ -93,7 +93,7 @@ public:
 		_shaderBufferMgr(deviceContext),
 		RM_CTOR_GEOMETRY_IMPL(LineGeometry), RM_CTOR_GEOMETRY_IMPL(RectangleGeometry), RM_CTOR_GEOMETRY_IMPL(PathGeometry),
 		RM_CTOR_GEOMETRY3D_IMPL(BoxGeometry3D), RM_CTOR_GEOMETRY3D_IMPL(MeshGeometry3D),
-		RM_CTOR_TEXTURE_IMPL(SolidColorTexture),
+		RM_CTOR_TEXTURE_IMPL(SolidColorTexture), RM_CTOR_TEXTURE_IMPL(MemoryTexture),
 		RM_CTOR_SAMPLER_IMPL(Sampler), RM_CTOR_SHADERSGROUP_IMPL(ShadersGroup), RM_CTOR_SHADERPARAMETERS_IMPL(ShaderParameters),
 		RM_CTOR_DEPENDENT_IMPL(Brush), RM_CTOR_DEPENDENT_IMPL(Pen), RM_CTOR_DEPENDENT_IMPL(Material),
 		RM_CTOR_NO_DEPENDENT_IMPL(Camera)
@@ -156,6 +156,7 @@ public:
 		switch (resRef->GetType())
 		{
 			RM_POPULATE_DEVICE_RES_RENDERCALL_IMPL1(SolidColorTexture);
+			RM_POPULATE_DEVICE_RES_RENDERCALL_IMPL1(MemoryTexture);
 		default:
 			ThrowAlways(L"Invalid Resource Type.");
 		}
@@ -349,6 +350,7 @@ protected:
 	RM_DECL_GET_GEOMETRY3D_TRC(MeshGeometry3D);
 
 	RM_DECL_GET_DEVICE_TRC(SolidColorTexture);
+	RM_DECL_GET_DEVICE_TRC(MemoryTexture);
 	RM_DECL_GET_DEVICE_TRC(Sampler);
 	RM_DECL_GET_DEVICE_TRC(ShadersGroup);
 	RM_DECL_GET_DEVICE_TRC(ShaderParameters);
@@ -382,6 +384,7 @@ private:
 	RM_DECL_GEOMETRY3D_TRC_MEMBER(MeshGeometry3D);
 
 	RM_DECL_TEXTURE_TRC_MEMBER(SolidColorTexture);
+	RM_DECL_TEXTURE_TRC_MEMBER(MemoryTexture);
 	RM_DECL_SAMPLER_TRC_MEMBER(Sampler);
 	RM_DECL_SHADERSGROUP_TRC_MEMBER(ShadersGroup);
 	RM_DECL_SHADERPARAMETERS_TRC_MEMBER(ShaderParameters);

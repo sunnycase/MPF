@@ -9,6 +9,7 @@
 #include "ResourceRef.h"
 #include "RenderCommandBuffer.h"
 #include "FontManager.h"
+#include "ImageManager.h"
 using namespace WRL;
 using namespace NS_PLATFORM;
 
@@ -16,7 +17,7 @@ using namespace NS_PLATFORM;
 _container##T(std::make_shared<ResourceContainer<T>>())
 
 ResourceManagerBase::ResourceManagerBase()
-	:_containerCS(1000), _fontManager(std::make_shared<FontManager>())
+	:_containerCS(1000), _fontManager(std::make_shared<FontManager>()), _imageManager(std::make_shared<ImageManager>())
 {
 }						   
 
@@ -182,6 +183,20 @@ HRESULT ResourceManagerBase::UpdateSolidColorTexture(IResource * res, ColorF * c
 	UPDATE_DEVICE_RES_IMPL(SolidColorTexture, { *color });
 }
 
+STDMETHODIMP ResourceManagerBase::UpdateMemoryTexture(IResource * res, MemoryTextureData * data)
+{
+	MemoryTexture src;
+	src.Format = data->Format;
+	src.Width = data->Width;
+	src.Height = data->Height;
+	src.Depth = data->Depth;
+	src.Dimension = data->Dimension;
+	src.RowPitch = data->RowPitch;
+	src.DepthPitch = data->DepthPitch;
+	src.Pixels.assign(reinterpret_cast<byte*>(data->Pixels), reinterpret_cast<byte*>(data->Pixels) + data->PixelsLength);
+	UPDATE_DEVICE_RES_IMPL(MemoryTexture, std::move(src));
+}
+
 HRESULT ResourceManagerBase::UpdateSampler(IResource * res, SamplerData * data)
 {
 	UPDATE_DEVICE_RES_IMPL(Sampler, { *data });
@@ -288,6 +303,7 @@ void ResourceManagerBase::UpdateGPU()
 	UPDATE_GEOMTRY3D_TRC_DEVRES_IMPL(MeshGeometry3D);
 
 	UPDATE_DEVICE_TRC_DEVRES_IMPL(SolidColorTexture);
+	UPDATE_DEVICE_TRC_DEVRES_IMPL(MemoryTexture);
 	UPDATE_DEVICE_TRC_DEVRES_IMPL(Sampler);
 	UPDATE_DEVICE_TRC_DEVRES_IMPL(ShadersGroup);
 	UPDATE_DEVICE_TRC_DEVRES_IMPL(ShaderParameters);
@@ -316,6 +332,26 @@ HRESULT ResourceManagerBase::CreateFontFaceFromMemory(INT_PTR buffer, UINT64 siz
 	try
 	{
 		_fontManager->CreateFontFaceFromMemory(buffer, size, faceIndex, fontFace);
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
+HRESULT ResourceManagerBase::CreateBitmapDecoderFromStream(IStream *stream, IBitmapDecoder **decoder)
+{
+	try
+	{
+		*decoder = _imageManager->CreateBitmapImage(stream).Detach();
+		return S_OK;
+	}
+	CATCH_ALL();
+}
+
+HRESULT ResourceManagerBase::GetBitsPerPixel(PixelFormat format, UINT* bits)
+{
+	try
+	{
+		*bits = _imageManager->GetBitsPerPixel(format);
 		return S_OK;
 	}
 	CATCH_ALL();

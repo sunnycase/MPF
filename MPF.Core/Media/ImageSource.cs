@@ -12,8 +12,8 @@ namespace MPF.Media
 
         }
 
-        IResource IResourceProvider.Resource => GetResourceOverride();
+        IResource IResourceProvider.Resource => GetTextureResourceOverride();
 
-        internal abstract IResource GetResourceOverride();
+        internal abstract IResource GetTextureResourceOverride();
     }
 }

@@ -167,9 +167,8 @@ void BufferProvider<BufferTypes::ShaderBuffer>::Update(DeviceContext& deviceCont
 			static const D3D11_INPUT_ELEMENT_DESC fillInputElementDesc[] =
 			{
 				{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Fill3DVertex, Position), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				//{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(FillVertex, ParamFormValue), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				//{ "TEXCOORD", 1, DXGI_FORMAT_R32_FLOAT, 0, offsetof(FillVertex, SegmentType), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-				//{ "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(FillVertex, TexCoord), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Fill3DVertex, Normal), D3D11_INPUT_PER_VERTEX_DATA, 0 },
+				{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Fill3DVertex, TexCoord), D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			};
 			ThrowIfFailed(deviceContext->Device->CreateInputLayout(fillInputElementDesc, _countof(fillInputElementDesc), item.VertexShader.data(),
 				item.VertexShader.size(), &buffer.at(offset).InputLayout));

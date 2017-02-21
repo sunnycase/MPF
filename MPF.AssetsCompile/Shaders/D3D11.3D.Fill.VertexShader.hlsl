@@ -30,5 +30,7 @@ PixelShaderInput main(VertexShaderInput input)
 	pos = mul(pos, Projection);
 	output.Position = pos;
 	output.Color = Color;
+	output.Normal = input.Normal;
+	output.TexCoord = input.TexCoord;
 	return output;
 }

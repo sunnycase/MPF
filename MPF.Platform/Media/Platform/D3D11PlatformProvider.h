@@ -47,6 +47,8 @@ struct FillVertex
 struct Fill3DVertex
 {
 	DirectX::XMFLOAT3 Position;
+	DirectX::XMFLOAT3 Normal;
+	DirectX::XMFLOAT3 TexCoord;
 };
 
 #pragma pack(pop)
@@ -352,6 +354,7 @@ struct PlatformProvider<PlatformId::D3D11>
 	void Transform(std::vector<Fill3DVertex>& vertices, std::vector<size_t>& indices, const MeshGeometry3D& geometry);
 
 	void Transform(std::vector<typename BufferProvider<BufferTypes::TextureBuffer>::RentUpdateContext>& textures, SolidColorTexture&& data);
+	void Transform(std::vector<typename BufferProvider<BufferTypes::TextureBuffer>::RentUpdateContext>& textures, MemoryTexture&& data);
 	void Transform(std::vector<typename BufferProvider<BufferTypes::SamplerBuffer>::RentUpdateContext>& samplers, Sampler&& data);
 
 	void Transform(std::vector<typename BufferProvider<BufferTypes::ShaderBuffer>::RentUpdateContext>& shaders, ShadersGroup&& data);

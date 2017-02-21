@@ -26,6 +26,45 @@ typedef struct
 	float Left, Top, Width, Height;
 } Rect;
 
+typedef struct
+{
+	INT X, Y, Width, Height;
+} Int32Rect;
+
+typedef struct
+{
+	UINT Width, Height;
+} UInt32Size;
+
+typedef enum
+{
+	PixelFormatUnknown,
+	PixelFormat1bppIndexed,
+	PixelFormat2bppIndexed,
+	PixelFormat4bppIndexed,
+	PixelFormat8bppIndexed,
+	PixelFormatBlackWhite,
+	PixelFormat2bppGray,
+	PixelFormat4bppGray,
+	PixelFormat8bppGray,
+	PixelFormat8bppAlpha,
+	PixelFormat16bppBGR555,
+	PixelFormat16bppBGR565,
+	PixelFormat16bppGray,
+	PixelFormat24bppBGR,
+	PixelFormat24bppRGB,
+	PixelFormat32bppBGR,
+	PixelFormat32bppBGRA,
+	PixelFormat32bppPBGRA,
+	PixelFormat32bppGrayFloat,
+	PixelFormat32bppRGB,
+	PixelFormat32bppRGBA,
+	PixelFormat32bppPRGBA,
+	PixelFormat48bppRGB,
+	PixelFormat48bppBGR,
+	PixelFormat64bppRGB,
+} PixelFormat;
+
 [
 	uuid(12DCA941-A675-4A79-81E0-2378753D6DAF),
 	helpstring("Native Window Callback Interface"),
@@ -163,6 +202,7 @@ typedef enum
 	RT_BoxGeometry3D,
 	RT_MeshGeometry3D,
 	RT_SolidColorTexture,
+	RT_MemoryTexture,
 	RT_Sampler,
 	RT_ShadersGroup
 } ResourceType;
@@ -203,6 +243,19 @@ typedef struct
 	UINT32* Indices;
 	UINT32 IndicesCount;
 } MeshGeometry3DData;
+
+typedef struct
+{
+	PixelFormat Format;
+	UINT Dimension;
+	UINT Width;
+	UINT Height;
+	UINT Depth;
+	UINT RowPitch;
+	UINT DepthPitch;
+	INT_PTR Pixels;
+	INT_PTR PixelsLength;
+} MemoryTextureData;
 
 typedef enum
 {
@@ -264,6 +317,34 @@ interface IFontFace : IUnknown
 	HRESULT CreateGlyphGeometry([in]IResourceManager* resMgr, [in]UINT unicode, [out]GlyphMetrics* metrics, [out, retval]IResource** geometry);
 };
 
+[
+	uuid(B12842B0-0313-4199-A24E-745E840D2B74),
+	helpstring("Bitmap Frame Decode Interface"),
+	version(1.0)
+]
+interface IBitmapFrameDecode : IUnknown
+{
+	[propget]
+	HRESULT PixelSize([out, retval]UInt32Size* size);
+	[propget]
+	HRESULT PixelFormat([out, retval]PixelFormat* format);
+
+	HRESULT CopyPixels([in]const Int32Rect* srcRect, [in]UINT stride, [in, out, size_is(bufferSize)]BYTE buffer[], [in]UINT bufferSize);
+};
+
+[
+	uuid(8705DFC6-752C-4C28-A51B-B156CFF3AB50),
+	helpstring("Bitmap Decoder Interface"),
+	version(1.0)
+]
+interface IBitmapDecoder : IUnknown
+{
+	[propget]
+	HRESULT FrameCount([out, retval]UINT* value);
+
+	HRESULT GetFrame([in]UINT id, [out, retval]IBitmapFrameDecode** frame);
+};
+
 typedef struct
 {
 	INT_PTR VertexShader;
@@ -281,6 +362,8 @@ interface IResourceManager : IUnknown
 {
 	HRESULT CreateRenderCommandBuffer([out, retval]IRenderCommandBuffer ** buffer);
 	HRESULT CreateFontFaceFromMemory([in]INT_PTR buffer, [in]UINT64 size, [in]UINT faceIndex, [out, retval]IFontFace ** fontFace);
+	HRESULT CreateBitmapDecoderFromStream([in]IStream* stream, [out, retval]IBitmapDecoder** decoder);
+	HRESULT GetBitsPerPixel([in]PixelFormat format, [out, retval]UINT* bits);
 	HRESULT CreateResource([in]ResourceType resType, [out, retval]IResource** res);
 	HRESULT UpdateLineGeometry([in]IResource* res, [in]LineGeometryData* data);
 	HRESULT UpdateRectangleGeometry([in]IResource* res, [in]RectangleGeometryData* data);
@@ -293,6 +376,7 @@ interface IResourceManager : IUnknown
 	HRESULT UpdateBoxGeometry3D([in]IResource* res, [in]BoxGeometry3DData* data);
 	HRESULT UpdateMeshGeometry3D([in]IResource* res, [in]MeshGeometry3DData* data);
 	HRESULT UpdateSolidColorTexture([in]IResource* res, [in]ColorF* color);
+	HRESULT UpdateMemoryTexture([in]IResource* res, [in]MemoryTextureData* data);
 	HRESULT UpdateSampler([in]IResource* res, [in]SamplerData* data);
 	HRESULT UpdateShadersGroup([in]IResource* res, [in]ShadersGroupData* data);
 };
