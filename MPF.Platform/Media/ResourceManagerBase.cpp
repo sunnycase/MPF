@@ -10,6 +10,7 @@
 #include "RenderCommandBuffer.h"
 #include "FontManager.h"
 #include "ImageManager.h"
+#include <set>
 using namespace WRL;
 using namespace NS_PLATFORM;
 
@@ -283,16 +284,24 @@ Get##T##FillTRC().UpdateDeviceResources(*this, registerRenderCallUpdate)
 #define UPDATE_DEVICE_TRC_DEVRES_IMPL(T)	\
 Get##T##TRC().UpdateDeviceResources(*this, registerRenderCallUpdate)
 
+namespace
+{
+	void UpdateRecursive(UINT_PTR handle, std::set<UINT_PTR>& updatedRes, const std::unordered_multimap<UINT_PTR, UINT_PTR>& dependentTable)
+	{
+		updatedRes.emplace(handle);
+
+		auto range = dependentTable.equal_range(handle);
+		for (auto it = range.first; it != range.second; ++it)
+			UpdateRecursive(it->second, updatedRes, dependentTable);
+	}
+}
+
 void ResourceManagerBase::UpdateGPU()
 {
-	std::vector<UINT_PTR> updatedRes;
+	std::set<UINT_PTR> updatedRes;
 	std::function<void(UINT_PTR, RenderCallAwareness)> registerRenderCallUpdate = [&](UINT_PTR handle, RenderCallAwareness rcAware)
 	{
-		updatedRes.emplace_back(handle);
-
-		auto range = _dependentResources.equal_range(handle);
-		for (auto it = range.first; it != range.second; ++it)
-			updatedRes.emplace_back(it->second);
+		UpdateRecursive(handle, updatedRes, _dependentResources);
 	};
 
 	UPDATE_GEOMTRY_TRC_DEVRES_IMPL(LineGeometry);

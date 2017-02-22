@@ -68,6 +68,9 @@ private:
 	WRL::ComPtr<ID3D11PixelShader> _strokePS;
 	WRL::ComPtr<ID3D11GeometryShader> _strokeGS;
 
+	WRL::ComPtr<ID3D11DepthStencilState> _depthStencilState;
+	WRL::ComPtr<ID3D11DepthStencilState> _depthStencilState3D;
+
 	WRL::ComPtr<ID3D11InputLayout> _fillInputLayout;
 	WRL::ComPtr<ID3D11VertexShader> _fillVS;
 	WRL::ComPtr<ID3D11PixelShader> _fillPS;

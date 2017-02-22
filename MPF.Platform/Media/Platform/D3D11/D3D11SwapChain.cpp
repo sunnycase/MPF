@@ -105,21 +105,23 @@ void D3D11SwapChain::CreateWindowSizeDependentResources()
 	ThrowIfFailed(device->CreateRenderTargetView(backBuffer.Get(), nullptr, &_renderTargetView));
 
 	{
-		//D3D11_TEXTURE2D_DESC dsDesc{};
-		//dsDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		//dsDesc.Width = 640;
-		//dsDesc.Height = 480;
-		//dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		//dsDesc.MipLevels = 1;
-		//dsDesc.ArraySize = 1;
-		//dsDesc.CPUAccessFlags = 0;
-		//dsDesc.SampleDesc.Count = 1;
-		//dsDesc.SampleDesc.Quality = 0;
-		//dsDesc.MiscFlags = 0;
-		//dsDesc.Usage = D3D11_USAGE_DEFAULT;
+		D3D11_TEXTURE2D_DESC dsDesc{};
+		dsDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		dsDesc.Width = _viewport.Width;
+		dsDesc.Height = _viewport.Height;
+		dsDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		dsDesc.MipLevels = 1;
+		dsDesc.ArraySize = 1;
+		dsDesc.CPUAccessFlags = 0;
+		dsDesc.SampleDesc.Count = 1;
+		dsDesc.SampleDesc.Quality = 0;
+		dsDesc.MiscFlags = 0;
+		dsDesc.Usage = D3D11_USAGE_DEFAULT;
 
-		//ThrowIfFailed(device->CreateTexture2D(&dsDesc, nullptr, &_depthStencilBuffer));
-		//
+		ThrowIfFailed(device->CreateTexture2D(&dsDesc, nullptr, &_depthStencilBuffer));
+
+		ThrowIfFailed(device->CreateDepthStencilView(_depthStencilBuffer.Get(), 
+			&CD3D11_DEPTH_STENCIL_VIEW_DESC(D3D11_DSV_DIMENSION_TEXTURE2D, DXGI_FORMAT_D24_UNORM_S8_UINT), &_depthStencilView));
 	}
 }
 
@@ -257,8 +259,9 @@ void D3D11SwapChain::DoFrame(SwapChainUpdateContext& context)
 	XMVECTORF32 color = { 1.f, 1.f, 1.f, 1.f };
 
 	drawingContext->PushAndApply(_viewport);
-	_deviceContext->OMSetRenderTargets(1, renderTargetViews, nullptr);
+	_deviceContext->OMSetRenderTargets(1, renderTargetViews, _depthStencilView.Get());
 	_deviceContext->ClearRenderTargetView(_renderTargetView.Get(), color.f);
+	_deviceContext->ClearDepthStencilView(_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.f, 0);
 
 	if (auto callback = _callback)
 		callback->OnDraw(drawingContext.Get());

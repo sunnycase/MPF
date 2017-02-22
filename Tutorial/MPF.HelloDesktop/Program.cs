@@ -67,7 +67,7 @@ namespace MPF.HelloDesktop
             {
                 Camera = new MatrixCamera
                 {
-                    ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(15, 15, 25), new Vector3(0, 0, 0), Vector3.UnitY)
+                    ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(15, 15, -25), new Vector3(0, 0, 0), Vector3.UnitY)
                 },
                 Scene = scene
             };
@@ -77,7 +77,7 @@ namespace MPF.HelloDesktop
             {
                 Camera = new MatrixCamera
                 {
-                    ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(0, 0, 50), new Vector3(0, 0, 0), Vector3.UnitY)
+                    ViewMatrix = Matrix4x4.CreateLookAt(new Vector3(-11, 15, -20), new Vector3(0, 15, 0), Vector3.UnitY)
                 },
                 Scene = scene
             };
@@ -106,26 +106,26 @@ namespace MPF.HelloDesktop
             //    }
             //};
             var dstScene = new Scene();
-
-            //var bitmap = BitmapDecoder.Create(File.OpenRead(Path.Combine(@"Content\", "heart.png")));
-            //var frame = bitmap.Frames[0];
-            //var brush = new ImageBrush { Source = frame };
-            //for (int i = 0; i < 5; i++)
-            //{
-            //    dstScene.Add(new Visual3D
-            //    {
-            //        Geometry = new BoxGeometry3D { Width = 10, Height = 2, Depth = 20 },
-            //        Material = new Material<StandardShaderParameters>
-            //        {
-            //            Shader = new StandardShadersGroup(),
-            //            Parameters = new StandardShaderParameters
-            //            {
-            //                MainTexture = brush
-            //            }
-            //        }
-            //    });
-            //}
-#if true
+#if false
+            var bitmap = BitmapDecoder.Create(File.OpenRead(Path.Combine(@"Content\", "heart.png")));
+            var frame = bitmap.Frames[0];
+            var brush = new ImageBrush { Source = frame };
+            for (int i = 0; i < 5; i++)
+            {
+                dstScene.Add(new Visual3D
+                {
+                    Geometry = new BoxGeometry3D { Width = 10, Height = 2, Depth = 20 },
+                    Material = new Material<StandardShaderParameters>
+                    {
+                        Shader = new StandardShadersGroup(),
+                        Parameters = new StandardShaderParameters
+                        {
+                            MainTexture = brush
+                        }
+                    }
+                });
+            }
+#else
             var context = new Assimp.AssimpContext();
             var scene = context.ImportFile(@"Content\Reimu\reimu_Sheep3D_0.957.fbx", Assimp.PostProcessSteps.GenerateSmoothNormals | Assimp.PostProcessSteps.GenerateUVCoords);
             foreach(var src in scene.Meshes)

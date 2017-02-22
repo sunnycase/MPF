@@ -311,6 +311,64 @@ concurrency::task<void> D3D11DeviceContext::CreateDeviceResourcesAsync()
 		_deviceContext->OMSetBlendState(blendState.Get(), nullptr, 0xFFFFFFFF);
 	}
 
+	{
+		D3D11_DEPTH_STENCIL_DESC dsDesc;
+
+		// Depth test parameters
+		dsDesc.DepthEnable = false;
+		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+		// Stencil test parameters
+		dsDesc.StencilEnable = false;
+		dsDesc.StencilReadMask = 0xFF;
+		dsDesc.StencilWriteMask = 0xFF;
+
+		// Stencil operations if pixel is front-facing
+		dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+		dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+		// Stencil operations if pixel is back-facing
+		dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+		dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+		// Create depth stencil state
+		ThrowIfFailed(_device->CreateDepthStencilState(&dsDesc, &_depthStencilState));
+	}
+
+	{
+		D3D11_DEPTH_STENCIL_DESC dsDesc;
+
+		// Depth test parameters
+		dsDesc.DepthEnable = true;
+		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+		// Stencil test parameters
+		dsDesc.StencilEnable = true;
+		dsDesc.StencilReadMask = 0xFF;
+		dsDesc.StencilWriteMask = 0xFF;
+
+		// Stencil operations if pixel is front-facing
+		dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+		dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+		// Stencil operations if pixel is back-facing
+		dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+		dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+		// Create depth stencil state
+		ThrowIfFailed(_device->CreateDepthStencilState(&dsDesc, &_depthStencilState3D));
+	}
+
 	return task_from_result();
 }
 
@@ -325,18 +383,21 @@ void D3D11DeviceContext::SetPipelineState(PiplineStateTypes type)
 			_deviceContext->VSSetShader(nullptr, nullptr, 0);
 			_deviceContext->PSSetShader(nullptr, nullptr, 0);
 			_deviceContext->GSSetShader(nullptr, nullptr, 0);
+			_deviceContext->OMSetDepthStencilState(_depthStencilState.Get(), 1);
 			break;
 		case PiplineStateTypes::Stroke:
 			_deviceContext->IASetInputLayout(_strokeInputLayout.Get());
 			_deviceContext->VSSetShader(_strokeVS.Get(), nullptr, 0);
 			_deviceContext->PSSetShader(_strokePS.Get(), nullptr, 0);
 			_deviceContext->GSSetShader(_strokeGS.Get(), nullptr, 0);
+			_deviceContext->OMSetDepthStencilState(_depthStencilState.Get(), 1);
 			break;
 		case PiplineStateTypes::Fill:
 			_deviceContext->IASetInputLayout(_fillInputLayout.Get());
 			_deviceContext->VSSetShader(_fillVS.Get(), nullptr, 0);
 			_deviceContext->PSSetShader(_fillPS.Get(), nullptr, 0);
 			_deviceContext->GSSetShader(nullptr, nullptr, 0);
+			_deviceContext->OMSetDepthStencilState(_depthStencilState.Get(), 1);
 			break;
 			//case PiplineStateTypes::Fill3D:
 			//	_deviceContext->IASetInputLayout(_fill3DInputLayout.Get());
@@ -363,6 +424,7 @@ void D3D11DeviceContext::SetPipelineState(PiplineStateTypes type, const Material
 			_deviceContext->VSSetShader(nullptr, nullptr, 0);
 			_deviceContext->PSSetShader(nullptr, nullptr, 0);
 			_deviceContext->GSSetShader(nullptr, nullptr, 0);
+			_deviceContext->OMSetDepthStencilState(_depthStencilState.Get(), 1);
 			break;
 		case PiplineStateTypes::Fill3D:
 		{
@@ -373,6 +435,7 @@ void D3D11DeviceContext::SetPipelineState(PiplineStateTypes type, const Material
 				_deviceContext->VSSetShader(entry.VertexShader.Get(), nullptr, 0);
 				_deviceContext->PSSetShader(entry.PixelShader.Get(), nullptr, 0);
 				_deviceContext->GSSetShader(nullptr, nullptr, 0);
+				_deviceContext->OMSetDepthStencilState(_depthStencilState3D.Get(), 1);
 			}
 			else
 			{
@@ -380,6 +443,7 @@ void D3D11DeviceContext::SetPipelineState(PiplineStateTypes type, const Material
 				_deviceContext->VSSetShader(nullptr, nullptr, 0);
 				_deviceContext->PSSetShader(nullptr, nullptr, 0);
 				_deviceContext->GSSetShader(nullptr, nullptr, 0);
+				_deviceContext->OMSetDepthStencilState(_depthStencilState.Get(), 1);
 			}
 		}
 		break;
