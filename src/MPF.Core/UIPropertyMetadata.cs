@@ -33,7 +33,8 @@ namespace MPF
         protected override void MergeOverride(PropertyMetadata<T> old)
         {
             base.MergeOverride(old);
-            _uiOptions |= ((UIPropertyMetadata<T>)old)._uiOptions;
+            if (old is UIPropertyMetadata<T>)
+                _uiOptions |= ((UIPropertyMetadata<T>)old)._uiOptions;
         }
 
         protected override void OnPropertyChanged(object sender, PropertyChangedEventArgs<T> e)

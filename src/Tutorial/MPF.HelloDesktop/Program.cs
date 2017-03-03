@@ -51,6 +51,7 @@ namespace MPF.HelloDesktop
             var grid = new Grid();
             grid.RowDefinitions.Add(new RowDefinition());
             grid.RowDefinitions.Add(new RowDefinition());
+            grid.RowDefinitions.Add(new RowDefinition());
             grid.ColumnDefinitions.Add(new ColumnDefinition());
             grid.ColumnDefinitions.Add(new ColumnDefinition());
             grid.Children.Add(button);
@@ -83,8 +84,15 @@ namespace MPF.HelloDesktop
             };
             viewport.SizeChanged += Viewport_SizeChanged;
             Grid.SetColumn(viewport, 1);
-            Grid.SetRowSpan(viewport, 2);
+            Grid.SetRowSpan(viewport, 3);
             grid.Children.Add(viewport);
+
+            var listBox = new ListBox
+            {
+                ItemsSource = new[] { "baka", "xiahuan" }
+            };
+            Grid.SetRow(listBox, 2);
+            grid.Children.Add(listBox);
             _window.Content = grid;
             _window.PointerPressed += window_PointerPressed;
             _window.Show();

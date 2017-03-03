@@ -32,7 +32,8 @@ namespace MPF
         protected override void MergeOverride(PropertyMetadata<T> old)
         {
             base.MergeOverride(old);
-            _fmkOptions |= ((FrameworkPropertyMetadata<T>)old)._fmkOptions;
+            if (old is FrameworkPropertyMetadata<T>)
+                _fmkOptions |= ((FrameworkPropertyMetadata<T>)old)._fmkOptions;
         }
 
         public override bool TryGetNonDefaultValue(DependencyObject d, DependencyProperty<T> property, out T value)

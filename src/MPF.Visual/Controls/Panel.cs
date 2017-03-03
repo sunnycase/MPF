@@ -59,5 +59,19 @@ namespace MPF.Controls
                 RigthBottom = (Point)RenderSize
             }, null, Background);
         }
+
+        internal void MapItemsToGenerator(ItemContainerGenerator generator, IEnumerable itemsSource)
+        {
+            _uiElements.Clear(_cookie);
+            if(generator != null && itemsSource != null)
+            {
+                foreach (var item in itemsSource)
+                {
+                    var container = generator.GenerateNext();
+                    generator.LinkContainerToItem(container, item);
+                    _uiElements.Add(container, _cookie);
+                }
+            }
+        }
     }
 }

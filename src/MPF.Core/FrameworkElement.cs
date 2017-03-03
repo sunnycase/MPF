@@ -248,6 +248,12 @@ namespace MPF
                 LoadStyle();
                 _styleLoaded = true;
             }
+            OnInitializeOverride();
+        }
+
+        protected virtual void OnInitializeOverride()
+        {
+
         }
 
         private void LoadStyle()
