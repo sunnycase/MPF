@@ -53,6 +53,7 @@ namespace
 			return D3DFMT_INDEX32;
 		default:
 			ThrowIfFailed(E_INVALIDARG);
+			std::unexpected();
 		}
 	}
 }

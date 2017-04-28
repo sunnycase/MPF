@@ -64,7 +64,7 @@ namespace MPF.Controls
 
         protected virtual void OnApplyTemplate()
         {
-
+            TemplateChild?.MapItemsToGenerator(ItemContainerGenerator, ItemsSource);
         }
 
         private static void OnItemsPanelTemplatePropertyChanged(object sender, PropertyChangedEventArgs<ItemsPanelTemplate> e)

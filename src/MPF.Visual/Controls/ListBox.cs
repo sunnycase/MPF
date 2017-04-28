@@ -40,7 +40,12 @@ namespace MPF.Controls
 
         public override UIElement GenerateNext()
         {
-            return new Button { Content = "baka", Height = 80, Width = 200 };
+            return new Button { Height = 80, Background = Color.FromArgb(0xFFeeeeee), Margin = 5 };
+        }
+
+        public override void LinkContainerToItem(UIElement container, object item)
+        {
+            ((Button)container).Content = item;
         }
     }
 }

@@ -73,13 +73,15 @@ void PlatformProvider<PlatformId::D3D11>::PlayRenderCall(const PlayRenderCallArg
 		deviceContext->IASetVertexBuffers(0, 1, vb.GetAddressOf(), &rc.VB.Stride, &offset);
 		deviceContext->IASetIndexBuffer(ib.Get(), rc.IB.Format, 0);
 
-		auto tb = args.ResMgr->GetTextureBuffer(rc.Material.Brush);
-		auto sb = args.ResMgr->GetSamplerBuffer(rc.Material.Brush);
+		if(rc.Material.Brush.Texture.Mgr)
 		{
+			auto& tb = args.ResMgr->GetTextureBuffer(rc.Material.Brush);
 			const auto& tex = rc.Material.Brush.Texture;
 			deviceContext->PSSetShaderResources(0, 1, tb.at(tex.Start).SRVs[0].GetAddressOf());
 		}
+		if(rc.Material.Brush.Sampler.Mgr)
 		{
+			auto& sb = args.ResMgr->GetSamplerBuffer(rc.Material.Brush);
 			const auto& samp = rc.Material.Brush.Sampler;
 			deviceContext->PSSetSamplers(0, 1, sb.at(samp.Start).GetAddressOf());
 		}
@@ -103,13 +105,15 @@ void PlatformProvider<PlatformId::D3D11>::PlayRenderCall(const PlayRenderCallArg
 		deviceContext->IASetVertexBuffers(0, 1, vb.GetAddressOf(), &rc.VB.Stride, &offset);
 		deviceContext->IASetIndexBuffer(ib.Get(), rc.IB.Format, 0);
 
-		auto tb = args.ResMgr->GetTextureBuffer(rc.Material.Brush);
-		auto sb = args.ResMgr->GetSamplerBuffer(rc.Material.Brush);
+		if (rc.Material.Brush.Texture.Mgr)
 		{
+			auto& tb = args.ResMgr->GetTextureBuffer(rc.Material.Brush);
 			const auto& tex = rc.Material.Brush.Texture;
 			deviceContext->PSSetShaderResources(0, 1, tb.at(tex.Start).SRVs[0].GetAddressOf());
 		}
+		if (rc.Material.Brush.Sampler.Mgr)
 		{
+			auto& sb = args.ResMgr->GetSamplerBuffer(rc.Material.Brush);
 			const auto& samp = rc.Material.Brush.Sampler;
 			deviceContext->PSSetSamplers(0, 1, sb.at(samp.Start).GetAddressOf());
 		}

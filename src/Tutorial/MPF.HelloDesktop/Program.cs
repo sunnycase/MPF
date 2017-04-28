@@ -89,7 +89,7 @@ namespace MPF.HelloDesktop
 
             var listBox = new ListBox
             {
-                ItemsSource = new[] { "baka", "xiahuan" }
+                ItemsSource = new[] { "I'm", "a ListBox" }
             };
             Grid.SetRow(listBox, 2);
             grid.Children.Add(listBox);
